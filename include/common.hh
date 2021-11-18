@@ -62,5 +62,6 @@ namespace Edid {
   }
 
   std::array<uint8_t, DTD_BLOCK_SIZE> make_dtd(const DetailedTimingDescriptor& dtd);
+  DetailedTimingDescriptor parse_dtd(const std::array<uint8_t, DTD_BLOCK_SIZE>& dtd);
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block);
 }

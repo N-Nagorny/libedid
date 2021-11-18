@@ -347,21 +347,21 @@ namespace Edid {
 
     // Standard Timings
     int std_timing_i = 0;
+    ++pos;
     for (int i = 0; i < result_struct.standard_timings.size(); ++i) {
-      if (base_block[pos + 1] == 0x01 && base_block[pos + 2] == 0x01) {
-        pos += 2;
-        continue;
+      if (base_block[pos] != 0x01 && base_block[pos + 1] != 0x01) {
+        StandardTiming std_timing;
+        std_timing.x_resolution = (base_block[pos] + 31) * 8;
+        std_timing.aspect_ratio = AspectRatio(base_block[pos + 1] >> 6 & BITMASK_TRUE(2));
+        std_timing.v_frequency = (base_block[pos + 1] & BITMASK_TRUE(6)) + 60;
+        result_struct.standard_timings[std_timing_i++] = std_timing;
       }
-      StandardTiming std_timing;
-      std_timing.x_resolution = (base_block[++pos] + 31) * 8;
-      std_timing.aspect_ratio = AspectRatio(base_block[++pos] >> 6 & BITMASK_TRUE(2));
-      std_timing.v_frequency = (base_block[pos] & BITMASK_TRUE(6)) + 60;
-      result_struct.standard_timings[std_timing_i++] = std_timing;
+      pos += 2;
     }
 
     // 18 byte descriptors
     auto parse_display_range_limits = [&base_block](int descriptor_num) -> DisplayRangeLimits {
-      int pos = 54 + descriptor_num * 18; // before the 18 byte descriptor at descriptor_num
+      int pos = BASE_18_BYTE_DESCRIPTORS_OFFSET + descriptor_num * 18;
       DisplayRangeLimits result;
       bool add_255_to_h_max = false;
       bool add_255_to_h_min = false;
@@ -397,7 +397,7 @@ namespace Edid {
     };
 
     auto parse_display_name = [&base_block](int descriptor_num) -> std::string {
-      int pos = 54 + descriptor_num * 18; // before the 18 byte descriptor at descriptor_num
+      int pos = BASE_18_BYTE_DESCRIPTORS_OFFSET + descriptor_num * 18;
       std::string result;
       pos += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
       for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
@@ -407,22 +407,28 @@ namespace Edid {
       return result;
     };
 
-    for (int i = 0; i < 4; ++i) {
-      if (base_block[pos + 1] == 0x0 && base_block[pos + 2] == 0x0 && base_block[pos + 3] == 0x0) {
-        if (base_block[pos + 4] == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
+    int dtd_timing_i = 0;
+    for (int i = 0; i < BASE_18_BYTE_DESCRIPTORS; ++i) {
+      if (base_block[pos] == 0x0 && base_block[pos + 1] == 0x0 && base_block[pos + 2] == 0x0) {
+        if (base_block[pos + 3] == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
           result_struct.display_range_limits = parse_display_range_limits(i);
-        } else if (base_block[pos + 4] == BASE_DISPLAY_DESCRIPTOR_NAME_TYPE) {
+        } else if (base_block[pos + 3] == BASE_DISPLAY_DESCRIPTOR_NAME_TYPE) {
           result_struct.display_name = parse_display_name(i);
-        } else if (base_block[pos + 4] != BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
+        } else if (base_block[pos + 3] != BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
           throw EdidException(__FUNCTION__,
             "Display Descriptor at position " + std::to_string(i) +
             " has unknown Display Descriptor Type " + std::to_string(static_cast<int>(base_block[pos + 4])));
         }
-        pos += DTD_BLOCK_SIZE;
       } else {
-        pos += DTD_BLOCK_SIZE;
-        continue; //FiXME
+        std::array<uint8_t, DTD_BLOCK_SIZE> dtd_binary;
+        std::move(
+          base_block.begin() + pos,
+          base_block.begin() + pos + DTD_BLOCK_SIZE,
+          dtd_binary.begin()
+        );
+        result_struct.detailed_timing_descriptors[dtd_timing_i++] = parse_dtd(dtd_binary);
       }
+      pos += DTD_BLOCK_SIZE;
     }
 
     return {result_struct, result_ext_blocks};

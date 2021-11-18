@@ -11,3 +11,5 @@ This code is written for educational purposes. Use it on your risk.
 - Incorrect Video input parameters bitmap and Display type for analog input type.
 - Display Range Limits Display Descriptor always has no timing information.
 - Chromaticity is not deserialized.
+- Features bitmap in DTD is not deserialized.
+- Number of extensions is not parsed from Base EDID.

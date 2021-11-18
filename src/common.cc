@@ -48,38 +48,77 @@ namespace Edid {
     int pos = 0;
 
     uint16_t pixel_clock = dtd.pixel_clock_hz / 10'000;
-    result[pos++] = pixel_clock & 0xFF;
-    result[pos++] = (pixel_clock >> 8) & 0xFF;
+    result[pos++] = pixel_clock & BITMASK_TRUE(8);
+    result[pos++] = (pixel_clock >> 8) & BITMASK_TRUE(8);
 
-    result[pos++] = dtd.h_res & 0xFF;
-    result[pos++] = dtd.h_blank_pixels & 0xFF;
-    result[pos] = (dtd.h_res >> 4) & 0xF0;
-    result[pos++] |= (dtd.h_blank_pixels >> 8) & 0x0F;
+    result[pos++] = dtd.h_res & BITMASK_TRUE(8);
+    result[pos++] = dtd.h_blank_pixels & BITMASK_TRUE(8);
+    result[pos] = ((dtd.h_res >> 8) & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= (dtd.h_blank_pixels >> 8) & BITMASK_TRUE(4);
 
-    result[pos++] = dtd.v_res & 0xFF;
-    result[pos++] = dtd.v_blank_lines & 0xFF;
-    result[pos] = (dtd.v_res >> 4) & 0xF0;
-    result[pos++] |= (dtd.v_blank_lines >> 8) & 0x0F;
+    result[pos++] = dtd.v_res & BITMASK_TRUE(8);
+    result[pos++] = dtd.v_blank_lines & BITMASK_TRUE(8);
+    result[pos] = ((dtd.v_res >> 8) & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= (dtd.v_blank_lines >> 8) & BITMASK_TRUE(4);
 
-    result[pos++] = dtd.h_sync_offset & 0xFF;
-    result[pos++] = dtd.h_sync_width & 0xFF;
-    result[pos] = (dtd.v_sync_offset << 4) & 0xF0;
-    result[pos++] |= dtd.v_sync_width & 0x0F;
-    result[pos] = (dtd.h_sync_offset >> 2) & 0xC0;
-    result[pos] |= (dtd.h_sync_width >> 4) & 0x30;
-    result[pos] |= (dtd.v_sync_offset >> 2) & 0x0C;
-    result[pos++] |= (dtd.v_sync_width >> 4) & 0x03;
+    result[pos++] = dtd.h_sync_offset & BITMASK_TRUE(8);
+    result[pos++] = dtd.h_sync_width & BITMASK_TRUE(8);
+    result[pos] = (dtd.v_sync_offset & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= dtd.v_sync_width & BITMASK_TRUE(4);
+    result[pos] = ((dtd.h_sync_offset >> 8) & BITMASK_TRUE(2)) << 6;
+    result[pos] |= ((dtd.h_sync_width >> 8) & BITMASK_TRUE(2)) << 4;
+    result[pos] |= ((dtd.v_sync_offset >> 4) & BITMASK_TRUE(2)) << 2;
+    result[pos++] |= ((dtd.v_sync_width >> 4) & BITMASK_TRUE(2)) << 0;
 
-    result[pos++] = dtd.h_image_size & 0xFF;
-    result[pos++] = dtd.v_image_size & 0xFF;
-    result[pos] = (dtd.h_image_size >> 4) & 0xF0;
-    result[pos++] |= (dtd.v_image_size >> 8) & 0x0F;
+    result[pos++] = dtd.h_image_size & BITMASK_TRUE(8);
+    result[pos++] = dtd.v_image_size & BITMASK_TRUE(8);
+    result[pos] = ((dtd.h_image_size >> 8) & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= (dtd.v_image_size >> 8) & BITMASK_TRUE(4);
 
     result[pos++] = dtd.h_border_pixels;
     result[pos++] = dtd.v_border_lines;
 
     result[pos] = dtd.features_bitmap;
 
+    return result;
+  };
+
+  DetailedTimingDescriptor parse_dtd(const std::array<uint8_t, DTD_BLOCK_SIZE>& dtd) {
+    DetailedTimingDescriptor result;
+    int pos = 0;
+
+    result.pixel_clock_hz = dtd[pos++];
+    result.pixel_clock_hz |= (dtd[pos++] & BITMASK_TRUE(8)) << 8;
+    result.pixel_clock_hz *= 10'000;
+
+    result.h_res = dtd[pos++];
+    result.h_blank_pixels = dtd[pos++];
+    result.h_res |= (dtd[pos] >> 4 & BITMASK_TRUE(4)) << 8;
+    result.h_blank_pixels |= (dtd[pos++] & BITMASK_TRUE(4)) << 8;
+
+    result.v_res = dtd[pos++];
+    result.v_blank_lines = dtd[pos++];
+    result.v_res |= (dtd[pos] >> 4 & BITMASK_TRUE(4)) << 8;
+    result.v_blank_lines |= (dtd[pos++] & BITMASK_TRUE(4)) << 8;
+
+    result.h_sync_offset = dtd[pos++];
+    result.h_sync_width = dtd[pos++];
+    result.v_sync_offset = dtd[pos] >> 4 & BITMASK_TRUE(4);
+    result.v_sync_width = dtd[pos++] & BITMASK_TRUE(4);
+    result.h_sync_offset |= (dtd[pos] >> 6 & BITMASK_TRUE(2)) << 8;
+    result.h_sync_width |= (dtd[pos] >> 4 & BITMASK_TRUE(2)) << 8;
+    result.v_sync_offset |= (dtd[pos] >> 2 & BITMASK_TRUE(2)) << 4;
+    result.v_sync_width |= (dtd[pos++] & BITMASK_TRUE(2)) << 4;
+
+    result.h_image_size = dtd[pos++];
+    result.v_image_size = dtd[pos++];
+    result.h_image_size |= (dtd[pos] >> 4 & BITMASK_TRUE(4)) << 8;
+    result.v_image_size |= (dtd[pos++] & BITMASK_TRUE(4)) << 8;
+
+    result.h_border_pixels = dtd[pos++];
+    result.v_border_lines = dtd[pos++];
+
+    result.features_bitmap = dtd[pos];
     return result;
   };
 
