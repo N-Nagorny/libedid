@@ -36,6 +36,34 @@ BaseBlock make_edid_base() {
   return edid_base;
 }
 
+Cta861Block make_cta861_ext() {
+  Cta861Block cta861;
+  cta861.underscan = true;
+  cta861.basic_audio = true;
+  cta861.ycbcr_444 = true;
+  cta861.ycbcr_422 = true;
+  cta861.data_block_collection.video_data_block.vics[0] = 16;
+  cta861.data_block_collection.video_data_block.vics[1] = 4;
+  cta861.data_block_collection.video_data_block.vics[2] = 31;
+  cta861.data_block_collection.video_data_block.vics[3] = 19;
+  cta861.data_block_collection.video_data_block.vics[4] = 2;
+  cta861.data_block_collection.video_data_block.vics[5] = 18;
+  cta861.data_block_collection.video_data_block.vics[6] = 1;
+  ShortAudioDescriptor sad;
+  sad.audio_format = AudioFormatCode::LPCM;
+  sad.channels = AudioChannels::AC_2;
+  sad.sampling_freqs |= SamplingFrequence::SF_48;
+  sad.sampling_freqs |= SamplingFrequence::SF_44_1;
+  sad.sampling_freqs |= SamplingFrequence::SF_32;
+  sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
+  cta861.data_block_collection.audio_data_block.sads[0] = sad;
+  cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
+    138'500'000, 1920, 1080, 28, 22, 88, 44,
+    4, 5, 960, 540, 25, 21, 0x1E
+  });
+  return cta861;
+}
+
 TEST(EqualityOperatorTests, DetailedTimingDescriptorIsEqualToItself) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     138'500'000, 1920, 1080, 28, 22, 88, 44,
@@ -58,7 +86,7 @@ TEST(EqualityOperatorTests, EdidBaseIsEqualToItself) {
   EXPECT_EQ(make_edid_base(), make_edid_base());
 }
 
-TEST(CircularTests, GeneratedAndParsedBaseEdidsAreTheSame) {
+TEST(CircularTests, BaseEdid) {
   EdidData edid;
   edid.base_block = make_edid_base();
   auto edid_binary = generate_edid_binary(edid);
@@ -67,13 +95,45 @@ TEST(CircularTests, GeneratedAndParsedBaseEdidsAreTheSame) {
   EXPECT_EQ(parse_base_block(base_edid_binary).first, make_edid_base());
 }
 
-TEST(CircularTests, GeneratedAndParsedDtdsAreTheSame) {
+TEST(CircularTests, DetailedTimingDescriptor) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     138'500'000, 1920, 1080, 28, 22, 88, 44,
     4, 5, 960, 540, 25, 21, 0x1E
   };
   auto binary = make_dtd(dtd);
   EXPECT_EQ(dtd, parse_dtd(binary));
+}
+
+TEST(CircularTests, VideoDataBlock) {
+  VideoDataBlock video_data_block;
+  video_data_block.vics[0] = 16;
+  video_data_block.vics[1] = 4;
+  video_data_block.vics[2] = 31;
+  video_data_block.vics[3] = 19;
+  video_data_block.vics[4] = 2;
+  video_data_block.vics[5] = 18;
+  video_data_block.vics[6] = 1;
+  std::vector<uint8_t> vdb_binary = generate_video_data_block(video_data_block);
+  EXPECT_EQ(video_data_block, parse_video_data_block(vdb_binary));
+}
+
+TEST(CircularTests, AudioDataBlock) {
+  ShortAudioDescriptor sad;
+  sad.audio_format = AudioFormatCode::LPCM;
+  sad.channels = AudioChannels::AC_2;
+  sad.sampling_freqs |= SamplingFrequence::SF_48;
+  sad.sampling_freqs |= SamplingFrequence::SF_44_1;
+  sad.sampling_freqs |= SamplingFrequence::SF_32;
+  sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
+  AudioDataBlock audio_data_block;
+  audio_data_block.sads[0] = sad;
+  std::vector<uint8_t> adb_binary = generate_audio_data_block(audio_data_block);
+  EXPECT_EQ(audio_data_block, parse_audio_data_block(adb_binary));
+}
+
+TEST(CircularTests, Cta861Block) {
+  std::array<uint8_t, EDID_BLOCK_SIZE> cta861_binary = generate_cta861_block(make_cta861_ext());
+  EXPECT_EQ(make_cta861_ext(), parse_cta861_block(cta861_binary));
 }
 
 int main(int argc, char **argv) {

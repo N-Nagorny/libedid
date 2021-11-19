@@ -34,6 +34,8 @@ namespace Edid {
     }
   };
 
+  bool operator==(const VideoDataBlock& lhs, const VideoDataBlock& rhs);
+
   enum AudioFormatCode {
     RESERVED_0   = 0b0000,
     LPCM         = 0b0001,
@@ -143,6 +145,26 @@ namespace Edid {
     }
   };
 
+  bool operator==(const ShortAudioDescriptor& lhs, const ShortAudioDescriptor& rhs);
+
+  struct AudioDataBlock {
+    std::array<std::optional<ShortAudioDescriptor>, 10> sads;
+
+    uint8_t valid_sads() const {
+      uint8_t result = 0;
+      for (const auto& sad : sads)
+        if (sad.has_value())
+          ++result;
+      return result;
+    }
+
+    uint8_t size() const {
+      return valid_sads() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
+    }
+  };
+
+  bool operator==(const AudioDataBlock& lhs, const AudioDataBlock& rhs);
+
   enum Speaker {
     RESERVED                    = 1 << 7,
     REAR_LEFT_AND_RIGHT_CENTER  = 1 << 6,
@@ -156,19 +178,33 @@ namespace Edid {
 
   using SpeakerAllocation = uint8_t;
 
+  struct SpeakerAllocationDataBlock {
+    SpeakerAllocation speaker_allocation = 0;
+
+    static constexpr uint8_t size() {
+      return CTA861_DATA_BLOCK_HEADER_SIZE +
+        sizeof(SpeakerAllocation) +
+        2; // reserved
+    }
+  };
+
+  bool operator==(const SpeakerAllocationDataBlock& lhs, const SpeakerAllocationDataBlock& rhs);
+
   struct DataBlockCollection {
     VideoDataBlock video_data_block;
-    ShortAudioDescriptor short_audio_descriptor;
-    SpeakerAllocation speaker_allocation = 0;
+    AudioDataBlock audio_data_block;
+    SpeakerAllocationDataBlock speaker_allocation_data_block;
 
     uint8_t size() const {
       uint8_t result = 0;
       result += video_data_block.size();
-      result += short_audio_descriptor.size();
-      result += 3;
+      result += audio_data_block.size();
+      result += speaker_allocation_data_block.size();
       return result;
     }
   };
+
+  bool operator==(const DataBlockCollection& lhs, const DataBlockCollection& rhs);
 
   // See CTA-861-G Section 7.5
   struct Cta861Block {
@@ -180,6 +216,17 @@ namespace Edid {
     std::vector<DetailedTimingDescriptor> detailed_timing_descriptors;
   };
 
+  bool operator==(const Cta861Block& lhs, const Cta861Block& rhs);
+
+  std::vector<uint8_t> generate_video_data_block(const VideoDataBlock& video_data_block);
+  std::vector<uint8_t> generate_audio_data_block(const AudioDataBlock& audio_data_block);
+  std::array<uint8_t, SpeakerAllocationDataBlock::size()> generate_speaker_allocation_data_block(const SpeakerAllocationDataBlock& speaker_allocation_data_block);
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection);
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_cta861_block(const Cta861Block& cta861_block);
+
+  VideoDataBlock parse_video_data_block(const std::vector<uint8_t>& video_data_block);
+  AudioDataBlock parse_audio_data_block(const std::vector<uint8_t>& audio_data_block);
+  DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection);
+  SpeakerAllocationDataBlock parse_speaker_allocation_data_block(const std::array<uint8_t, SpeakerAllocationDataBlock::size()>& speaker_allocation_data_block);
+  Cta861Block parse_cta861_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& cta861);
 }
