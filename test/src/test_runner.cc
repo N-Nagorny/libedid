@@ -136,6 +136,12 @@ TEST(CircularTests, Cta861Block) {
   EXPECT_EQ(make_cta861_ext(), parse_cta861_block(cta861_binary));
 }
 
+TEST(CircularTests, FullEdid) {
+  EdidData edid{make_edid_base(), std::vector{make_cta861_ext()}};
+  auto edid_binary = generate_edid_binary(edid);
+  EXPECT_EQ(edid, parse_edid_binary(edid_binary));
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
