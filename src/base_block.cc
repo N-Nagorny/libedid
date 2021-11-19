@@ -431,6 +431,8 @@ namespace Edid {
       pos += DTD_BLOCK_SIZE;
     }
 
+    result_ext_blocks = base_block[pos];
+
     return {result_struct, result_ext_blocks};
   }
 
