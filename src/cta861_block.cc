@@ -73,12 +73,11 @@ namespace Edid {
     int pos = 0;
 
     result[pos] = CTA861_SPEAKERS_DATA_BLOCK_TAG << 5;
-    result[pos++] |= SpeakerAllocationDataBlock::size() & BITMASK_TRUE(5);
+    result[pos++] |= (SpeakerAllocationDataBlock::size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
 
-    result[pos++] = 0;
     result[pos++] = speaker_allocation_data_block.speaker_allocation;
     result[pos++] = 0;
-    result[pos++] = 0;
+    result[pos] = 0;
 
     return result;
   }
@@ -209,12 +208,11 @@ namespace Edid {
 
     int data_block_size = speaker_allocation_data_block[pos] & BITMASK_TRUE(5);
 
-    if (data_block_size != SpeakerAllocationDataBlock::size())
+    if (data_block_size != SpeakerAllocationDataBlock::size() - CTA861_DATA_BLOCK_HEADER_SIZE)
       throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has invalid size: " +
         std::to_string(data_block_size));
 
-    pos += 2;
-    result.speaker_allocation = speaker_allocation_data_block[pos];
+    result.speaker_allocation = speaker_allocation_data_block[++pos];
 
     return result;
   }
