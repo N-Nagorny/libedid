@@ -232,7 +232,7 @@ namespace Edid {
     std::array<uint8_t, SpeakerAllocationDataBlock::size()> speaker_allocation_data_block;
     std::move(
       collection.begin() + result.video_data_block.size() + result.audio_data_block.size(),
-      collection.end(),
+      collection.begin() + result.video_data_block.size() + result.audio_data_block.size() + SpeakerAllocationDataBlock::size(),
       speaker_allocation_data_block.begin()
     );
     result.speaker_allocation_data_block = parse_speaker_allocation_data_block(speaker_allocation_data_block);
@@ -270,7 +270,7 @@ namespace Edid {
           cta861.begin() + pos,
           cta861.begin() + dtd_start_pos
         ));
-        pos += result.data_block_collection.size();
+        pos = dtd_start_pos;
       }
 
       while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
