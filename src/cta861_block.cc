@@ -155,13 +155,17 @@ namespace Edid {
 
     int data_block_tag = video_data_block[pos] >> 5 & BITMASK_TRUE(3);
     if (data_block_tag != CTA861_VIDEO_DATA_BLOCK_TAG)
-      throw EdidException(__FUNCTION__, "Video Data Block has incorrect header: " +
+      throw EdidException(__FUNCTION__, "Video Data Block has incorrect Data Block Tag: " +
         std::to_string(data_block_tag));
 
     int vics = video_data_block[pos] & BITMASK_TRUE(5);
 
     for (int i = 0; i < vics; ++i) {
-      result.vics[i] = video_data_block[++pos];
+      uint8_t byte = video_data_block[++pos];
+      // Exclude Native Timing indicator bit from VIC
+      if (byte >= 128 && byte <= 192)
+        byte -= 128;
+      result.vics[i] = byte;
     }
 
     return result;
