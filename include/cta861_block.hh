@@ -176,6 +176,17 @@ namespace Edid {
     FRONT_LEFT_AND_RIGHT        = 1 << 0
   };
 
+  STRINGIFY_ENUM(Speaker, {
+    {RESERVED, "RESERVED"},
+    {REAR_LEFT_AND_RIGHT_CENTER, "REAR_LEFT_AND_RIGHT_CENTER"},
+    {FRONT_LEFT_AND_RIGHT_CENTER, "FRONT_LEFT_AND_RIGHT_CENTER"},
+    {REAR_CENTER, "REAR_CENTER"},
+    {REAR_LEFT_AND_RIGHT, "REAR_LEFT_AND_RIGHT"},
+    {FRONT_CENTER, "FRONT_CENTER"},
+    {LFE, "LFE"},
+    {FRONT_LEFT_AND_RIGHT, "FRONT_LEFT_AND_RIGHT"},
+  })
+
   using SpeakerAllocation = uint8_t;
 
   struct SpeakerAllocationDataBlock {
@@ -229,4 +240,6 @@ namespace Edid {
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection);
   SpeakerAllocationDataBlock parse_speaker_allocation_data_block(const std::array<uint8_t, SpeakerAllocationDataBlock::size()>& speaker_allocation_data_block);
   Cta861Block parse_cta861_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& cta861);
+
+  void print_cta861_block(std::ostream& os, const Cta861Block& cta861_block);
 }

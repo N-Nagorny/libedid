@@ -287,4 +287,58 @@ namespace Edid {
 
     return result;
   }
+
+  void print_video_data_block(std::ostream& os, const VideoDataBlock& video_data_block) {
+    os << "Video Data Block: ";
+    for (const std::optional<uint8_t>& vic : video_data_block.vics)
+      if (vic.has_value())
+        os << (int)vic.value() << " ";
+    os << '\n';
+  }
+
+  void print_audio_data_block(std::ostream& os, const AudioDataBlock& audio_data_block) {
+    os << "Audio Data Block:\n";
+    for (const std::optional<ShortAudioDescriptor>& sad : audio_data_block.sads) {
+      if (sad.has_value()) {
+        os << '\t' << "Short Audio Descriptor:\n";
+        os << "\t\t" << to_string(sad->audio_format) << '\n';
+        os << "\t\t" << to_string(sad->channels) << '\n';
+        for (SamplingFrequence sf : bitfield_to_enums<SamplingFrequence>(sad->sampling_freqs))
+          os << "\t\t" << to_string(sf) << '\n';
+        if (sad->audio_format == AudioFormatCode::LPCM)
+          for (LpcmBitDepth bit_depth : bitfield_to_enums<LpcmBitDepth>(sad->lpcm_bit_depths))
+            os << "\t\t" << to_string(bit_depth) << '\n';
+      }
+    }
+    os << '\n';
+  }
+
+  void print_speaker_allocation_data_block(std::ostream& os, const SpeakerAllocationDataBlock& speaker_allocation_data_block) {
+    os << "Speaker Allocation Data Block:\n";
+    for (Speaker speaker : bitfield_to_enums<Speaker>(speaker_allocation_data_block.speaker_allocation))
+      os << '\t' << to_string(speaker) << '\n';
+    os << '\n';
+  }
+
+  void print_data_block_collection(std::ostream& os, const DataBlockCollection& data_block_collection) {
+    print_video_data_block(os, data_block_collection.video_data_block);
+    print_audio_data_block(os, data_block_collection.audio_data_block);
+    print_speaker_allocation_data_block(os, data_block_collection.speaker_allocation_data_block);
+  }
+
+  void print_cta861_block(std::ostream& os, const Cta861Block& cta861_block) {
+    if (cta861_block.underscan)
+      os << "The display underscans IT timings by default" << '\n';
+    if (cta861_block.basic_audio)
+      os << "The display supports Basic Audio" << '\n';
+    if (cta861_block.ycbcr_444)
+      os << "The display supports YCbCr 4:4:4" << '\n';
+    if (cta861_block.ycbcr_422)
+      os << "The display supports YCbCr 4:2:2" << '\n';
+    print_data_block_collection(os, cta861_block.data_block_collection);
+    os << "Detailed Timing Descriptors:\n";
+    for (const auto& detailed_timing_descriptor : cta861_block.detailed_timing_descriptors) {
+      print_detailed_timing_descriptor(os, detailed_timing_descriptor);
+    }
+  }
 }
