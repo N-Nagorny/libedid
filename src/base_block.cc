@@ -497,10 +497,7 @@ namespace Edid {
     os << "Detailed Timing Descriptors:\n";
     for (const auto& detailed_timing_descriptor : base_block.detailed_timing_descriptors) {
       if (detailed_timing_descriptor.has_value()) {
-        os << '\t'
-          << detailed_timing_descriptor->h_res << 'x'
-          << detailed_timing_descriptor->v_res << '@'
-          << detailed_timing_descriptor->pixel_clock_hz << " Hz\n";
+        print_detailed_timing_descriptor(os, detailed_timing_descriptor.value());
       }
     }
 

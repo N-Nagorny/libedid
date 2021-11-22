@@ -122,6 +122,28 @@ namespace Edid {
     return result;
   };
 
+  void print_detailed_timing_descriptor(std::ostream& os, const DetailedTimingDescriptor& detailed_timing_descriptor, int tabs) {
+    std::string first_level_indent;
+    for (int i = 0; i < tabs; ++i)
+      first_level_indent.push_back('\t');
+    std::string second_level_indent = first_level_indent + "\t";
+    os << first_level_indent
+      << detailed_timing_descriptor.h_res << 'x'
+      << detailed_timing_descriptor.v_res << '@'
+      << detailed_timing_descriptor.pixel_clock_hz << " Hz ("
+      << detailed_timing_descriptor.h_image_size << " mm x "
+      << detailed_timing_descriptor.v_image_size << " mm)\n";
+
+    os << second_level_indent << detailed_timing_descriptor.h_blank_pixels << " blank H pixels\n";
+    os << second_level_indent << detailed_timing_descriptor.v_blank_lines << " blank V lines\n";
+    os << second_level_indent << "Hfront " << detailed_timing_descriptor.h_sync_offset
+      << " Hsync " << detailed_timing_descriptor.h_sync_width
+      << " Hborder " << (int)detailed_timing_descriptor.h_border_pixels << '\n';
+    os << second_level_indent << "Vfront " << (int)detailed_timing_descriptor.v_sync_offset
+      << " Vsync " << (int)detailed_timing_descriptor.v_sync_width
+      << " Vborder " << (int)detailed_timing_descriptor.v_border_lines << '\n';
+  }
+
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block) {
     int sum = 0;
     for (int i = 0; i < EDID_BLOCK_SIZE - 1; ++i)

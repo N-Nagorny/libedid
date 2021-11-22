@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <ostream>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
@@ -63,5 +64,6 @@ namespace Edid {
 
   std::array<uint8_t, DTD_BLOCK_SIZE> make_dtd(const DetailedTimingDescriptor& dtd);
   DetailedTimingDescriptor parse_dtd(const std::array<uint8_t, DTD_BLOCK_SIZE>& dtd);
+  void print_detailed_timing_descriptor(std::ostream& os, const DetailedTimingDescriptor& detailed_timing_descriptor, int tabs = 1);
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block);
 }
