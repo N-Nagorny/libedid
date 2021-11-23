@@ -12,6 +12,7 @@ This code is written for educational purposes. Use it on your risk.
 - Display Range Limits Display Descriptor always has no timing information.
 - Chromaticity is not deserialized.
 - Features bitmap in DTD is not deserialized.
+- Gamma is printed in the floating-point format though BaseBlock stores it in the integer format.
 
 ### CTA Extension
 
