@@ -273,7 +273,6 @@ namespace Edid {
     return result;
   }
 
-  // TODO: Add DTD parsing
   std::pair<BaseBlock, uint8_t> parse_base_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block) {
     BaseBlock result_struct;
     uint8_t result_ext_blocks = 0;

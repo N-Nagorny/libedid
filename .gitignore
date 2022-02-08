@@ -1,4 +1,1 @@
-obj/
-libedidgen.a
-test/test_runner
-test/obj/
+build/

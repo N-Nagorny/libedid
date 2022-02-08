@@ -3,6 +3,9 @@
 with import <nixpkgs> {};
 
 stdenv.mkDerivation {
-  name = "backoffice";
-  buildInputs = [ gnumake gtest ];
+  name = "libedid";
+  buildInputs = [ gtest ];
+  nativeBuildInputs = [ cmake pkg-config ];
+
+  src = ./.;
 }
