@@ -409,14 +409,17 @@ namespace Edid {
     int dtd_timing_i = 0;
     for (int i = 0; i < BASE_18_BYTE_DESCRIPTORS; ++i) {
       if (base_block[pos] == 0x0 && base_block[pos + 1] == 0x0 && base_block[pos + 2] == 0x0) {
-        if (base_block[pos + 3] == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
+        uint8_t display_descriptor_type = base_block[pos + 3];
+        if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
           result_struct.display_range_limits = parse_display_range_limits(i);
-        } else if (base_block[pos + 3] == BASE_DISPLAY_DESCRIPTOR_NAME_TYPE) {
+        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_NAME_TYPE) {
           result_struct.display_name = parse_display_name(i);
-        } else if (base_block[pos + 3] != BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
+        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE) {
+          result_struct.display_serial_number = parse_display_name(i);
+        } else if (display_descriptor_type != BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
           throw EdidException(__FUNCTION__,
             "Display Descriptor at position " + std::to_string(i) +
-            " has unknown Display Descriptor Type " + std::to_string(static_cast<int>(base_block[pos + 4])));
+            " has unknown Display Descriptor Type " + std::to_string(display_descriptor_type));
         }
       } else {
         std::array<uint8_t, DTD_BLOCK_SIZE> dtd_binary;

@@ -17,6 +17,7 @@
 #define BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE 0x10
 #define BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE 0xFD
 #define BASE_DISPLAY_DESCRIPTOR_NAME_TYPE 0xFC
+#define BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE 0xFF
 
 namespace Edid {
   static const std::array<uint8_t, 8> base_block_header = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
@@ -197,6 +198,7 @@ namespace Edid {
     std::array<std::optional<DetailedTimingDescriptor>, 2> detailed_timing_descriptors;
     std::optional<DisplayRangeLimits> display_range_limits;
     std::optional<std::string> display_name; // Maximum is 12 chars
+    std::optional<std::string> display_serial_number; // Maximum is 12 chars
 
     BaseBlock() {
       manufacturer_id.fill('A');
