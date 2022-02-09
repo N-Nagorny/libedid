@@ -1,7 +1,7 @@
 #include <array>
 #include <cstdint>
 
-#include "common.hh"
+#include "edid/common.hh"
 
 namespace Edid {
   bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs) {

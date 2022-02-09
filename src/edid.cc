@@ -2,10 +2,10 @@
 #include <iostream>
 #include <vector>
 
-#include "base_block.hh"
-#include "cta861_block.hh"
-#include "edid.hh"
-#include "exceptions.hh"
+#include "edid/base_block.hh"
+#include "edid/cta861_block.hh"
+#include "edid/edid.hh"
+#include "edid/exceptions.hh"
 
 namespace Edid {
   bool operator==(const EdidData& lhs, const EdidData& rhs) {

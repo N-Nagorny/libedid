@@ -4,8 +4,8 @@
 
 #include "gtest/gtest.h"
 
-#include "base_block.hh"
-#include "edid.hh"
+#include "edid/base_block.hh"
+#include "edid/edid.hh"
 
 using namespace Edid;
 

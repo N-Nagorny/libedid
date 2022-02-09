@@ -15,19 +15,13 @@ set(HEADERS
     include/
 )
 
-file(GLOB PUBLIC_HEADERS
-    "include/*.hh"
-)
-
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${HEADERS}
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
-
-install(TARGETS ${PROJECT_NAME} PUBLIC_HEADER)
+install(DIRECTORY include/ DESTINATION include)
 
 # Test application
 

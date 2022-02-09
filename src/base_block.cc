@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "base_block.hh"
-#include "exceptions.hh"
+#include "edid/base_block.hh"
+#include "edid/exceptions.hh"
 
 namespace Edid {
   bool operator==(const StandardTiming& lhs, const StandardTiming& rhs) {

@@ -2,9 +2,9 @@
 #include <cstdint>
 #include <iostream>
 
-#include "common.hh"
-#include "cta861_block.hh"
-#include "exceptions.hh"
+#include "edid/common.hh"
+#include "edid/cta861_block.hh"
+#include "edid/exceptions.hh"
 
 namespace Edid {
   bool operator==(const VideoDataBlock& lhs, const VideoDataBlock& rhs) {
