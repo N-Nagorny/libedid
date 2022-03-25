@@ -30,7 +30,7 @@ BaseBlock make_edid_base() {
   edid_base.display_range_limits = DisplayRangeLimits{56, 75, 30, 83, 170};
   edid_base.detailed_timing_descriptors[0] = DetailedTimingDescriptor{
     138'500'000, 1920, 1080, 28, 22, 88, 44,
-    4, 5, 960, 540, 25, 21, 0x1E
+    4, 5, 960, 540, 25, 21, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
   edid_base.display_name = "Hello";
   return edid_base;
@@ -59,7 +59,7 @@ Cta861Block make_cta861_ext() {
   cta861.data_block_collection.audio_data_block.sads[0] = sad;
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     138'500'000, 1920, 1080, 28, 22, 88, 44,
-    4, 5, 960, 540, 25, 21, 0x1E
+    4, 5, 960, 540, 25, 21, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   });
   return cta861;
 }
@@ -67,7 +67,7 @@ Cta861Block make_cta861_ext() {
 TEST(EqualityOperatorTests, DetailedTimingDescriptorIsEqualToItself) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     138'500'000, 1920, 1080, 28, 22, 88, 44,
-    4, 5, 960, 540, 25, 21, 0x1E
+    4, 5, 960, 540, 25, 21, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
   EXPECT_EQ(dtd, dtd);
 }
@@ -98,7 +98,7 @@ TEST(CircularTests, BaseEdid) {
 TEST(CircularTests, DetailedTimingDescriptor) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     138'500'000, 1920, 1080, 28, 22, 88, 44,
-    4, 5, 960, 540, 25, 21, 0x1E
+    4, 5, 960, 540, 25, 21, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
   auto binary = make_dtd(dtd);
   EXPECT_EQ(dtd, parse_dtd(binary));
@@ -204,7 +204,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   edid_base.display_range_limits = DisplayRangeLimits{40, 144, 160, 160, 330};
   edid_base.detailed_timing_descriptors[0] = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
-    4, 5, 477, 268, 0, 0, 0x18
+    4, 5, 477, 268, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
   };
   edid_base.display_name = "KALED24144F";
 
@@ -244,19 +244,19 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
 
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     326'660'000, 1920, 1080, 120, 32, 88, 44,
-    4, 5, 598, 336, 0, 0, 0x18
+    4, 5, 598, 336, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
   });
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     285'540'000, 1920, 1080, 160, 64, 48, 32,
-    3, 5, 576, 324, 0, 0, 0x1E
+    3, 5, 576, 324, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   });
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     138'650'000, 1920, 1080, 160, 31, 48, 32,
-    3, 5, 576, 324, 0, 0, 0x1E
+    3, 5, 576, 324, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   });
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     64'020'000, 1280, 720, 160, 21, 48, 32,
-    3, 5, 384, 216, 0, 0, 0x18
+    3, 5, 384, 216, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
   });
 
   std::vector<uint8_t> edid = std::vector<uint8_t>(edid_binary, edid_binary + ARRAY_SIZE(edid_binary));

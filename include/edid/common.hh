@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdint>
 #include <ostream>
+#include <variant>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
@@ -27,21 +28,65 @@
 #define DTD_BLOCK_SIZE 18
 
 namespace Edid {
+  enum StereoMode {
+    NO_STEREO = 0b000,
+    FIELD_SEQUENTIAL_L_R = 0b010,
+    FIELD_SEQUENTIAL_R_L = 0b100,
+    INTERLEAVED_RIGHT_EVEN = 0b011,
+    INTERLEAVED_LEFT_EVEN = 0b101,
+    FOUR_WAY_INTERLEAVED = 0b110,
+    SIDE_BY_SIDE_INTERLEAVED = 0b111
+  };
+
+  struct AnalogCompositeSync {
+    bool bipolar;
+    bool serrations;
+    bool sync_on_rgb_signals;
+  };
+
+  bool operator==(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs);
+  bool operator!=(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs);
+
+  struct DigitalCompositeSync {
+    bool serrations;
+    bool h_sync_polarity;
+  };
+
+  bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
+  bool operator!=(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
+
+  struct DigitalSeparateSync {
+    bool v_sync_polarity;
+    bool h_sync_polarity;
+  };
+
+  bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);
+  bool operator!=(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);
+
+  struct DtdFeaturesBitmap {
+    bool interlaced;
+    StereoMode stereo_mode;
+    std::variant<AnalogCompositeSync, DigitalCompositeSync, DigitalSeparateSync> sync;
+  };
+
+  bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
+  bool operator!=(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
+
   struct DetailedTimingDescriptor {
     uint32_t pixel_clock_hz; // This value becomes uint16_t in EDID by dividing by 10'000
     uint16_t h_res;
     uint16_t v_res;
     uint16_t h_blank_pixels;
     uint16_t v_blank_lines;
-    uint16_t h_sync_offset;
+    uint16_t h_sync_offset; // Horizontal front porch in other words
     uint16_t h_sync_width;
-    uint8_t v_sync_offset;
+    uint8_t v_sync_offset; // Vertical front porch in other words
     uint8_t v_sync_width;
     uint16_t h_image_size;
     uint16_t v_image_size;
     uint8_t h_border_pixels;
     uint8_t v_border_lines;
-    uint8_t features_bitmap;
+    DtdFeaturesBitmap features_bitmap;
 
     uint8_t size() const {
       return DTD_BLOCK_SIZE;

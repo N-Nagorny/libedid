@@ -208,7 +208,20 @@ namespace Edid {
 
   bool operator==(const BaseBlock& lhs, const BaseBlock& rhs);
 
-  std::array<uint8_t, EDID_BLOCK_SIZE> generate_base_block(const BaseBlock& base_block, uint8_t ext_blocks);
-  std::pair<BaseBlock, uint8_t> parse_base_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block);
-  void print_base_block(std::ostream& os, const BaseBlock& base_block);
+  /** Generates EDID Base Block binary */
+  std::array<uint8_t, EDID_BLOCK_SIZE> generate_base_block(
+    const BaseBlock& base_block, /**< Base Block structure */
+    uint8_t ext_blocks /**< Number of extension blocks following the Base Block in effective EDID binary */
+  );
+
+  /** Parses EDID Base Block binary into Base Block structure and number of extension blocks in EDID binary */
+  std::pair<BaseBlock, uint8_t> parse_base_block(
+    const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block /**< EDID Base Block binary */
+  );
+
+  /** Prints Base Block structure into stream */
+  void print_base_block(
+    std::ostream& os, /**< Output stream */
+    const BaseBlock& base_block /**< Base Block structure */
+  );
 }
