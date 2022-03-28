@@ -26,6 +26,8 @@
 
 #define EDID_BLOCK_SIZE 128
 #define DTD_BLOCK_SIZE 18
+#define NTSC_FACTOR_NUMERATOR 1000
+#define NTSC_FACTOR_DENOMINATOR 1001
 
 namespace Edid {
   enum StereoMode {

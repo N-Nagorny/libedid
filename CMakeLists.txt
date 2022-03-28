@@ -4,6 +4,8 @@ project (edid LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(ENABLE_BCP00501 ON CACHE BOOL "Enable EDID to NMOS Receiver Capabilities conversion functions")
+
 set(SOURCES
     src/base_block.cc
     src/common.cc
@@ -11,6 +13,11 @@ set(SOURCES
     src/edid.cc
     src/timing_modes.cc
 )
+
+if (ENABLE_BCP00501)
+    find_package(nlohmann_json 3.2.0 REQUIRED)
+    list(APPEND SOURCES src/bcp00501.cc)
+endif()
 
 set(HEADERS
     include/
@@ -21,6 +28,10 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${HEADERS}
 )
+
+if (ENABLE_BCP00501)
+    target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+endif()
 
 install(DIRECTORY include/ DESTINATION include)
 
