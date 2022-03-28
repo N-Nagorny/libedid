@@ -9,6 +9,7 @@ set(SOURCES
     src/common.cc
     src/cta861_block.cc
     src/edid.cc
+    src/timing_modes.cc
 )
 
 set(HEADERS

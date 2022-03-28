@@ -73,7 +73,7 @@ namespace Edid {
   bool operator!=(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
 
   struct DetailedTimingDescriptor {
-    uint32_t pixel_clock_hz; // This value becomes uint16_t in EDID by dividing by 10'000
+    uint64_t pixel_clock_hz; // This value becomes uint16_t in EDID by dividing by 10'000
     uint16_t h_res;
     uint16_t v_res;
     uint16_t h_blank_pixels;
