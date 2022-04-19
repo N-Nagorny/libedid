@@ -39,11 +39,24 @@ install(DIRECTORY include/ DESTINATION include)
 
 include(GoogleTest)
 
+set(TEST_HEADERS
+    test/include/
+)
+
 set(TEST_SOURCES
+    test/src/common.cc
     test/src/test_runner.cc
 )
 
+if (ENABLE_BCP00501)
+    list(APPEND TEST_SOURCES test/src/bcp00501_tests.cc)
+endif()
+
 add_executable(test_runner ${TEST_SOURCES})
+
+target_include_directories(test_runner PUBLIC
+    ${TEST_HEADERS}
+)
 
 target_link_libraries(test_runner PRIVATE
     ${PROJECT_NAME}
