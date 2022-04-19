@@ -9,33 +9,17 @@ namespace Edid {
       == std::tie(rhs.bipolar, rhs.serrations, rhs.sync_on_rgb_signals);
   }
 
-  bool operator!=(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs) {
-    return !(lhs == rhs);
-  }
-
   bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs) {
     return std::tie(lhs.serrations, lhs.h_sync_polarity) == std::tie(rhs.serrations, rhs.h_sync_polarity);
-  }
-
-  bool operator!=(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs) {
-    return !(lhs == rhs);
   }
 
   bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs) {
     return std::tie(lhs.v_sync_polarity, lhs.h_sync_polarity) == std::tie(rhs.v_sync_polarity, rhs.h_sync_polarity);
   }
 
-  bool operator!=(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs) {
-    return !(lhs == rhs);
-  }
-
   bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs) {
     return std::tie(lhs.interlaced, lhs.stereo_mode, lhs.sync)
       == std::tie(rhs.interlaced, rhs.stereo_mode, rhs.sync);
-  }
-
-  bool operator!=(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs) {
-    return !(lhs == rhs);
   }
 
   bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs) {
@@ -70,10 +54,6 @@ namespace Edid {
       rhs.v_border_lines,
       rhs.features_bitmap
     );
-  }
-
-  bool operator!=(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs) {
-    return !(lhs == rhs);
   }
 
   uint8_t make_dtd_features_bitmap(const DtdFeaturesBitmap& features_bitmap) {

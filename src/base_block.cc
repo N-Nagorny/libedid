@@ -9,20 +9,14 @@ namespace Edid {
       std::tie(rhs.x_resolution, rhs.aspect_ratio, rhs.v_frequency);
   }
 
-  bool operator!=(const StandardTiming& lhs, const StandardTiming& rhs) {
-    return !(lhs == rhs);
-  }
-
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs) {
     return std::tie(lhs.min_v_rate_hz, lhs.max_v_rate_hz, lhs.min_h_rate_khz, lhs.max_h_rate_khz, lhs.max_pixel_clock_rate_mhz) ==
       std::tie(rhs.min_v_rate_hz, rhs.max_v_rate_hz, rhs.min_h_rate_khz, rhs.max_h_rate_khz, rhs.max_pixel_clock_rate_mhz);
   }
 
-  bool operator!=(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs) {
-    return !(lhs == rhs);
-  }
-
   bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
+    using namespace details;
+
     if (lhs.manufacturer_id != rhs.manufacturer_id)
       return false;
     if (lhs.manufacturer_product_code != rhs.manufacturer_product_code)
@@ -75,7 +69,7 @@ namespace Edid {
       return false;
     if (lhs.display_range_limits != rhs.display_range_limits)
       return false;
-    if (lhs.display_name != rhs.display_name)
+    if (std::operator!=(lhs.display_name, rhs.display_name))
       return false;
     return true;
   }

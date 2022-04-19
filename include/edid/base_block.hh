@@ -149,7 +149,6 @@ namespace Edid {
   };
 
   bool operator==(const StandardTiming& lhs, const StandardTiming& rhs);
-  bool operator!=(const StandardTiming& lhs, const StandardTiming& rhs);
 
   struct DisplayRangeLimits {
     uint16_t min_v_rate_hz = 1; // Range is 1..510 Hz with step of 1 Hz
@@ -160,7 +159,6 @@ namespace Edid {
   };
 
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
-  bool operator!=(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
 
   // See https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
   struct BaseBlock {

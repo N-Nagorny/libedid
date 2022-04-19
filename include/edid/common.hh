@@ -46,8 +46,14 @@ namespace Edid {
     bool sync_on_rgb_signals;
   };
 
+  namespace details {
+    template<typename T>
+    bool operator!=(const T& lhs, const T& rhs) {
+      return !(lhs == rhs);
+    }
+  }
+
   bool operator==(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs);
-  bool operator!=(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs);
 
   struct DigitalCompositeSync {
     bool serrations;
@@ -55,7 +61,6 @@ namespace Edid {
   };
 
   bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
-  bool operator!=(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
 
   struct DigitalSeparateSync {
     bool v_sync_polarity;
@@ -63,7 +68,6 @@ namespace Edid {
   };
 
   bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);
-  bool operator!=(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);
 
   struct DtdFeaturesBitmap {
     bool interlaced;
@@ -72,7 +76,6 @@ namespace Edid {
   };
 
   bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
-  bool operator!=(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
 
   struct DetailedTimingDescriptor {
     uint64_t pixel_clock_hz; // This value becomes uint16_t in EDID by dividing by 10'000
@@ -96,7 +99,6 @@ namespace Edid {
   };
 
   bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs);
-  bool operator!=(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs);
 
   template<typename E>
   std::vector<E> bitfield_to_enums(uint8_t bitfield) {
