@@ -9,12 +9,17 @@ namespace Edid {
   using Ratio = std::pair<uint64_t, uint64_t>;
 
   json generate_constraint_set(uint16_t frame_width, uint16_t frame_height, Ratio frame_rate, bool interlaced) {
+    const std::string cap_frame_width = "urn:x-nmos:cap:format:frame_width";
+    const std::string cap_frame_height = "urn:x-nmos:cap:format:frame_height";
+    const std::string cap_grain_rate = "urn:x-nmos:cap:format:grain_rate";
+    const std::string cap_interlace_mode = "urn:x-nmos:cap:format:interlace_mode";
+
     json result;
 
-    result["urn:x-nmos:cap:format:frame_width"]["enum"] = { frame_width };
-    result["urn:x-nmos:cap:format:frame_height"]["enum"] = { frame_height };
+    result[cap_frame_width]["enum"] = { frame_width };
+    result[cap_frame_height]["enum"] = { frame_height };
     if (frame_rate.first % frame_rate.second == 0) {
-      result["urn:x-nmos:cap:format:grain_rate"]["enum"]["numerator"] = frame_rate.first / frame_rate.second;
+      result[cap_grain_rate]["enum"]["numerator"] = frame_rate.first / frame_rate.second;
     }
     else {
       uint64_t numerator = frame_rate.first;
@@ -28,12 +33,12 @@ namespace Edid {
         denominator = NTSC_FACTOR_DENOMINATOR;
       }
 
-      result["urn:x-nmos:cap:format:grain_rate"]["enum"] = {
+      result[cap_grain_rate]["enum"] = {
         { "numerator", numerator },
         { "denominator", denominator },
       };
     }
-    result["urn:x-nmos:cap:format:interlace_mode"]["enum"] = { interlaced };
+    result[cap_interlace_mode]["enum"] = { interlaced };
 
     return result;
   }
