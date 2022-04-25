@@ -200,4 +200,13 @@ namespace Edid {
     }
     throw EdidException(std::to_string(vic) + " is not a valid VIC");
   }
+
+  VideoTimingMode to_video_timing_mode(const DetailedTimingDescriptor& dtd, uint8_t pixel_repetition_factor) {
+    return VideoTimingMode{
+      static_cast<uint16_t>(dtd.h_res / pixel_repetition_factor),
+      static_cast<uint16_t>(dtd.v_res * (dtd.features_bitmap.interlaced ? 2 : 1)),
+      std::make_pair(dtd.pixel_clock_hz, (dtd.v_res + dtd.v_blank_lines) * (dtd.h_res + dtd.h_blank_pixels)),
+      dtd.features_bitmap.interlaced
+    };
+  }
 }
