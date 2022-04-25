@@ -7,6 +7,7 @@
 #include "edid/base_block.hh"
 #include "edid/edid.hh"
 
+#include "edid/timing_modes.hh"
 
 #include "common.hh"
 
@@ -88,6 +89,47 @@ TEST(CircularTests, FullEdid) {
   EdidData edid{make_edid_base(), std::vector{make_cta861_ext()}};
   auto edid_binary = generate_edid_binary(edid);
   EXPECT_EQ(edid, parse_edid_binary(edid_binary));
+}
+
+TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
+  BaseBlock edid_base_before = make_edid_base();
+  remove_mode_if(edid_base_before, [](const VideoTimingMode& mode) {
+    return mode.v_res == 600 || mode.v_res == 1080;
+  });
+  BaseBlock edid_base_after = make_edid_base();
+  edid_base_after.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
+  edid_base_after.detailed_timing_descriptors = {};
+  EXPECT_EQ(edid_base_before, edid_base_after);
+}
+
+TEST(ForEachModeTests, DeleteModesFromCta861) {
+  Cta861Block edid_base_before = make_cta861_ext();
+  remove_mode_if(edid_base_before, [](const VideoTimingMode& mode) {
+    return mode.v_res == 600 || mode.v_res == 1080;
+  });
+  Cta861Block edid_base_after = make_cta861_ext();
+  edid_base_after.data_block_collection.video_data_block.vics[0] = std::nullopt;
+  edid_base_after.data_block_collection.video_data_block.vics[2] = std::nullopt;
+  edid_base_after.detailed_timing_descriptors = {};
+  EXPECT_EQ(edid_base_before, edid_base_after);
+}
+
+TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
+  EdidData edid_before{make_edid_base(), std::vector{make_cta861_ext()}};
+
+  remove_mode_if(edid_before, [](const VideoTimingMode& mode) {
+    return mode.v_res == 600 || mode.v_res == 1080;
+  });
+
+  EdidData edid_after{make_edid_base(), std::vector{make_cta861_ext()}};
+
+  edid_after.base_block.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
+  edid_after.base_block.detailed_timing_descriptors = {};
+
+  edid_after.extension_blocks->at(0).data_block_collection.video_data_block.vics[0] = std::nullopt;
+  edid_after.extension_blocks->at(0).data_block_collection.video_data_block.vics[2] = std::nullopt;
+  edid_after.extension_blocks->at(0).detailed_timing_descriptors = {};
+  EXPECT_EQ(edid_before, edid_after);
 }
 
 TEST(WildEdidParsing, KoganKaled24144F_HDMI) {

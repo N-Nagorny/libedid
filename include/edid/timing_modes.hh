@@ -4,6 +4,7 @@
 
 #include "base_block.hh"
 #include "cta861_block.hh"
+#include "edid.hh"
 
 namespace Edid {
   using Ratio = std::pair<uint64_t, uint64_t>;
@@ -72,6 +73,33 @@ namespace Edid {
   }
 
   template <class Function>
+  void remove_mode_if(BaseBlock& base_block, Function fn) {
+    for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1)) {
+      if (fn(established_timings_1.at(et))) {
+        base_block.established_timings_1 &= ~et;
+      }
+    }
+    for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2)) {
+      if (fn(established_timings_2.at(et))) {
+        base_block.established_timings_2 &= ~et;
+      }
+    }
+    for (EstablishedTiming3 et : bitfield_to_enums<EstablishedTiming3>(base_block.established_timings_3)) {
+      if (fn(established_timings_3.at(et))) {
+        base_block.established_timings_3 &= ~et;
+      }
+    }
+
+    for (auto& mode : base_block.detailed_timing_descriptors) {
+      if (mode.has_value()) {
+        if (fn(to_video_timing_mode(mode.value()))) {
+          mode = std::nullopt;
+        }
+      }
+    }
+  }
+
+  template <class Function>
   Function for_each_mode(const Cta861Block& cta861_block, Function fn) {
     for (const std::optional<uint8_t>& vic : cta861_block.data_block_collection.video_data_block.vics) {
       if (vic.has_value()) {
@@ -96,5 +124,62 @@ namespace Edid {
     }
 
     return fn;
+  }
+
+  template <class Function>
+  void remove_mode_if(Cta861Block& cta861_block, Function fn) {
+    for (std::optional<uint8_t>& vic : cta861_block.data_block_collection.video_data_block.vics) {
+      if (vic.has_value()) {
+        auto mode = get_cta861_video_timing_mode(vic.value());
+        uint8_t pixel_repetition_factor = 1;
+        if (std::holds_alternative<uint8_t>(mode.pixel_repetition_factor)) {
+          pixel_repetition_factor = std::get<uint8_t>(mode.pixel_repetition_factor);
+        }
+        else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor)) {
+          pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor).first;
+        }
+        else if (std::holds_alternative<std::vector<uint8_t>>(mode.pixel_repetition_factor)) {
+          pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode.pixel_repetition_factor).at(0);
+        }
+
+        if (fn(to_video_timing_mode(mode.dtd, pixel_repetition_factor))) {
+          vic = std::nullopt;
+        }
+      }
+    }
+
+    for ( auto it = cta861_block.detailed_timing_descriptors.begin();
+          it != cta861_block.detailed_timing_descriptors.end();
+    ) {
+      if (fn(to_video_timing_mode(*it))) {
+        it = cta861_block.detailed_timing_descriptors.erase(it);
+      }
+      else {
+        ++it;
+      }
+    }
+  }
+
+  template <class Function>
+  Function for_each_mode(const EdidData& edid, Function fn) {
+    for_each_mode(edid.base_block, fn);
+
+    if (edid.extension_blocks.has_value()) {
+      for (const auto& ext_block : edid.extension_blocks.value()) {
+        for_each_mode(ext_block, fn);
+      }
+    }
+    return fn;
+  }
+
+  template <class Function>
+  void remove_mode_if(EdidData& edid, Function fn) {
+    remove_mode_if(edid.base_block, fn);
+
+    if (edid.extension_blocks.has_value()) {
+      for (auto& ext_block : edid.extension_blocks.value()) {
+        remove_mode_if(ext_block, fn);
+      }
+    }
   }
 }
