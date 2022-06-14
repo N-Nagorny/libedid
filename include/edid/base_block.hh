@@ -212,9 +212,16 @@ namespace Edid {
     uint8_t ext_blocks /**< Number of extension blocks following the Base Block in effective EDID binary */
   );
 
+  std::optional<StandardTiming> parse_standard_timing(uint8_t byte_1, uint8_t byte_2);
+
   /** Parses EDID Base Block binary into Base Block structure and number of extension blocks in EDID binary */
   std::pair<BaseBlock, uint8_t> parse_base_block(
     const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block /**< EDID Base Block binary */
+  );
+
+  void print_standard_timing(
+    std::ostream& os, /**< Output stream */
+    const StandardTiming& std_timing /**< Standard Timing structure */
   );
 
   /** Prints Base Block structure into stream */

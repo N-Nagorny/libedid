@@ -267,6 +267,18 @@ namespace Edid {
     return result;
   }
 
+  std::optional<StandardTiming> parse_standard_timing(uint8_t byte_1, uint8_t byte_2) {
+    std::optional<StandardTiming> result;
+    if (byte_1 != 0x01 && byte_2 != 0x01) {
+      StandardTiming std_timing;
+      std_timing.x_resolution = (byte_1 + 31) * 8;
+      std_timing.aspect_ratio = AspectRatio(byte_2 >> 6 & BITMASK_TRUE(2));
+      std_timing.v_frequency = (byte_2 & BITMASK_TRUE(6)) + 60;
+      result = std_timing;
+    }
+    return result;
+  }
+
   std::pair<BaseBlock, uint8_t> parse_base_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block) {
     BaseBlock result_struct;
     uint8_t result_ext_blocks = 0;
@@ -342,12 +354,9 @@ namespace Edid {
     int std_timing_i = 0;
     ++pos;
     for (int i = 0; i < result_struct.standard_timings.size(); ++i) {
-      if (base_block[pos] != 0x01 && base_block[pos + 1] != 0x01) {
-        StandardTiming std_timing;
-        std_timing.x_resolution = (base_block[pos] + 31) * 8;
-        std_timing.aspect_ratio = AspectRatio(base_block[pos + 1] >> 6 & BITMASK_TRUE(2));
-        std_timing.v_frequency = (base_block[pos + 1] & BITMASK_TRUE(6)) + 60;
-        result_struct.standard_timings[std_timing_i++] = std_timing;
+      auto std_timing = parse_standard_timing(base_block[pos], base_block[pos + 1]);
+      if (std_timing.has_value()) {
+        result_struct.standard_timings[std_timing_i++] = std_timing.value();
       }
       pos += 2;
     }
@@ -432,6 +441,12 @@ namespace Edid {
     return {result_struct, result_ext_blocks};
   }
 
+  void print_standard_timing(std::ostream& os, const StandardTiming& std_timing) {
+    os << std_timing.x_resolution << ' '
+      << to_string(std_timing.aspect_ratio) << ' '
+      << static_cast<int>(std_timing.v_frequency) << " Hz\n";
+  }
+
   void print_base_block(std::ostream& os, const BaseBlock& base_block) {
     os << "Manufacturer ID: "
       << base_block.manufacturer_id.at(0)
@@ -483,10 +498,8 @@ namespace Edid {
     os << "Standard Timings:\n";
     for (const std::optional<StandardTiming>& std_timing : base_block.standard_timings) {
       if (std_timing.has_value()) {
-        os << '\t'
-          << std_timing->x_resolution << ' '
-          << to_string(std_timing->aspect_ratio) << ' '
-          << static_cast<int>(std_timing->v_frequency) << " Hz\n";
+        os << '\t';
+        print_standard_timing(os, std_timing.value());
       }
     }
 
