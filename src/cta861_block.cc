@@ -302,7 +302,7 @@ namespace Edid {
       if (sad.has_value()) {
         os << '\t' << "Short Audio Descriptor:\n";
         os << "\t\t" << to_string(sad->audio_format) << '\n';
-        os << "\t\t" << to_string(sad->channels) << '\n';
+        os << "\t\t" << "Up to " << to_string(sad->channels) << " channels\n";
         for (SamplingFrequence sf : bitfield_to_enums<SamplingFrequence>(sad->sampling_freqs))
           os << "\t\t" << to_string(sf) << '\n';
         if (sad->audio_format == AudioFormatCode::LPCM)

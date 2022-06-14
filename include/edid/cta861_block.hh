@@ -57,20 +57,20 @@ namespace Edid {
 
   STRINGIFY_ENUM(AudioFormatCode, {
     {RESERVED_0, "RESERVED_0"},
-    {LPCM, "LPCM"},
-    {AC3, "AC3"},
-    {MPEG1, "MPEG1"},
+    {LPCM, "L-PCM"},
+    {AC3, "AC-3"},
+    {MPEG1, "MPEG-1"},
     {MP3, "MP3"},
-    {MPEG2, "MPEG2"},
-    {AAC, "AAC"},
+    {MPEG2, "MPEG-2"},
+    {AAC, "AAC LC"},
     {DTS, "DTS"},
     {ATRAC, "ATRAC"},
-    {ONE_BIT, "ONE_BIT"},
-    {ENHANCED_AC3, "ENHANCED_AC3"},
-    {DTSHD, "DTSHD"},
-    {MAT, "MAT"},
+    {ONE_BIT, "One Bit Audio (Super Audio CD)"},
+    {ENHANCED_AC3, "Enhanced AC-3 (a.k.a. Dolby Digital Plus)"},
+    {DTSHD, "DTS-HD"},
+    {MAT, "Dolby TrueHD (MLP compression, MAT transport)"},
     {DST, "DST"},
-    {WMA_PRO, "WMA_PRO"},
+    {WMA_PRO, "WMA Pro"},
     {RESERVED_15, "RESERVED_15"},
   })
 
@@ -109,13 +109,13 @@ namespace Edid {
 
   STRINGIFY_ENUM(SamplingFrequence, {
     {SF_RESERVED, "SF_RESERVED"},
-    {SF_192, "SF_192"},
-    {SF_176, "SF_176"},
-    {SF_96, "SF_96"},
-    {SF_88, "SF_88"},
-    {SF_48, "SF_48"},
-    {SF_44_1, "SF_44_1"},
-    {SF_32, "SF_32"},
+    {SF_192, "192 kHz"},
+    {SF_176, "176 kHz"},
+    {SF_96, "96 kHz"},
+    {SF_88, "88 kHz"},
+    {SF_48, "48 kHz"},
+    {SF_44_1, "44.1 kHz"},
+    {SF_32, "32 kHz"},
   })
 
   using SamplingFrequences = uint8_t;
