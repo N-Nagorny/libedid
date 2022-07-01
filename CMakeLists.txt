@@ -34,6 +34,7 @@ if (ENABLE_BCP00501)
 endif()
 
 install(DIRECTORY include/ DESTINATION include)
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 # Test application
 
