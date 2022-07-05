@@ -17,7 +17,9 @@ namespace Edid {
     result[cap_frame_width]["enum"] = { mode.h_res };
     result[cap_frame_height]["enum"] = { mode.v_res };
     if (mode.v_rate_hz.first % mode.v_rate_hz.second == 0) {
-      result[cap_grain_rate]["enum"]["numerator"] = mode.v_rate_hz.first / mode.v_rate_hz.second;
+      result[cap_grain_rate]["enum"] = {{
+        { "numerator", mode.v_rate_hz.first / mode.v_rate_hz.second },
+      }};
     }
     else {
       uint64_t numerator = mode.v_rate_hz.first;
@@ -31,10 +33,10 @@ namespace Edid {
         denominator = NTSC_FACTOR_DENOMINATOR;
       }
 
-      result[cap_grain_rate]["enum"] = {
+      result[cap_grain_rate]["enum"] = {{
         { "numerator", numerator },
         { "denominator", denominator },
-      };
+      }};
     }
     result[cap_interlace_mode]["enum"] = { mode.interlaced };
 
