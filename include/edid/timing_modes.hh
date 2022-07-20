@@ -16,6 +16,8 @@ namespace Edid {
     bool interlaced;
   };
 
+  bool operator==(const VideoTimingMode& lhs, const VideoTimingMode& rhs);
+
   struct Cta861VideoTimingMode {
     DetailedTimingDescriptor dtd;
     std::variant<uint8_t, std::pair<uint8_t, uint8_t>, std::vector<uint8_t>> pixel_repetition_factor;

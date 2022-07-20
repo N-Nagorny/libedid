@@ -2,6 +2,11 @@
 #include "edid/timing_modes.hh"
 
 namespace Edid {
+  bool operator==(const VideoTimingMode& lhs, const VideoTimingMode& rhs) {
+    return std::tie(lhs.h_res, lhs.v_res, lhs.v_rate_hz, lhs.interlaced) ==
+      std::tie(rhs.h_res, rhs.v_res, rhs.v_rate_hz, rhs.interlaced);
+  }
+
   #define N(x) uint8_t(x)
   #define R(x, y) std::make_pair<uint8_t, uint8_t>(x, y)
   #define V(...) std::vector<uint8_t>{__VA_ARGS__}
