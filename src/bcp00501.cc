@@ -12,6 +12,11 @@ namespace Edid {
     const std::string cap_grain_rate = "urn:x-nmos:cap:format:grain_rate";
     const std::string cap_interlace_mode = "urn:x-nmos:cap:format:interlace_mode";
 
+    const std::string interlaced_bff = "interlaced_bff";
+    const std::string interlaced_tff = "interlaced_tff";
+    const std::string interlaced_psf = "interlaced_psf";
+    const std::string progressive = "progressive";
+
     json result;
 
     result[cap_frame_width]["enum"] = { mode.h_res };
@@ -38,7 +43,12 @@ namespace Edid {
         { "denominator", denominator },
       }};
     }
-    result[cap_interlace_mode]["enum"] = { mode.interlaced };
+    if (mode.interlaced) {
+      result[cap_interlace_mode]["enum"] = { interlaced_bff, interlaced_psf, interlaced_tff };
+    }
+    else {
+      result[cap_interlace_mode]["enum"] = { progressive };
+    }
 
     return result;
   }
