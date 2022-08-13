@@ -10,8 +10,21 @@ namespace Edid {
   }
 
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs) {
-    return std::tie(lhs.min_v_rate_hz, lhs.max_v_rate_hz, lhs.min_h_rate_khz, lhs.max_h_rate_khz, lhs.max_pixel_clock_rate_mhz) ==
-      std::tie(rhs.min_v_rate_hz, rhs.max_v_rate_hz, rhs.min_h_rate_khz, rhs.max_h_rate_khz, rhs.max_pixel_clock_rate_mhz);
+    return std::tie(
+      lhs.min_v_rate_hz,
+      lhs.max_v_rate_hz,
+      lhs.min_h_rate_khz,
+      lhs.max_h_rate_khz,
+      lhs.max_pixel_clock_rate_mhz,
+      lhs.vts
+    ) == std::tie(
+      rhs.min_v_rate_hz,
+      rhs.max_v_rate_hz,
+      rhs.min_h_rate_khz,
+      rhs.max_h_rate_khz,
+      rhs.max_pixel_clock_rate_mhz,
+      rhs.vts
+    );
   }
 
   bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
@@ -211,7 +224,7 @@ namespace Edid {
       result[pos++] = limits.max_h_rate_khz;
       result[pos++] = limits.max_pixel_clock_rate_mhz / 10;
 
-      result[pos++] = 0x01;
+      result[pos++] = limits.vts;
       result[pos++] = 0x0A;
       for (int i = 0; i < 6; ++i)
         result[pos++] = 0x20;
@@ -395,6 +408,7 @@ namespace Edid {
       if (add_255_to_h_max)
         result.max_h_rate_khz += 255;
       result.max_pixel_clock_rate_mhz = base_block[++pos] * 10;
+      result.vts = VideoTimingSupport(base_block[++pos]);
       return result;
     };
 

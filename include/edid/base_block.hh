@@ -150,12 +150,27 @@ namespace Edid {
 
   bool operator==(const StandardTiming& lhs, const StandardTiming& rhs);
 
+  enum VideoTimingSupport {
+    VTS_DEFAULT_GTF = 0x00,
+    VTS_BARE_LIMITS = 0x01,
+    VTS_SECONDARY_GTF = 0x02,
+    VTS_CVT = 0x03
+  };
+
+  STRINGIFY_ENUM(VideoTimingSupport, {
+    {VTS_DEFAULT_GTF, "GTF"},
+    {VTS_BARE_LIMITS, "Bare Limits"},
+    {VTS_SECONDARY_GTF, "Secondary GTF"},
+    {VTS_CVT, "CVT"},
+  })
+
   struct DisplayRangeLimits {
     uint16_t min_v_rate_hz = 1; // Range is 1..510 Hz with step of 1 Hz
     uint16_t max_v_rate_hz = 1; // Range is 1..510 Hz with step of 1 Hz
     uint16_t min_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_pixel_clock_rate_mhz = 10; // Range is 10..2550 MHz with step of 10 MHz
+    VideoTimingSupport vts;
   };
 
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);

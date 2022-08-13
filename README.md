@@ -9,7 +9,7 @@ This code is written for educational purposes. Use it on your risk.
 ### Base EDID
 
 - Incorrect Video input parameters bitmap and Display type for analog input type. (TODO: std::variant to distinct)
-- Display Range Limits Display Descriptor always has no timing information.
+- Display Range Limits Display Descriptor doesn't describe Secondary GTF curve and CVT data.
 - Chromaticity is not deserialized.
 - Gamma is printed in the floating-point format though BaseBlock stores it in the integer format.
 

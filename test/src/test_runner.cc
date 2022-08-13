@@ -22,7 +22,7 @@ TEST(EqualityOperatorTests, DetailedTimingDescriptorIsEqualToItself) {
 }
 
 TEST(EqualityOperatorTests, DisplayRangeLimitsAreEqualToThemselves) {
-  DisplayRangeLimits limits = DisplayRangeLimits{56, 75, 30, 83, 170};
+  DisplayRangeLimits limits = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
   EXPECT_EQ(limits, limits);
 }
 
@@ -191,7 +191,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   edid_base.standard_timings[5] = StandardTiming{1600, AspectRatio::AR_16_9, 60};
   edid_base.standard_timings[6] = StandardTiming{1360, AspectRatio::AR_16_9, 60};
 
-  edid_base.display_range_limits = DisplayRangeLimits{40, 144, 160, 160, 330};
+  edid_base.display_range_limits = DisplayRangeLimits{40, 144, 160, 160, 330, VideoTimingSupport::VTS_DEFAULT_GTF};
   edid_base.detailed_timing_descriptors[0] = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 477, 268, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
