@@ -17,6 +17,8 @@
 #define CTA861_SPEAKERS_DATA_BLOCK_TAG 0b100
 #define CTA861_VESA_DISPLAY_TRANSFER_DATA_BLOCK_TAG 0b101
 
+#define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
+
 namespace Edid {
   struct VideoDataBlock {
     std::array<std::optional<uint8_t>, 31> vics;
@@ -192,10 +194,8 @@ namespace Edid {
   struct SpeakerAllocationDataBlock {
     SpeakerAllocation speaker_allocation = 0;
 
-    static constexpr uint8_t size() {
-      return CTA861_DATA_BLOCK_HEADER_SIZE +
-        sizeof(SpeakerAllocation) +
-        2; // reserved
+    uint8_t size() const {
+      return CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
   };
 
@@ -231,14 +231,16 @@ namespace Edid {
 
   std::vector<uint8_t> generate_video_data_block(const VideoDataBlock& video_data_block);
   std::vector<uint8_t> generate_audio_data_block(const AudioDataBlock& audio_data_block);
-  std::array<uint8_t, SpeakerAllocationDataBlock::size()> generate_speaker_allocation_data_block(const SpeakerAllocationDataBlock& speaker_allocation_data_block);
+  std::vector<uint8_t> generate_speaker_allocation_data_block(const SpeakerAllocationDataBlock& speaker_allocation_data_block);
+
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection);
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_cta861_block(const Cta861Block& cta861_block);
 
   VideoDataBlock parse_video_data_block(const std::vector<uint8_t>& video_data_block);
   AudioDataBlock parse_audio_data_block(const std::vector<uint8_t>& audio_data_block);
+  SpeakerAllocationDataBlock parse_speaker_allocation_data_block(const std::vector<uint8_t>& speaker_allocation_data_block);
+
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection);
-  SpeakerAllocationDataBlock parse_speaker_allocation_data_block(const std::array<uint8_t, SpeakerAllocationDataBlock::size()>& speaker_allocation_data_block);
   Cta861Block parse_cta861_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& cta861);
 
   void print_cta861_block(std::ostream& os, const Cta861Block& cta861_block);

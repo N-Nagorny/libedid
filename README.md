@@ -15,6 +15,6 @@ This code is written for educational purposes. Use it on your risk.
 
 ### CTA Extension
 
-- Indicating DTDs and VICs are native is not supported.
+- Indicating DTDs and VICs as native is not supported.
 - Data Block Collection supports only Video Data Block, Audio Data Block and Speaker Allocation Data Block.
 - Format-specific parameters of Short Audio Descriptors are incorrect for all the audio formats except of Linear PCM.

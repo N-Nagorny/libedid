@@ -30,8 +30,15 @@ namespace Edid {
   }
 
   bool operator==(const DataBlockCollection& lhs, const DataBlockCollection& rhs) {
-    return std::tie(lhs.video_data_block, lhs.audio_data_block, lhs.speaker_allocation_data_block) ==
-      std::tie(rhs.video_data_block, rhs.audio_data_block, rhs.speaker_allocation_data_block);
+    return std::tie(
+      lhs.video_data_block,
+      lhs.audio_data_block,
+      lhs.speaker_allocation_data_block
+    ) == std::tie(
+      rhs.video_data_block,
+      rhs.audio_data_block,
+      rhs.speaker_allocation_data_block
+    );
   }
 
   std::vector<uint8_t> generate_video_data_block(const VideoDataBlock& video_data_block) {
@@ -67,13 +74,12 @@ namespace Edid {
     return result;
   }
 
-  std::array<uint8_t, SpeakerAllocationDataBlock::size()> generate_speaker_allocation_data_block(const SpeakerAllocationDataBlock& speaker_allocation_data_block) {
-    std::array<uint8_t, SpeakerAllocationDataBlock::size()> result;
-    result.fill(0x0);
+  std::vector<uint8_t> generate_speaker_allocation_data_block(const SpeakerAllocationDataBlock& speaker_allocation_data_block) {
+    std::vector<uint8_t> result(CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE, 0x00);
     int pos = 0;
 
     result[pos] = CTA861_SPEAKERS_DATA_BLOCK_TAG << 5;
-    result[pos++] |= (SpeakerAllocationDataBlock::size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
+    result[pos++] |= (speaker_allocation_data_block.size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
 
     result[pos++] = speaker_allocation_data_block.speaker_allocation;
     result[pos++] = 0;
@@ -87,7 +93,7 @@ namespace Edid {
 
     std::vector<uint8_t> video_data_block = generate_video_data_block(collection.video_data_block);
     std::vector<uint8_t> audio_data_block = generate_audio_data_block(collection.audio_data_block);
-    std::array<uint8_t, SpeakerAllocationDataBlock::size()> speaker_allocation_data_block =
+    std::vector<uint8_t> speaker_allocation_data_block =
       generate_speaker_allocation_data_block(collection.speaker_allocation_data_block);
 
     auto pos = std::move(video_data_block.begin(), video_data_block.end(), result.begin());
@@ -201,7 +207,7 @@ namespace Edid {
     return result;
   }
 
-  SpeakerAllocationDataBlock parse_speaker_allocation_data_block(const std::array<uint8_t, SpeakerAllocationDataBlock::size()>& speaker_allocation_data_block) {
+  SpeakerAllocationDataBlock parse_speaker_allocation_data_block(const std::vector<uint8_t>& speaker_allocation_data_block) {
     SpeakerAllocationDataBlock result;
     int pos = 0;
 
@@ -212,8 +218,8 @@ namespace Edid {
 
     int data_block_size = speaker_allocation_data_block[pos] & BITMASK_TRUE(5);
 
-    if (data_block_size != SpeakerAllocationDataBlock::size() - CTA861_DATA_BLOCK_HEADER_SIZE)
-      throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has invalid size: " +
+    if (data_block_size != CTA861_SPEAKERS_DATA_BLOCK_LENGTH)
+      throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has invalid length: " +
         std::to_string(data_block_size));
 
     result.speaker_allocation = speaker_allocation_data_block[++pos];
@@ -223,20 +229,22 @@ namespace Edid {
 
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection) {
     DataBlockCollection result;
+    auto iter_read = collection.begin();
 
     result.video_data_block = parse_video_data_block(collection);
+    iter_read += result.video_data_block.size();
+
     result.audio_data_block = parse_audio_data_block(std::vector<uint8_t>(
-      collection.begin() + result.video_data_block.size(),
+      iter_read,
       collection.end()
     ));
-    std::array<uint8_t, SpeakerAllocationDataBlock::size()> speaker_allocation_data_block;
-    std::move(
-      collection.begin() + result.video_data_block.size() + result.audio_data_block.size(),
-      collection.begin() + result.video_data_block.size() + result.audio_data_block.size() + SpeakerAllocationDataBlock::size(),
-      speaker_allocation_data_block.begin()
-    );
-    result.speaker_allocation_data_block = parse_speaker_allocation_data_block(speaker_allocation_data_block);
+    iter_read += result.audio_data_block.size();
 
+    result.speaker_allocation_data_block = parse_speaker_allocation_data_block(std::vector<uint8_t>(
+      iter_read,
+      collection.end()
+    ));
+    iter_read += result.speaker_allocation_data_block.size();
     return result;
   }
 
