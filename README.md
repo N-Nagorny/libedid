@@ -4,6 +4,17 @@ This is a C++ library for parsing and generating EDID binaries. It's targeted ag
 
 This code is written for educational purposes. Use it on your risk.
 
+## Build procedure
+
+The project uses [CMake](https://cmake.org/) as a build tool and [nix](https://nixos.org/) as a package manager.
+
+Here is an example of build procedure for Linux:
+```sh
+nix-shell
+cmake -B build/ .
+cmake --build build/
+```
+
 ## Known issues
 
 ### Base EDID

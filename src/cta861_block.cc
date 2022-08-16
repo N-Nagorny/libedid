@@ -415,7 +415,9 @@ namespace Edid {
           print_speaker_allocation_data_block(os, *std::dynamic_pointer_cast<SpeakerAllocationDataBlock>(wrapper.data_block_ptr));
           break;
         default:
-          os << "Unrecognized Data Block with tag " << std::hex << wrapper.data_block_tag << '\n';
+          os << "Unrecognized Data Block with tag " <<
+            std::hex << unsigned(wrapper.data_block_tag) <<
+            std::dec << '\n';
       }
     }
   }

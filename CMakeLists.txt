@@ -53,13 +53,25 @@ if (ENABLE_BCP00501)
     list(APPEND TEST_SOURCES test/src/bcp00501_tests.cc)
 endif()
 
-add_executable(test_runner ${TEST_SOURCES})
+add_executable(test-runner ${TEST_SOURCES})
 
-target_include_directories(test_runner PUBLIC
+target_include_directories(test-runner PUBLIC
     ${TEST_HEADERS}
 )
 
-target_link_libraries(test_runner PRIVATE
+target_link_libraries(test-runner PRIVATE
     ${PROJECT_NAME}
     gtest
+)
+
+# Example applications
+
+set(WORKSHOP_SOURCES
+    examples/edid-workshop/src/main.cc
+)
+
+add_executable(edid-workshop ${WORKSHOP_SOURCES})
+
+target_link_libraries(edid-workshop PRIVATE
+    ${PROJECT_NAME}
 )
