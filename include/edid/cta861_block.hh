@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -20,7 +21,34 @@
 #define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
 
 namespace Edid {
-  struct VideoDataBlock {
+  class CtaDataBlock {
+   public:
+    virtual ~CtaDataBlock() = default;
+
+    virtual uint8_t size() const = 0;
+  };
+
+  struct CtaDataBlockWrapper {
+    uint8_t data_block_tag;
+    uint8_t data_block_length;
+    std::shared_ptr<CtaDataBlock> data_block_ptr;
+  };
+
+  bool operator==(const CtaDataBlockWrapper& lhs, const CtaDataBlockWrapper& rhs);
+
+  struct UnknownDataBlock : CtaDataBlock {
+    UnknownDataBlock(const std::vector<uint8_t>& raw_data)
+      : raw_data(raw_data)
+    {}
+    std::vector<uint8_t> raw_data;
+    uint8_t size() const override {
+      return raw_data.size() + CTA861_DATA_BLOCK_HEADER_SIZE;
+    }
+  };
+
+  bool operator==(const UnknownDataBlock& lhs, const UnknownDataBlock& rhs);
+
+  struct VideoDataBlock : CtaDataBlock {
     std::array<std::optional<uint8_t>, 31> vics;
 
     uint8_t valid_vics() const {
@@ -31,7 +59,7 @@ namespace Edid {
       return result;
     }
 
-    uint8_t size() const {
+    uint8_t size() const override {
       return valid_vics() * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
   };
@@ -149,7 +177,7 @@ namespace Edid {
 
   bool operator==(const ShortAudioDescriptor& lhs, const ShortAudioDescriptor& rhs);
 
-  struct AudioDataBlock {
+  struct AudioDataBlock : CtaDataBlock {
     std::array<std::optional<ShortAudioDescriptor>, 10> sads;
 
     uint8_t valid_sads() const {
@@ -160,7 +188,7 @@ namespace Edid {
       return result;
     }
 
-    uint8_t size() const {
+    uint8_t size() const override {
       return valid_sads() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
   };
@@ -191,31 +219,17 @@ namespace Edid {
 
   using SpeakerAllocation = uint8_t;
 
-  struct SpeakerAllocationDataBlock {
+  struct SpeakerAllocationDataBlock : CtaDataBlock {
     SpeakerAllocation speaker_allocation = 0;
 
-    uint8_t size() const {
+    uint8_t size() const override {
       return CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
   };
 
   bool operator==(const SpeakerAllocationDataBlock& lhs, const SpeakerAllocationDataBlock& rhs);
 
-  struct DataBlockCollection {
-    VideoDataBlock video_data_block;
-    AudioDataBlock audio_data_block;
-    SpeakerAllocationDataBlock speaker_allocation_data_block;
-
-    uint8_t size() const {
-      uint8_t result = 0;
-      result += video_data_block.size();
-      result += audio_data_block.size();
-      result += speaker_allocation_data_block.size();
-      return result;
-    }
-  };
-
-  bool operator==(const DataBlockCollection& lhs, const DataBlockCollection& rhs);
+  using DataBlockCollection = std::vector<CtaDataBlockWrapper>;
 
   // See CTA-861-G Section 7.5
   struct Cta861Block {

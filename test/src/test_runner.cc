@@ -35,7 +35,7 @@ TEST(EqualityOperatorTests, EdidBaseIsEqualToItself) {
   EXPECT_EQ(make_edid_base(), make_edid_base());
 }
 
-TEST(CircularTests, BaseEdid) {
+TEST(CommonCircularTests, BaseEdid) {
   EdidData edid;
   edid.base_block = make_edid_base();
   auto edid_binary = generate_edid_binary(edid);
@@ -44,7 +44,7 @@ TEST(CircularTests, BaseEdid) {
   EXPECT_EQ(parse_base_block(base_edid_binary).first, make_edid_base());
 }
 
-TEST(CircularTests, DetailedTimingDescriptor) {
+TEST(CommonCircularTests, DetailedTimingDescriptor) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
@@ -53,7 +53,7 @@ TEST(CircularTests, DetailedTimingDescriptor) {
   EXPECT_EQ(dtd, parse_dtd(binary));
 }
 
-TEST(CircularTests, VideoDataBlock) {
+TEST(CommonCircularTests, VideoDataBlock) {
   VideoDataBlock video_data_block;
   video_data_block.vics[0] = 16;
   video_data_block.vics[1] = 4;
@@ -66,7 +66,7 @@ TEST(CircularTests, VideoDataBlock) {
   EXPECT_EQ(video_data_block, parse_video_data_block(vdb_binary));
 }
 
-TEST(CircularTests, AudioDataBlock) {
+TEST(CommonCircularTests, AudioDataBlock) {
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
   sad.channels = AudioChannels::AC_2;
@@ -80,15 +80,147 @@ TEST(CircularTests, AudioDataBlock) {
   EXPECT_EQ(audio_data_block, parse_audio_data_block(adb_binary));
 }
 
-TEST(CircularTests, Cta861Block) {
+TEST(CommonCircularTests, FullEdid) {
+  EdidData edid{make_edid_base(), std::vector{make_cta861_ext()}};
+  auto edid_binary = generate_edid_binary(edid);
+  EXPECT_EQ(edid, parse_edid_binary(edid_binary));
+}
+
+TEST(DataBlockCollection, DataBlockCollectionGenerating) {
+  std::vector<uint8_t> dbc = {
+    0x47, 0x10, 0x04, 0x1F, 0x13, 0x02, 0x12, 0x01, 0x23, 0x09, 0x07, 0x01, 0x67, 0xd8, 0x5d, 0xc4,
+    0x01, 0x78, 0xc0, 0x00, 0x65, 0x03, 0x0c, 0x00, 0x20, 0x00
+  };
+  DataBlockCollection data_block_collection;
+
+  VideoDataBlock video_data_block;
+  video_data_block.vics[0] = 16;
+  video_data_block.vics[1] = 4;
+  video_data_block.vics[2] = 31;
+  video_data_block.vics[3] = 19;
+  video_data_block.vics[4] = 2;
+  video_data_block.vics[5] = 18;
+  video_data_block.vics[6] = 1;
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+  );
+
+  ShortAudioDescriptor sad;
+  sad.audio_format = AudioFormatCode::LPCM;
+  sad.channels = AudioChannels::AC_2;
+  sad.sampling_freqs |= SamplingFrequence::SF_48;
+  sad.sampling_freqs |= SamplingFrequence::SF_44_1;
+  sad.sampling_freqs |= SamplingFrequence::SF_32;
+  sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
+
+  AudioDataBlock audio_data_block;
+  audio_data_block.sads[0] = sad;
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+  );
+
+  auto unknown_block_1_ptr = std::make_shared<UnknownDataBlock>(
+    std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00}
+  );
+  auto unknown_block_2_ptr = std::make_shared<UnknownDataBlock>(
+    std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00}
+  );
+
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      unknown_block_1_ptr->size(),
+      unknown_block_1_ptr
+    }
+  );
+
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      unknown_block_2_ptr->size(),
+      unknown_block_2_ptr
+    }
+  );
+
+  auto dbc_binary = generate_data_block_collection(data_block_collection);
+  EXPECT_EQ(dbc, dbc_binary);
+}
+
+TEST(DataBlockCollection, CircularTest) {
+  DataBlockCollection data_block_collection;
+
+  VideoDataBlock video_data_block;
+  video_data_block.vics[0] = 16;
+  video_data_block.vics[1] = 4;
+  video_data_block.vics[2] = 31;
+  video_data_block.vics[3] = 19;
+  video_data_block.vics[4] = 2;
+  video_data_block.vics[5] = 18;
+  video_data_block.vics[6] = 1;
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+  );
+
+  ShortAudioDescriptor sad;
+  sad.audio_format = AudioFormatCode::LPCM;
+  sad.channels = AudioChannels::AC_2;
+  sad.sampling_freqs |= SamplingFrequence::SF_48;
+  sad.sampling_freqs |= SamplingFrequence::SF_44_1;
+  sad.sampling_freqs |= SamplingFrequence::SF_32;
+  sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
+
+  AudioDataBlock audio_data_block;
+  audio_data_block.sads[0] = sad;
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+  );
+
+  auto unknown_block_1_ptr = std::make_shared<UnknownDataBlock>(
+    std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00}
+  );
+  auto unknown_block_2_ptr = std::make_shared<UnknownDataBlock>(
+    std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00}
+  );
+
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      unknown_block_1_ptr->size(),
+      unknown_block_1_ptr
+    }
+  );
+
+  data_block_collection.push_back(
+    CtaDataBlockWrapper{
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      unknown_block_2_ptr->size(),
+      unknown_block_2_ptr
+    }
+  );
+
+  auto dbc_binary = generate_data_block_collection(data_block_collection);
+  auto dbc_parsed = parse_data_block_collection(dbc_binary);
+  EXPECT_EQ(data_block_collection, dbc_parsed);
+}
+
+
+TEST(Cta861Block, CircularTest) {
   std::array<uint8_t, EDID_BLOCK_SIZE> cta861_binary = generate_cta861_block(make_cta861_ext());
   EXPECT_EQ(make_cta861_ext(), parse_cta861_block(cta861_binary));
 }
 
-TEST(CircularTests, FullEdid) {
-  EdidData edid{make_edid_base(), std::vector{make_cta861_ext()}};
-  auto edid_binary = generate_edid_binary(edid);
-  EXPECT_EQ(edid, parse_edid_binary(edid_binary));
+TEST(Cta861Block, Cta861BlockGenerating) {
+  std::array<uint8_t, EDID_BLOCK_SIZE> cta861_binary = {
+    0x02, 0x03, 0x10, 0xF0, 0x47, 0x10, 0x04, 0x1F, 0x13, 0x02, 0x12, 0x01, 0x23, 0x09, 0x07, 0x01,
+    0x02, 0x3A, 0x80, 0x18, 0x71, 0x38, 0x2D, 0x40, 0x58, 0x2C, 0x45, 0x00, 0x0F, 0x48, 0x42, 0x00,
+    0x00, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBB
+  };
+  EXPECT_EQ(cta861_binary, generate_cta861_block(make_cta861_ext()));
 }
 
 TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
@@ -103,15 +235,19 @@ TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
 }
 
 TEST(ForEachModeTests, DeleteModesFromCta861) {
-  Cta861Block edid_base_before = make_cta861_ext();
-  remove_mode_if(edid_base_before, [](const VideoTimingMode& mode) {
+  Cta861Block cta861_before = make_cta861_ext();
+  remove_mode_if(cta861_before, [](const VideoTimingMode& mode) {
     return mode.v_res == 600 || mode.v_res == 1080;
   });
-  Cta861Block edid_base_after = make_cta861_ext();
-  edid_base_after.data_block_collection.video_data_block.vics[0] = std::nullopt;
-  edid_base_after.data_block_collection.video_data_block.vics[2] = std::nullopt;
-  edid_base_after.detailed_timing_descriptors = {};
-  EXPECT_EQ(edid_base_before, edid_base_after);
+  Cta861Block cta861_after = make_cta861_ext();
+  auto iter = std::find_if(cta861_after.data_block_collection.begin(), cta861_after.data_block_collection.end(), [](const auto& wrapper){
+    return wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG;
+  });
+  std::shared_ptr<VideoDataBlock> video_data_block = std::dynamic_pointer_cast<VideoDataBlock>(iter->data_block_ptr);
+  video_data_block->vics[0] = std::nullopt;
+  video_data_block->vics[2] = std::nullopt;
+  cta861_after.detailed_timing_descriptors = {};
+  EXPECT_EQ(cta861_before, cta861_after);
 }
 
 TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
@@ -126,8 +262,13 @@ TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
   edid_after.base_block.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
   edid_after.base_block.detailed_timing_descriptors = {};
 
-  edid_after.extension_blocks->at(0).data_block_collection.video_data_block.vics[0] = std::nullopt;
-  edid_after.extension_blocks->at(0).data_block_collection.video_data_block.vics[2] = std::nullopt;
+  auto iter = std::find_if(edid_after.extension_blocks->at(0).data_block_collection.begin(), edid_after.extension_blocks->at(0).data_block_collection.end(), [](const auto& wrapper){
+    return wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG;
+  });
+  std::shared_ptr<VideoDataBlock> video_data_block = std::dynamic_pointer_cast<VideoDataBlock>(iter->data_block_ptr);
+
+  video_data_block->vics[0] = std::nullopt;
+  video_data_block->vics[2] = std::nullopt;
   edid_after.extension_blocks->at(0).detailed_timing_descriptors = {};
   EXPECT_EQ(edid_before, edid_after);
 }
@@ -203,22 +344,27 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   cta861.basic_audio = true;
   cta861.ycbcr_444 = true;
   cta861.ycbcr_422 = true;
-  cta861.data_block_collection.video_data_block.vics[0] = 16;
-  cta861.data_block_collection.video_data_block.vics[1] = 5;
-  cta861.data_block_collection.video_data_block.vics[2] = 4;
-  cta861.data_block_collection.video_data_block.vics[3] = 3;
-  cta861.data_block_collection.video_data_block.vics[4] = 2;
-  cta861.data_block_collection.video_data_block.vics[5] = 1;
-  cta861.data_block_collection.video_data_block.vics[6] = 17;
-  cta861.data_block_collection.video_data_block.vics[7] = 18;
-  cta861.data_block_collection.video_data_block.vics[8] = 19;
-  cta861.data_block_collection.video_data_block.vics[9] = 20;
-  cta861.data_block_collection.video_data_block.vics[10] = 6;
-  cta861.data_block_collection.video_data_block.vics[11] = 7;
-  cta861.data_block_collection.video_data_block.vics[12] = 21;
-  cta861.data_block_collection.video_data_block.vics[13] = 22;
-  cta861.data_block_collection.video_data_block.vics[14] = 31;
-  cta861.data_block_collection.video_data_block.vics[15] = 32;
+
+  VideoDataBlock video_data_block;
+  video_data_block.vics[0] = 16;
+  video_data_block.vics[1] = 5;
+  video_data_block.vics[2] = 4;
+  video_data_block.vics[3] = 3;
+  video_data_block.vics[4] = 2;
+  video_data_block.vics[5] = 1;
+  video_data_block.vics[6] = 17;
+  video_data_block.vics[7] = 18;
+  video_data_block.vics[8] = 19;
+  video_data_block.vics[9] = 20;
+  video_data_block.vics[10] = 6;
+  video_data_block.vics[11] = 7;
+  video_data_block.vics[12] = 21;
+  video_data_block.vics[13] = 22;
+  video_data_block.vics[14] = 31;
+  video_data_block.vics[15] = 32;
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+  );
 
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
@@ -229,8 +375,39 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_20;
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_24;
-  cta861.data_block_collection.audio_data_block.sads[0] = sad;
-  cta861.data_block_collection.speaker_allocation_data_block.speaker_allocation |= FRONT_LEFT_AND_RIGHT;
+  AudioDataBlock audio_data_block;
+  audio_data_block.sads[0] = sad;
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+  );
+  SpeakerAllocationDataBlock speaker_allocation_data_block;
+  speaker_allocation_data_block.speaker_allocation |= FRONT_LEFT_AND_RIGHT;
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_SPEAKERS_DATA_BLOCK_TAG, speaker_allocation_data_block.size(), std::make_unique<SpeakerAllocationDataBlock>(std::move(speaker_allocation_data_block))}
+  );
+
+  auto unknown_block_1_ptr = std::make_shared<UnknownDataBlock>(
+    std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00}
+  );
+  auto unknown_block_2_ptr = std::make_shared<UnknownDataBlock>(
+    std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00}
+  );
+
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      unknown_block_1_ptr->size(),
+      unknown_block_1_ptr
+    }
+  );
+
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      unknown_block_2_ptr->size(),
+      unknown_block_2_ptr
+    }
+  );
 
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     326'660'000, 1920, 1080, 120, 32, 88, 44,

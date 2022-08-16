@@ -1,6 +1,7 @@
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <numeric>
 
 #include "edid/common.hh"
 #include "edid/cta861_block.hh"
@@ -29,16 +30,35 @@ namespace Edid {
       std::tie(rhs.underscan, rhs.basic_audio, rhs.ycbcr_444, rhs.ycbcr_422, rhs.data_block_collection, rhs.detailed_timing_descriptors);
   }
 
-  bool operator==(const DataBlockCollection& lhs, const DataBlockCollection& rhs) {
-    return std::tie(
-      lhs.video_data_block,
-      lhs.audio_data_block,
-      lhs.speaker_allocation_data_block
-    ) == std::tie(
-      rhs.video_data_block,
-      rhs.audio_data_block,
-      rhs.speaker_allocation_data_block
-    );
+  bool operator==(const CtaDataBlockWrapper& lhs, const CtaDataBlockWrapper& rhs) {
+    bool headers_equal = std::tie(lhs.data_block_tag, lhs.data_block_length) ==
+      std::tie(rhs.data_block_tag, rhs.data_block_length);
+    if (!headers_equal)
+      return false;
+
+    bool content_equal = false;
+    switch (lhs.data_block_tag) {
+      case CTA861_VIDEO_DATA_BLOCK_TAG:
+        content_equal = *std::dynamic_pointer_cast<VideoDataBlock>(lhs.data_block_ptr) ==
+          *std::dynamic_pointer_cast<VideoDataBlock>(rhs.data_block_ptr);
+        break;
+      case CTA861_AUDIO_DATA_BLOCK_TAG:
+        content_equal = *std::dynamic_pointer_cast<AudioDataBlock>(lhs.data_block_ptr) ==
+          *std::dynamic_pointer_cast<AudioDataBlock>(rhs.data_block_ptr);
+        break;
+      case CTA861_SPEAKERS_DATA_BLOCK_TAG:
+        content_equal = *std::dynamic_pointer_cast<SpeakerAllocationDataBlock>(lhs.data_block_ptr) ==
+          *std::dynamic_pointer_cast<SpeakerAllocationDataBlock>(rhs.data_block_ptr);
+        break;
+      default:
+        content_equal = *std::dynamic_pointer_cast<UnknownDataBlock>(lhs.data_block_ptr) ==
+          *std::dynamic_pointer_cast<UnknownDataBlock>(rhs.data_block_ptr);
+    }
+    return content_equal;
+  }
+
+  bool operator==(const UnknownDataBlock& lhs, const UnknownDataBlock& rhs) {
+    return lhs.raw_data == rhs.raw_data;
   }
 
   std::vector<uint8_t> generate_video_data_block(const VideoDataBlock& video_data_block) {
@@ -75,7 +95,7 @@ namespace Edid {
   }
 
   std::vector<uint8_t> generate_speaker_allocation_data_block(const SpeakerAllocationDataBlock& speaker_allocation_data_block) {
-    std::vector<uint8_t> result(CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE, 0x00);
+    std::vector<uint8_t> result(speaker_allocation_data_block.size(), 0x00);
     int pos = 0;
 
     result[pos] = CTA861_SPEAKERS_DATA_BLOCK_TAG << 5;
@@ -88,17 +108,42 @@ namespace Edid {
     return result;
   }
 
+  std::vector<uint8_t> generate_unknown_data_block(uint8_t tag, const UnknownDataBlock& unknown_data_block) {
+    std::vector<uint8_t> result(unknown_data_block.size(), 0x00);
+    int pos = 0;
+
+    result[pos] = (tag & BITMASK_TRUE(3)) << 5;
+    result[pos++] |= (unknown_data_block.size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
+
+    std::copy(unknown_data_block.raw_data.begin(), unknown_data_block.raw_data.end(), result.begin() + pos);
+
+    return result;
+  }
+
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection) {
-    std::vector<uint8_t> result(collection.size(), 0x0);
+    size_t collection_size = std::accumulate(collection.begin(), collection.end(), 0, [](size_t size, const CtaDataBlockWrapper& wrapper) {
+      return size + wrapper.data_block_length;
+    });
+    std::vector<uint8_t> result(collection_size, 0x0);
+    auto pos = result.begin();
 
-    std::vector<uint8_t> video_data_block = generate_video_data_block(collection.video_data_block);
-    std::vector<uint8_t> audio_data_block = generate_audio_data_block(collection.audio_data_block);
-    std::vector<uint8_t> speaker_allocation_data_block =
-      generate_speaker_allocation_data_block(collection.speaker_allocation_data_block);
-
-    auto pos = std::move(video_data_block.begin(), video_data_block.end(), result.begin());
-    pos = std::move(audio_data_block.begin(), audio_data_block.end(), pos);
-    std::move(speaker_allocation_data_block.begin(), speaker_allocation_data_block.end(), pos);
+    for (const auto& wrapper : collection) {
+      std::vector<uint8_t> data_block;
+      switch (wrapper.data_block_tag) {
+        case CTA861_VIDEO_DATA_BLOCK_TAG:
+          data_block = generate_video_data_block(*std::dynamic_pointer_cast<VideoDataBlock>(wrapper.data_block_ptr));
+          break;
+        case CTA861_AUDIO_DATA_BLOCK_TAG:
+          data_block = generate_audio_data_block(*std::dynamic_pointer_cast<AudioDataBlock>(wrapper.data_block_ptr));
+          break;
+        case CTA861_SPEAKERS_DATA_BLOCK_TAG:
+          data_block = generate_speaker_allocation_data_block(*std::dynamic_pointer_cast<SpeakerAllocationDataBlock>(wrapper.data_block_ptr));
+          break;
+        default:
+          data_block = generate_unknown_data_block(wrapper.data_block_tag, *std::dynamic_pointer_cast<UnknownDataBlock>(wrapper.data_block_ptr));
+      }
+      pos = std::move(data_block.begin(), data_block.end(), pos);
+    }
 
     return result;
   }
@@ -107,7 +152,9 @@ namespace Edid {
     const int header_size = 4;
     const int checksum_size = 1;
     const int dtd_block_size = cta861.detailed_timing_descriptors.size() * DTD_BLOCK_SIZE;
-    const int data_block_collection_size = cta861.data_block_collection.size();
+    const int data_block_collection_size = std::accumulate(cta861.data_block_collection.begin(), cta861.data_block_collection.end(), 0, [](size_t size, const CtaDataBlockWrapper& wrapper) {
+      return size + wrapper.data_block_length;
+    });
 
     if (header_size + data_block_collection_size + dtd_block_size + checksum_size > EDID_BLOCK_SIZE)
       throw EdidException(__FUNCTION__,
@@ -227,24 +274,51 @@ namespace Edid {
     return result;
   }
 
+  UnknownDataBlock parse_unknown_data_block(const std::vector<uint8_t>& unknown_data_block) {
+    int pos = 0;
+
+    int data_block_tag = unknown_data_block[pos] >> 5 & BITMASK_TRUE(3);
+    int data_block_size = unknown_data_block[pos++] & BITMASK_TRUE(5);
+    return UnknownDataBlock(
+      std::vector<uint8_t>(unknown_data_block.begin() + pos, unknown_data_block.begin() + pos + data_block_size)
+    );
+  }
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection) {
     DataBlockCollection result;
     auto iter_read = collection.begin();
+    std::shared_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
-    result.video_data_block = parse_video_data_block(collection);
-    iter_read += result.video_data_block.size();
+    while (iter_read < collection.end()) {
+      uint8_t data_block_tag = *iter_read >> 5 & BITMASK_TRUE(3);
+      switch (data_block_tag) {
+        case CTA861_VIDEO_DATA_BLOCK_TAG:
+          data_block_ptr = std::make_unique<VideoDataBlock>(std::move(parse_video_data_block(std::vector<uint8_t>(
+            iter_read,
+            collection.end()
+          ))));
+          break;
+        case CTA861_AUDIO_DATA_BLOCK_TAG:
+          data_block_ptr = std::make_unique<AudioDataBlock>(std::move(parse_audio_data_block(std::vector<uint8_t>(
+            iter_read,
+            collection.end()
+          ))));
+          break;
+        case CTA861_SPEAKERS_DATA_BLOCK_TAG:
+          data_block_ptr = std::make_unique<SpeakerAllocationDataBlock>(std::move(parse_speaker_allocation_data_block(std::vector<uint8_t>(
+            iter_read,
+            collection.end()
+          ))));
+          break;
+        default:
+          data_block_ptr = std::make_unique<UnknownDataBlock>(std::move(parse_unknown_data_block(std::vector<uint8_t>(
+            iter_read,
+            collection.end()
+          ))));
+      }
+      result.push_back({data_block_tag, data_block_ptr->size(), data_block_ptr});
+      iter_read += data_block_ptr->size();
+    }
 
-    result.audio_data_block = parse_audio_data_block(std::vector<uint8_t>(
-      iter_read,
-      collection.end()
-    ));
-    iter_read += result.audio_data_block.size();
-
-    result.speaker_allocation_data_block = parse_speaker_allocation_data_block(std::vector<uint8_t>(
-      iter_read,
-      collection.end()
-    ));
-    iter_read += result.speaker_allocation_data_block.size();
     return result;
   }
 
@@ -328,10 +402,22 @@ namespace Edid {
     os << '\n';
   }
 
-  void print_data_block_collection(std::ostream& os, const DataBlockCollection& data_block_collection) {
-    print_video_data_block(os, data_block_collection.video_data_block);
-    print_audio_data_block(os, data_block_collection.audio_data_block);
-    print_speaker_allocation_data_block(os, data_block_collection.speaker_allocation_data_block);
+  void print_data_block_collection(std::ostream& os, const DataBlockCollection& collection) {
+    for (const auto& wrapper : collection) {
+      switch (wrapper.data_block_tag) {
+        case CTA861_VIDEO_DATA_BLOCK_TAG:
+          print_video_data_block(os, *std::dynamic_pointer_cast<VideoDataBlock>(wrapper.data_block_ptr));
+          break;
+        case CTA861_AUDIO_DATA_BLOCK_TAG:
+          print_audio_data_block(os, *std::dynamic_pointer_cast<AudioDataBlock>(wrapper.data_block_ptr));
+          break;
+        case CTA861_SPEAKERS_DATA_BLOCK_TAG:
+          print_speaker_allocation_data_block(os, *std::dynamic_pointer_cast<SpeakerAllocationDataBlock>(wrapper.data_block_ptr));
+          break;
+        default:
+          os << "Unrecognized Data Block with tag " << std::hex << wrapper.data_block_tag << '\n';
+      }
+    }
   }
 
   void print_cta861_block(std::ostream& os, const Cta861Block& cta861_block) {

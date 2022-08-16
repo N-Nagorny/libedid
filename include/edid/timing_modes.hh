@@ -103,21 +103,26 @@ namespace Edid {
 
   template <class Function>
   Function for_each_mode(const Cta861Block& cta861_block, Function fn) {
-    for (const std::optional<uint8_t>& vic : cta861_block.data_block_collection.video_data_block.vics) {
-      if (vic.has_value()) {
-        auto mode = get_cta861_video_timing_mode(vic.value());
-        uint8_t pixel_repetition_factor = 1;
-        if (std::holds_alternative<uint8_t>(mode.pixel_repetition_factor)) {
-          pixel_repetition_factor = std::get<uint8_t>(mode.pixel_repetition_factor);
-        }
-        else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor)) {
-          pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor).first;
-        }
-        else if (std::holds_alternative<std::vector<uint8_t>>(mode.pixel_repetition_factor)) {
-          pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode.pixel_repetition_factor).at(0);
-        }
+    for (const auto& wrapper : cta861_block.data_block_collection) {
+      if (wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG) {
+        const auto& vics = std::dynamic_pointer_cast<VideoDataBlock>(wrapper.data_block_ptr)->vics;
+        for (const std::optional<uint8_t>& vic : vics) {
+          if (vic.has_value()) {
+            auto mode = get_cta861_video_timing_mode(vic.value());
+            uint8_t pixel_repetition_factor = 1;
+            if (std::holds_alternative<uint8_t>(mode.pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<uint8_t>(mode.pixel_repetition_factor);
+            }
+            else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor).first;
+            }
+            else if (std::holds_alternative<std::vector<uint8_t>>(mode.pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode.pixel_repetition_factor).at(0);
+            }
 
-        fn(to_video_timing_mode(mode.dtd, pixel_repetition_factor));
+            fn(to_video_timing_mode(mode.dtd, pixel_repetition_factor));
+          }
+        }
       }
     }
 
@@ -130,22 +135,27 @@ namespace Edid {
 
   template <class Function>
   void remove_mode_if(Cta861Block& cta861_block, Function fn) {
-    for (std::optional<uint8_t>& vic : cta861_block.data_block_collection.video_data_block.vics) {
-      if (vic.has_value()) {
-        auto mode = get_cta861_video_timing_mode(vic.value());
-        uint8_t pixel_repetition_factor = 1;
-        if (std::holds_alternative<uint8_t>(mode.pixel_repetition_factor)) {
-          pixel_repetition_factor = std::get<uint8_t>(mode.pixel_repetition_factor);
-        }
-        else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor)) {
-          pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor).first;
-        }
-        else if (std::holds_alternative<std::vector<uint8_t>>(mode.pixel_repetition_factor)) {
-          pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode.pixel_repetition_factor).at(0);
-        }
+    for (const auto& wrapper : cta861_block.data_block_collection) {
+      if (wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG) {
+        auto& vics = std::dynamic_pointer_cast<VideoDataBlock>(wrapper.data_block_ptr)->vics;
+        for (std::optional<uint8_t>& vic : vics) {
+          if (vic.has_value()) {
+            auto mode = get_cta861_video_timing_mode(vic.value());
+            uint8_t pixel_repetition_factor = 1;
+            if (std::holds_alternative<uint8_t>(mode.pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<uint8_t>(mode.pixel_repetition_factor);
+            }
+            else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode.pixel_repetition_factor).first;
+            }
+            else if (std::holds_alternative<std::vector<uint8_t>>(mode.pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode.pixel_repetition_factor).at(0);
+            }
 
-        if (fn(to_video_timing_mode(mode.dtd, pixel_repetition_factor))) {
-          vic = std::nullopt;
+            if (fn(to_video_timing_mode(mode.dtd, pixel_repetition_factor))) {
+              vic = std::nullopt;
+            }
+          }
         }
       }
     }

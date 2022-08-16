@@ -36,13 +36,19 @@ Cta861Block make_cta861_ext() {
   cta861.basic_audio = true;
   cta861.ycbcr_444 = true;
   cta861.ycbcr_422 = true;
-  cta861.data_block_collection.video_data_block.vics[0] = 16;
-  cta861.data_block_collection.video_data_block.vics[1] = 4;
-  cta861.data_block_collection.video_data_block.vics[2] = 31;
-  cta861.data_block_collection.video_data_block.vics[3] = 19;
-  cta861.data_block_collection.video_data_block.vics[4] = 2;
-  cta861.data_block_collection.video_data_block.vics[5] = 18;
-  cta861.data_block_collection.video_data_block.vics[6] = 1;
+
+  VideoDataBlock video_data_block;
+  video_data_block.vics[0] = 16;
+  video_data_block.vics[1] = 4;
+  video_data_block.vics[2] = 31;
+  video_data_block.vics[3] = 19;
+  video_data_block.vics[4] = 2;
+  video_data_block.vics[5] = 18;
+  video_data_block.vics[6] = 1;
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+  );
+
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
   sad.channels = AudioChannels::AC_2;
@@ -50,7 +56,13 @@ Cta861Block make_cta861_ext() {
   sad.sampling_freqs |= SamplingFrequence::SF_44_1;
   sad.sampling_freqs |= SamplingFrequence::SF_32;
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
-  cta861.data_block_collection.audio_data_block.sads[0] = sad;
+
+  AudioDataBlock audio_data_block;
+  audio_data_block.sads[0] = sad;
+  cta861.data_block_collection.push_back(
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+  );
+
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
