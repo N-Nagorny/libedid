@@ -172,9 +172,9 @@ namespace Edid {
     result[pos++] = CTA861_EXT_TAG;
     result[pos++] = CTA861_VERSION;
 
-    int dtd_start_pos = 0x0;
-    if (!cta861.detailed_timing_descriptors.empty())
-      dtd_start_pos = 0x4 + data_block_collection_size;
+    int dtd_start_pos = 0x4 + data_block_collection_size;
+    if (cta861.detailed_timing_descriptors.empty() && data_block_collection_size == 0)
+      dtd_start_pos = 0x0;
 
     result[pos++] = dtd_start_pos;
 
