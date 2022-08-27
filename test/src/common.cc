@@ -46,7 +46,7 @@ Cta861Block make_cta861_ext() {
   video_data_block.vics[5] = 18;
   video_data_block.vics[6] = 1;
   cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_shared<VideoDataBlock>(std::move(video_data_block))}
   );
 
   ShortAudioDescriptor sad;
@@ -60,7 +60,7 @@ Cta861Block make_cta861_ext() {
   AudioDataBlock audio_data_block;
   audio_data_block.sads[0] = sad;
   cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_shared<AudioDataBlock>(std::move(audio_data_block))}
   );
 
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{

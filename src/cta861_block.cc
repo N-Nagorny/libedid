@@ -292,25 +292,25 @@ namespace Edid {
       uint8_t data_block_tag = *iter_read >> 5 & BITMASK_TRUE(3);
       switch (data_block_tag) {
         case CTA861_VIDEO_DATA_BLOCK_TAG:
-          data_block_ptr = std::make_unique<VideoDataBlock>(std::move(parse_video_data_block(std::vector<uint8_t>(
+          data_block_ptr = std::make_shared<VideoDataBlock>(std::move(parse_video_data_block(std::vector<uint8_t>(
             iter_read,
             collection.end()
           ))));
           break;
         case CTA861_AUDIO_DATA_BLOCK_TAG:
-          data_block_ptr = std::make_unique<AudioDataBlock>(std::move(parse_audio_data_block(std::vector<uint8_t>(
+          data_block_ptr = std::make_shared<AudioDataBlock>(std::move(parse_audio_data_block(std::vector<uint8_t>(
             iter_read,
             collection.end()
           ))));
           break;
         case CTA861_SPEAKERS_DATA_BLOCK_TAG:
-          data_block_ptr = std::make_unique<SpeakerAllocationDataBlock>(std::move(parse_speaker_allocation_data_block(std::vector<uint8_t>(
+          data_block_ptr = std::make_shared<SpeakerAllocationDataBlock>(std::move(parse_speaker_allocation_data_block(std::vector<uint8_t>(
             iter_read,
             collection.end()
           ))));
           break;
         default:
-          data_block_ptr = std::make_unique<UnknownDataBlock>(std::move(parse_unknown_data_block(std::vector<uint8_t>(
+          data_block_ptr = std::make_shared<UnknownDataBlock>(std::move(parse_unknown_data_block(std::vector<uint8_t>(
             iter_read,
             collection.end()
           ))));

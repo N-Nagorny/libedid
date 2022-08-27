@@ -102,7 +102,7 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
   video_data_block.vics[5] = 18;
   video_data_block.vics[6] = 1;
   data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_shared<VideoDataBlock>(std::move(video_data_block))}
   );
 
   ShortAudioDescriptor sad;
@@ -116,7 +116,7 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
   AudioDataBlock audio_data_block;
   audio_data_block.sads[0] = sad;
   data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_shared<AudioDataBlock>(std::move(audio_data_block))}
   );
 
   auto unknown_block_1_ptr = std::make_shared<UnknownDataBlock>(
@@ -158,7 +158,7 @@ TEST(DataBlockCollection, CircularTest) {
   video_data_block.vics[5] = 18;
   video_data_block.vics[6] = 1;
   data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_shared<VideoDataBlock>(std::move(video_data_block))}
   );
 
   ShortAudioDescriptor sad;
@@ -172,7 +172,7 @@ TEST(DataBlockCollection, CircularTest) {
   AudioDataBlock audio_data_block;
   audio_data_block.sads[0] = sad;
   data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_shared<AudioDataBlock>(std::move(audio_data_block))}
   );
 
   auto unknown_block_1_ptr = std::make_shared<UnknownDataBlock>(
@@ -363,7 +363,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   video_data_block.vics[14] = 31;
   video_data_block.vics[15] = 32;
   cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_unique<VideoDataBlock>(std::move(video_data_block))}
+    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_shared<VideoDataBlock>(std::move(video_data_block))}
   );
 
   ShortAudioDescriptor sad;
@@ -378,12 +378,12 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   AudioDataBlock audio_data_block;
   audio_data_block.sads[0] = sad;
   cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_unique<AudioDataBlock>(std::move(audio_data_block))}
+    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_shared<AudioDataBlock>(std::move(audio_data_block))}
   );
   SpeakerAllocationDataBlock speaker_allocation_data_block;
   speaker_allocation_data_block.speaker_allocation |= FRONT_LEFT_AND_RIGHT;
   cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_SPEAKERS_DATA_BLOCK_TAG, speaker_allocation_data_block.size(), std::make_unique<SpeakerAllocationDataBlock>(std::move(speaker_allocation_data_block))}
+    CtaDataBlockWrapper{CTA861_SPEAKERS_DATA_BLOCK_TAG, speaker_allocation_data_block.size(), std::make_shared<SpeakerAllocationDataBlock>(std::move(speaker_allocation_data_block))}
   );
 
   auto unknown_block_1_ptr = std::make_shared<UnknownDataBlock>(
