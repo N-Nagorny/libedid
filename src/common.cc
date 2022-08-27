@@ -118,106 +118,106 @@ namespace Edid {
     return result;
   }
 
-  std::array<uint8_t, DTD_BLOCK_SIZE> make_dtd(const DetailedTimingDescriptor& dtd) {
-    std::array<uint8_t, DTD_BLOCK_SIZE> result;
+  std::array<uint8_t, EIGHTEEN_BYTES> DetailedTimingDescriptor::generate_byte_block() const {
+    std::array<uint8_t, EIGHTEEN_BYTES> result;
     result.fill(0x0);
     int pos = 0;
 
-    uint16_t pixel_clock = dtd.pixel_clock_hz / 10'000;
+    uint16_t pixel_clock = pixel_clock_hz / 10'000;
     result[pos++] = pixel_clock & BITMASK_TRUE(8);
     result[pos++] = (pixel_clock >> 8) & BITMASK_TRUE(8);
 
-    result[pos++] = dtd.h_res & BITMASK_TRUE(8);
-    result[pos++] = dtd.h_blank_pixels & BITMASK_TRUE(8);
-    result[pos] = ((dtd.h_res >> 8) & BITMASK_TRUE(4)) << 4;
-    result[pos++] |= (dtd.h_blank_pixels >> 8) & BITMASK_TRUE(4);
+    result[pos++] = h_res & BITMASK_TRUE(8);
+    result[pos++] = h_blank_pixels & BITMASK_TRUE(8);
+    result[pos] = ((h_res >> 8) & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= (h_blank_pixels >> 8) & BITMASK_TRUE(4);
 
-    result[pos++] = dtd.v_res & BITMASK_TRUE(8);
-    result[pos++] = dtd.v_blank_lines & BITMASK_TRUE(8);
-    result[pos] = ((dtd.v_res >> 8) & BITMASK_TRUE(4)) << 4;
-    result[pos++] |= (dtd.v_blank_lines >> 8) & BITMASK_TRUE(4);
+    result[pos++] = v_res & BITMASK_TRUE(8);
+    result[pos++] = v_blank_lines & BITMASK_TRUE(8);
+    result[pos] = ((v_res >> 8) & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= (v_blank_lines >> 8) & BITMASK_TRUE(4);
 
-    result[pos++] = dtd.h_sync_offset & BITMASK_TRUE(8);
-    result[pos++] = dtd.h_sync_width & BITMASK_TRUE(8);
-    result[pos] = (dtd.v_sync_offset & BITMASK_TRUE(4)) << 4;
-    result[pos++] |= dtd.v_sync_width & BITMASK_TRUE(4);
-    result[pos] = ((dtd.h_sync_offset >> 8) & BITMASK_TRUE(2)) << 6;
-    result[pos] |= ((dtd.h_sync_width >> 8) & BITMASK_TRUE(2)) << 4;
-    result[pos] |= ((dtd.v_sync_offset >> 4) & BITMASK_TRUE(2)) << 2;
-    result[pos++] |= ((dtd.v_sync_width >> 4) & BITMASK_TRUE(2)) << 0;
+    result[pos++] = h_sync_offset & BITMASK_TRUE(8);
+    result[pos++] = h_sync_width & BITMASK_TRUE(8);
+    result[pos] = (v_sync_offset & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= v_sync_width & BITMASK_TRUE(4);
+    result[pos] = ((h_sync_offset >> 8) & BITMASK_TRUE(2)) << 6;
+    result[pos] |= ((h_sync_width >> 8) & BITMASK_TRUE(2)) << 4;
+    result[pos] |= ((v_sync_offset >> 4) & BITMASK_TRUE(2)) << 2;
+    result[pos++] |= ((v_sync_width >> 4) & BITMASK_TRUE(2)) << 0;
 
-    result[pos++] = dtd.h_image_size & BITMASK_TRUE(8);
-    result[pos++] = dtd.v_image_size & BITMASK_TRUE(8);
-    result[pos] = ((dtd.h_image_size >> 8) & BITMASK_TRUE(4)) << 4;
-    result[pos++] |= (dtd.v_image_size >> 8) & BITMASK_TRUE(4);
+    result[pos++] = h_image_size & BITMASK_TRUE(8);
+    result[pos++] = v_image_size & BITMASK_TRUE(8);
+    result[pos] = ((h_image_size >> 8) & BITMASK_TRUE(4)) << 4;
+    result[pos++] |= (v_image_size >> 8) & BITMASK_TRUE(4);
 
-    result[pos++] = dtd.h_border_pixels;
-    result[pos++] = dtd.v_border_lines;
+    result[pos++] = h_border_pixels;
+    result[pos++] = v_border_lines;
 
-    result[pos] = make_dtd_features_bitmap(dtd.features_bitmap);
+    result[pos] = make_dtd_features_bitmap(features_bitmap);
 
     return result;
   };
 
-  DetailedTimingDescriptor parse_dtd(const std::array<uint8_t, DTD_BLOCK_SIZE>& dtd) {
+  DetailedTimingDescriptor DetailedTimingDescriptor::parse_byte_block(const std::array<uint8_t, EIGHTEEN_BYTES>& block) {
     DetailedTimingDescriptor result;
     int pos = 0;
 
-    result.pixel_clock_hz = dtd[pos++];
-    result.pixel_clock_hz |= (dtd[pos++] & BITMASK_TRUE(8)) << 8;
+    result.pixel_clock_hz = block[pos++];
+    result.pixel_clock_hz |= (block[pos++] & BITMASK_TRUE(8)) << 8;
     result.pixel_clock_hz *= 10'000;
 
-    result.h_res = dtd[pos++];
-    result.h_blank_pixels = dtd[pos++];
-    result.h_res |= (dtd[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.h_blank_pixels |= (dtd[pos++] & BITMASK_TRUE(4)) << 8;
+    result.h_res = block[pos++];
+    result.h_blank_pixels = block[pos++];
+    result.h_res |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
+    result.h_blank_pixels |= (block[pos++] & BITMASK_TRUE(4)) << 8;
 
-    result.v_res = dtd[pos++];
-    result.v_blank_lines = dtd[pos++];
-    result.v_res |= (dtd[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.v_blank_lines |= (dtd[pos++] & BITMASK_TRUE(4)) << 8;
+    result.v_res = block[pos++];
+    result.v_blank_lines = block[pos++];
+    result.v_res |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
+    result.v_blank_lines |= (block[pos++] & BITMASK_TRUE(4)) << 8;
 
-    result.h_sync_offset = dtd[pos++];
-    result.h_sync_width = dtd[pos++];
-    result.v_sync_offset = dtd[pos] >> 4 & BITMASK_TRUE(4);
-    result.v_sync_width = dtd[pos++] & BITMASK_TRUE(4);
-    result.h_sync_offset |= (dtd[pos] >> 6 & BITMASK_TRUE(2)) << 8;
-    result.h_sync_width |= (dtd[pos] >> 4 & BITMASK_TRUE(2)) << 8;
-    result.v_sync_offset |= (dtd[pos] >> 2 & BITMASK_TRUE(2)) << 4;
-    result.v_sync_width |= (dtd[pos++] & BITMASK_TRUE(2)) << 4;
+    result.h_sync_offset = block[pos++];
+    result.h_sync_width = block[pos++];
+    result.v_sync_offset = block[pos] >> 4 & BITMASK_TRUE(4);
+    result.v_sync_width = block[pos++] & BITMASK_TRUE(4);
+    result.h_sync_offset |= (block[pos] >> 6 & BITMASK_TRUE(2)) << 8;
+    result.h_sync_width |= (block[pos] >> 4 & BITMASK_TRUE(2)) << 8;
+    result.v_sync_offset |= (block[pos] >> 2 & BITMASK_TRUE(2)) << 4;
+    result.v_sync_width |= (block[pos++] & BITMASK_TRUE(2)) << 4;
 
-    result.h_image_size = dtd[pos++];
-    result.v_image_size = dtd[pos++];
-    result.h_image_size |= (dtd[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.v_image_size |= (dtd[pos++] & BITMASK_TRUE(4)) << 8;
+    result.h_image_size = block[pos++];
+    result.v_image_size = block[pos++];
+    result.h_image_size |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
+    result.v_image_size |= (block[pos++] & BITMASK_TRUE(4)) << 8;
 
-    result.h_border_pixels = dtd[pos++];
-    result.v_border_lines = dtd[pos++];
+    result.h_border_pixels = block[pos++];
+    result.v_border_lines = block[pos++];
 
-    result.features_bitmap = parse_dtd_features_bitmap(dtd[pos]);
+    result.features_bitmap = parse_dtd_features_bitmap(block[pos]);
     return result;
   };
 
-  void print_detailed_timing_descriptor(std::ostream& os, const DetailedTimingDescriptor& detailed_timing_descriptor, int tabs) {
+  void DetailedTimingDescriptor::print(std::ostream& os, uint8_t tabs) const {
     std::string first_level_indent;
     for (int i = 0; i < tabs; ++i)
       first_level_indent.push_back('\t');
     std::string second_level_indent = first_level_indent + "\t";
     os << first_level_indent
-      << detailed_timing_descriptor.h_res << 'x'
-      << detailed_timing_descriptor.v_res << '@'
-      << detailed_timing_descriptor.pixel_clock_hz << " Hz ("
-      << detailed_timing_descriptor.h_image_size << " mm x "
-      << detailed_timing_descriptor.v_image_size << " mm)\n";
+      << h_res << 'x'
+      << v_res << '@'
+      << pixel_clock_hz << " Hz ("
+      << h_image_size << " mm x "
+      << v_image_size << " mm)\n";
 
-    os << second_level_indent << detailed_timing_descriptor.h_blank_pixels << " blank H pixels\n";
-    os << second_level_indent << detailed_timing_descriptor.v_blank_lines << " blank V lines\n";
-    os << second_level_indent << "Hfront " << detailed_timing_descriptor.h_sync_offset
-      << " Hsync " << detailed_timing_descriptor.h_sync_width
-      << " Hborder " << (int)detailed_timing_descriptor.h_border_pixels << '\n';
-    os << second_level_indent << "Vfront " << (int)detailed_timing_descriptor.v_sync_offset
-      << " Vsync " << (int)detailed_timing_descriptor.v_sync_width
-      << " Vborder " << (int)detailed_timing_descriptor.v_border_lines << '\n';
+    os << second_level_indent << h_blank_pixels << " blank H pixels\n";
+    os << second_level_indent << v_blank_lines << " blank V lines\n";
+    os << second_level_indent << "Hfront " << h_sync_offset
+      << " Hsync " << h_sync_width
+      << " Hborder " << (int)h_border_pixels << '\n';
+    os << second_level_indent << "Vfront " << (int)v_sync_offset
+      << " Vsync " << (int)v_sync_width
+      << " Vborder " << (int)v_border_lines << '\n';
   }
 
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block) {

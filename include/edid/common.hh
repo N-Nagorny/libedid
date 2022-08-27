@@ -7,6 +7,8 @@
 #include <ostream>
 #include <variant>
 
+#include "eighteen_byte_descriptor.hh"
+
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 #define BITMASK_TRUE(length) static_cast<uint8_t>(std::pow(2.0, length) - 1)
@@ -25,7 +27,6 @@
   }                                                                                \
 
 #define EDID_BLOCK_SIZE 128
-#define DTD_BLOCK_SIZE 18
 #define NTSC_FACTOR_NUMERATOR 1000
 #define NTSC_FACTOR_DENOMINATOR 1001
 
@@ -93,8 +94,12 @@ namespace Edid {
     uint8_t v_border_lines;
     DtdFeaturesBitmap features_bitmap;
 
-    uint8_t size() const {
-      return DTD_BLOCK_SIZE;
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+    static DetailedTimingDescriptor parse_byte_block(const std::array<uint8_t, EIGHTEEN_BYTES>& block);
+
+    uint8_t type() const {
+      return BASE_FAKE_DTD_TYPE;
     }
   };
 
@@ -110,9 +115,5 @@ namespace Edid {
         result.push_back(static_cast<E>(1 << i));
     return result;
   }
-
-  std::array<uint8_t, DTD_BLOCK_SIZE> make_dtd(const DetailedTimingDescriptor& dtd);
-  DetailedTimingDescriptor parse_dtd(const std::array<uint8_t, DTD_BLOCK_SIZE>& dtd);
-  void print_detailed_timing_descriptor(std::ostream& os, const DetailedTimingDescriptor& detailed_timing_descriptor, int tabs = 1);
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block);
 }

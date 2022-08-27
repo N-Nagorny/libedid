@@ -65,9 +65,11 @@ namespace Edid {
       fn(established_timings_3.at(et));
     }
 
-    for (const auto& mode : base_block.detailed_timing_descriptors) {
-      if (mode.has_value()) {
-        fn(to_video_timing_mode(mode.value()));
+    for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
+      if (descriptor.has_value()) {
+        if (std::visit(is_dtd_visitor, descriptor.value())) {
+          fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor.value())));
+        }
       }
     }
 
@@ -92,10 +94,12 @@ namespace Edid {
       }
     }
 
-    for (auto& mode : base_block.detailed_timing_descriptors) {
-      if (mode.has_value()) {
-        if (fn(to_video_timing_mode(mode.value()))) {
-          mode = std::nullopt;
+    for (auto& descriptor : base_block.eighteen_byte_descriptors) {
+      if (descriptor.has_value()) {
+        if (std::visit(is_dtd_visitor, descriptor.value())) {
+          if (fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor.value())))) {
+            descriptor = std::nullopt;
+          }
         }
       }
     }

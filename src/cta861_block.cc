@@ -151,7 +151,7 @@ namespace Edid {
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_cta861_block(const Cta861Block& cta861) {
     const int header_size = 4;
     const int checksum_size = 1;
-    const int dtd_block_size = cta861.detailed_timing_descriptors.size() * DTD_BLOCK_SIZE;
+    const int dtd_block_size = cta861.detailed_timing_descriptors.size() * EIGHTEEN_BYTES;
     const int data_block_collection_size = std::accumulate(cta861.data_block_collection.begin(), cta861.data_block_collection.end(), 0, [](size_t size, const CtaDataBlockWrapper& wrapper) {
       return size + wrapper.data_block_length;
     });
@@ -189,7 +189,7 @@ namespace Edid {
     pos += data_block_collection_size;
 
     for (const auto& detailed_timing_descriptor : cta861.detailed_timing_descriptors) {
-      auto dtd = make_dtd(detailed_timing_descriptor);
+      auto dtd = detailed_timing_descriptor.generate_byte_block();
       std::move(dtd.begin(), dtd.end(), result.begin() + pos);
       pos += dtd.size();
     }
@@ -356,14 +356,14 @@ namespace Edid {
       }
 
       while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
-        std::array<uint8_t, DTD_BLOCK_SIZE> dtd_binary;
+        std::array<uint8_t, EIGHTEEN_BYTES> dtd_binary;
         std::move(
           cta861.begin() + pos,
-          cta861.begin() + pos + DTD_BLOCK_SIZE,
+          cta861.begin() + pos + EIGHTEEN_BYTES,
           dtd_binary.begin()
         );
-        result.detailed_timing_descriptors.push_back(parse_dtd(dtd_binary));
-        pos += DTD_BLOCK_SIZE;
+        result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(dtd_binary));
+        pos += EIGHTEEN_BYTES;
       }
     }
 
@@ -434,7 +434,7 @@ namespace Edid {
     print_data_block_collection(os, cta861_block.data_block_collection);
     os << "Detailed Timing Descriptors:\n";
     for (const auto& detailed_timing_descriptor : cta861_block.detailed_timing_descriptors) {
-      print_detailed_timing_descriptor(os, detailed_timing_descriptor);
+      detailed_timing_descriptor.print(os);
     }
   }
 }

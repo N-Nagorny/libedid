@@ -14,11 +14,6 @@
 #define BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE 5
 #define MAX_DISPLAY_NAME_CHARS 12
 
-#define BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE 0x10
-#define BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE 0xFD
-#define BASE_DISPLAY_DESCRIPTOR_NAME_TYPE 0xFC
-#define BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE 0xFF
-
 namespace Edid {
   static const std::array<uint8_t, 8> base_block_header = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
 
@@ -171,9 +166,115 @@ namespace Edid {
     uint16_t max_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_pixel_clock_rate_mhz = 10; // Range is 10..2550 MHz with step of 10 MHz
     VideoTimingSupport vts;
+
+    uint8_t type() const {
+      return BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE;
+    }
+
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    template<typename Iterator>
+    static DisplayRangeLimits parse_byte_block(Iterator start) {
+      DisplayRangeLimits result;
+      int pos = 0;
+
+      bool add_255_to_h_max = false;
+      bool add_255_to_h_min = false;
+      bool add_255_to_v_max = false;
+      bool add_255_to_v_min = false;
+      pos += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE - 1; // Only for Display Range Limits Descriptor
+      if (*(start + pos) >> 2 & BITMASK_TRUE(2) == 0b10) {
+        add_255_to_h_max = true;
+      } else if (*(start + pos) >> 2 & BITMASK_TRUE(2) == 0b11) {
+        add_255_to_h_max = true;
+        add_255_to_h_min = true;
+      }
+      if (*(start + pos) & BITMASK_TRUE(2) == 0b10) {
+        add_255_to_v_max = true;
+      } else if (*(start + pos) & BITMASK_TRUE(2) == 0b11) {
+        add_255_to_v_max = true;
+        add_255_to_v_min = true;
+      }
+      result.min_v_rate_hz = *(start + ++pos);
+      result.max_v_rate_hz = *(start + ++pos);
+      result.min_h_rate_khz = *(start + ++pos);
+      result.max_h_rate_khz = *(start + ++pos);
+      if (add_255_to_v_min)
+        result.min_v_rate_hz += 255;
+      if (add_255_to_v_max)
+        result.max_v_rate_hz += 255;
+      if (add_255_to_h_min)
+        result.min_h_rate_khz += 255;
+      if (add_255_to_h_max)
+        result.max_h_rate_khz += 255;
+      result.max_pixel_clock_rate_mhz = *(start + ++pos) * 10;
+      result.vts = VideoTimingSupport(*(start + ++pos));
+      return result;
+    }
   };
 
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
+
+  struct DisplayName {
+    std::string name; // Maximum is 12 chars
+
+    uint8_t type() const {
+      return BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
+    }
+
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    template<typename Iterator>
+    static DisplayName parse_byte_block(Iterator start) {
+      DisplayName result;
+      start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
+
+      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
+        if (*(start + i) != ' ' && *(start + i) != '\n')
+          result.name.push_back(*(start + i));
+      }
+      return result;
+    };
+  };
+
+  bool operator==(const DisplayName& lhs, const DisplayName& rhs);
+
+  struct DisplaySerialNumber {
+    std::string display_serial_number; // Maximum is 12 chars
+
+    uint8_t type() const {
+      return BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE;
+    }
+
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    template<typename Iterator>
+    static DisplaySerialNumber parse_byte_block(Iterator start) {
+      DisplaySerialNumber result;
+
+      for (int i = BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
+        if (*(start + i) != ' ' && *(start + i) != '\n')
+          result.display_serial_number.push_back(*(start + i));
+      }
+      return result;
+    };
+  };
+
+  bool operator==(const DisplaySerialNumber& lhs, const DisplaySerialNumber& rhs);
+
+  struct DummyDescriptor {
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    uint8_t type() const {
+      return BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE;
+    }
+  };
+
+  bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs);
 
   // See https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
   struct BaseBlock {
@@ -208,10 +309,7 @@ namespace Edid {
     EstablishedTimings established_timings_3 = 0x0;
 
     std::array<std::optional<StandardTiming>, 8> standard_timings;
-    std::array<std::optional<DetailedTimingDescriptor>, 2> detailed_timing_descriptors;
-    std::optional<DisplayRangeLimits> display_range_limits;
-    std::optional<std::string> display_name; // Maximum is 12 chars
-    std::optional<std::string> display_serial_number; // Maximum is 12 chars
+    std::array<std::optional<EighteenByteDescriptor>, BASE_18_BYTE_DESCRIPTORS> eighteen_byte_descriptors;
 
     BaseBlock() {
       manufacturer_id.fill('A');

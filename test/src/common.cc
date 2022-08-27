@@ -21,12 +21,12 @@ BaseBlock make_edid_base() {
   edid_base.standard_timings[2] = StandardTiming{1280, AspectRatio::AR_16_10, 60};
   edid_base.standard_timings[3] = StandardTiming{1440, AspectRatio::AR_16_10, 60};
   edid_base.standard_timings[4] = StandardTiming{1920, AspectRatio::AR_16_9, 60};
-  edid_base.display_range_limits = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
-  edid_base.detailed_timing_descriptors[0] = DetailedTimingDescriptor{
+  edid_base.eighteen_byte_descriptors[0] = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
-  edid_base.display_name = "Hello";
+  edid_base.eighteen_byte_descriptors[1] = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
+  edid_base.eighteen_byte_descriptors[2] = DisplayName{"Hello"};
   return edid_base;
 }
 

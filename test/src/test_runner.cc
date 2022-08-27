@@ -49,8 +49,8 @@ TEST(CommonCircularTests, DetailedTimingDescriptor) {
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
-  auto binary = make_dtd(dtd);
-  EXPECT_EQ(dtd, parse_dtd(binary));
+  auto binary = dtd.generate_byte_block();
+  EXPECT_EQ(dtd, DetailedTimingDescriptor::parse_byte_block(binary));
 }
 
 TEST(CommonCircularTests, VideoDataBlock) {
@@ -230,7 +230,7 @@ TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
   });
   BaseBlock edid_base_after = make_edid_base();
   edid_base_after.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
-  edid_base_after.detailed_timing_descriptors = {};
+  edid_base_after.eighteen_byte_descriptors[0] = std::nullopt;
   EXPECT_EQ(edid_base_before, edid_base_after);
 }
 
@@ -260,7 +260,7 @@ TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
   EdidData edid_after{make_edid_base(), std::vector{make_cta861_ext()}};
 
   edid_after.base_block.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
-  edid_after.base_block.detailed_timing_descriptors = {};
+  edid_after.base_block.eighteen_byte_descriptors[0] = std::nullopt;
 
   auto iter = std::find_if(edid_after.extension_blocks->at(0).data_block_collection.begin(), edid_after.extension_blocks->at(0).data_block_collection.end(), [](const auto& wrapper){
     return wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG;
@@ -332,12 +332,12 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   edid_base.standard_timings[5] = StandardTiming{1600, AspectRatio::AR_16_9, 60};
   edid_base.standard_timings[6] = StandardTiming{1360, AspectRatio::AR_16_9, 60};
 
-  edid_base.display_range_limits = DisplayRangeLimits{40, 144, 160, 160, 330, VideoTimingSupport::VTS_DEFAULT_GTF};
-  edid_base.detailed_timing_descriptors[0] = DetailedTimingDescriptor{
+  edid_base.eighteen_byte_descriptors[0] = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 477, 268, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
   };
-  edid_base.display_name = "KALED24144F";
+  edid_base.eighteen_byte_descriptors[1] = DisplayName{"KALED24144F"};
+  edid_base.eighteen_byte_descriptors[2] = DisplayRangeLimits{40, 144, 160, 160, 330, VideoTimingSupport::VTS_DEFAULT_GTF};
 
   Cta861Block cta861;
   cta861.underscan = true;

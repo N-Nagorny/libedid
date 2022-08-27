@@ -27,6 +27,18 @@ namespace Edid {
     );
   }
 
+  bool operator==(const DisplayName& lhs, const DisplayName& rhs) {
+    return lhs.name == rhs.name;
+  }
+
+  bool operator==(const DisplaySerialNumber& lhs, const DisplaySerialNumber& rhs) {
+    return lhs.display_serial_number == rhs.display_serial_number;
+  }
+
+  bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs) {
+    return true;
+  }
+
   bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
     using namespace details;
 
@@ -78,13 +90,138 @@ namespace Edid {
       return false;
     if (lhs.standard_timings != rhs.standard_timings)
       return false;
-    if (lhs.detailed_timing_descriptors != rhs.detailed_timing_descriptors)
-      return false;
-    if (lhs.display_range_limits != rhs.display_range_limits)
-      return false;
-    if (std::operator!=(lhs.display_name, rhs.display_name))
+    if (lhs.eighteen_byte_descriptors != rhs.eighteen_byte_descriptors)
       return false;
     return true;
+  }
+
+  std::array<uint8_t, EIGHTEEN_BYTES> DisplayRangeLimits::generate_byte_block() const {
+    std::array<uint8_t, EIGHTEEN_BYTES> result;
+    result.fill(0x0);
+    int pos = 0;
+
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE;
+
+    auto is_value_in_range = [](uint16_t value, uint16_t min = 1, uint16_t max = 510) -> bool {
+      return value >= min && value <= max;
+    };
+
+    if (!is_value_in_range(min_h_rate_khz))
+      throw EdidException("Min H rate is out of range.");
+    if (!is_value_in_range(max_h_rate_khz))
+      throw EdidException("Max H rate is out of range.");
+    if (!is_value_in_range(min_v_rate_hz))
+      throw EdidException("Min V rate is out of range.");
+    if (!is_value_in_range(max_v_rate_hz))
+      throw EdidException("Max V rate is out of range.");
+    if (!is_value_in_range(max_pixel_clock_rate_mhz, 10, 2550))
+      throw EdidException("Max Pixel Clock rate is out of range.");
+    if (max_pixel_clock_rate_mhz % 10 != 0)
+      throw EdidException("Max Pixel Clock rate divided by 10 gives a non-zero remainder.");
+
+    uint16_t min_h_rate = min_h_rate_khz;
+    uint16_t max_h_rate = max_h_rate_khz;
+    uint16_t min_v_rate = min_v_rate_hz;
+    uint16_t max_v_rate = max_v_rate_hz;
+
+    if (min_h_rate_khz > 255 && max_h_rate_khz > 255) {
+      result[pos] = 0x0C;
+      min_h_rate = min_h_rate_khz - 255;
+      max_h_rate = max_h_rate_khz - 255;
+    } else if (max_h_rate_khz > 255) {
+      result[pos] = 0x04;
+      max_h_rate = max_h_rate_khz - 255;
+    }
+
+    if (min_v_rate_hz > 255 && max_v_rate_hz > 255) {
+      result[pos] |= 0x03;
+      min_v_rate = min_v_rate_hz - 255;
+      max_v_rate = max_v_rate_hz - 255;
+    } else if (max_v_rate_hz > 255) {
+      result[pos] |= 0x02;
+      max_v_rate = max_v_rate_hz - 255;
+    }
+
+    ++pos;
+    result[pos++] = min_v_rate;
+    result[pos++] = max_v_rate;
+    result[pos++] = min_h_rate;
+    result[pos++] = max_h_rate;
+    result[pos++] = max_pixel_clock_rate_mhz / 10;
+
+    result[pos++] = vts;
+    result[pos++] = 0x0A;
+    for (int i = 0; i < 6; ++i)
+      result[pos++] = 0x20;
+
+    return result;
+  }
+
+  std::array<uint8_t, EIGHTEEN_BYTES> DisplayName::generate_byte_block() const {
+    std::array<uint8_t, EIGHTEEN_BYTES> result;
+    result.fill(0x0);
+    int pos = 0;
+
+    if (name.size() > MAX_DISPLAY_NAME_CHARS)
+      throw EdidException("Display Name is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
+    if (name.find(' ') != std::string::npos)
+      throw EdidException("Display Name contains spaces.");
+
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
+    result[pos++] = 0x0;
+
+    for (int i = 0; i < name.size(); ++i)
+      result[pos++] = name[i];
+    result[pos++] = '\n';
+    for (int i = name.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
+      result[pos++] = ' ';
+
+    return result;
+  }
+
+  std::array<uint8_t, EIGHTEEN_BYTES> DisplaySerialNumber::generate_byte_block() const {
+    std::array<uint8_t, EIGHTEEN_BYTES> result;
+    result.fill(0x0);
+    int pos = 0;
+
+    if (display_serial_number.size() > MAX_DISPLAY_NAME_CHARS)
+      throw EdidException("Display Serial Number is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
+    if (display_serial_number.find(' ') != std::string::npos)
+      throw EdidException("Display Serial Number contains spaces.");
+
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE;
+    result[pos++] = 0x0;
+
+    for (int i = 0; i < display_serial_number.size(); ++i)
+      result[pos++] = display_serial_number[i];
+    result[pos++] = '\n';
+    for (int i = display_serial_number.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
+      result[pos++] = ' ';
+
+    return result;
+  }
+
+  std::array<uint8_t, EIGHTEEN_BYTES> DummyDescriptor::generate_byte_block() const {
+    std::array<uint8_t, EIGHTEEN_BYTES> result;
+    result.fill(0x0);
+    int pos = 0;
+
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE;
+    pos += EIGHTEEN_BYTES - 4;
+
+    return result;
   }
 
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_base_block(const BaseBlock& base_block, uint8_t ext_blocks) {
@@ -168,107 +305,19 @@ namespace Edid {
     }
 
     // 18 byte descriptors
-    auto mark_as_dummy = [&result, &pos]() {
-      result[pos++] = 0x0;
-      result[pos++] = 0x0;
-      result[pos++] = 0x0;
-      result[pos++] = BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE;
-      pos += DTD_BLOCK_SIZE - 4;
-    };
+    for (const auto& eighteen_byte_descriptor : base_block.eighteen_byte_descriptors) {
+      auto eighteen_byte_descriptor_visitor =
+        [](const auto& descriptor) -> std::array<uint8_t, EIGHTEEN_BYTES> {
+          return descriptor.generate_byte_block();
+        };
 
-    auto insert_display_range_limits = [&result, &pos](DisplayRangeLimits limits) {
-      result[pos++] = 0x0;
-      result[pos++] = 0x0;
-      result[pos++] = 0x0;
-      result[pos++] = BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE;
+      std::array<uint8_t, EIGHTEEN_BYTES> block =
+        eighteen_byte_descriptor.has_value()
+        ? std::visit(eighteen_byte_descriptor_visitor, eighteen_byte_descriptor.value())
+        : DummyDescriptor().generate_byte_block();
 
-      auto is_value_in_range = [](uint16_t value, uint16_t min = 1, uint16_t max = 510) -> bool {
-        return value >= min && value <= max;
-      };
-
-      if (!is_value_in_range(limits.min_h_rate_khz))
-        throw EdidException("Min H rate is out of range.");
-      if (!is_value_in_range(limits.max_h_rate_khz))
-        throw EdidException("Max H rate is out of range.");
-      if (!is_value_in_range(limits.min_v_rate_hz))
-        throw EdidException("Min V rate is out of range.");
-      if (!is_value_in_range(limits.max_v_rate_hz))
-        throw EdidException("Max V rate is out of range.");
-      if (!is_value_in_range(limits.max_pixel_clock_rate_mhz, 10, 2550))
-        throw EdidException("Max Pixel Clock rate is out of range.");
-      if (limits.max_pixel_clock_rate_mhz % 10 != 0)
-        throw EdidException("Max Pixel Clock rate divided by 10 gives a non-zero remainder.");
-
-      if (limits.min_h_rate_khz > 255 && limits.max_h_rate_khz > 255) {
-        result[pos] = 0x0C;
-        limits.min_h_rate_khz -= 255;
-        limits.max_h_rate_khz -= 255;
-      } else if (limits.max_h_rate_khz > 255) {
-        result[pos] = 0x04;
-        limits.max_h_rate_khz -= 255;
-      }
-
-      if (limits.min_v_rate_hz > 255 && limits.max_v_rate_hz > 255) {
-        result[pos] |= 0x03;
-        limits.min_v_rate_hz -= 255;
-        limits.max_v_rate_hz -= 255;
-      } else if (limits.max_v_rate_hz > 255) {
-        result[pos] |= 0x02;
-        limits.max_v_rate_hz -= 255;
-      }
-
-      ++pos;
-      result[pos++] = limits.min_v_rate_hz;
-      result[pos++] = limits.max_v_rate_hz;
-      result[pos++] = limits.min_h_rate_khz;
-      result[pos++] = limits.max_h_rate_khz;
-      result[pos++] = limits.max_pixel_clock_rate_mhz / 10;
-
-      result[pos++] = limits.vts;
-      result[pos++] = 0x0A;
-      for (int i = 0; i < 6; ++i)
-        result[pos++] = 0x20;
-    };
-
-    auto insert_display_name = [&result, &pos](const std::string& name) {
-      if (name.size() > MAX_DISPLAY_NAME_CHARS)
-        throw EdidException("Display Name is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
-      if (name.find(' ') != std::string::npos)
-        throw EdidException("Display Name contains spaces.");
-
-      result[pos++] = 0x0;
-      result[pos++] = 0x0;
-      result[pos++] = 0x0;
-      result[pos++] = BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
-      result[pos++] = 0x0;
-
-      for (int i = 0; i < name.size(); ++i)
-        result[pos++] = name[i];
-      result[pos++] = '\n';
-      for (int i = name.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
-        result[pos++] = ' ';
-    };
-
-    for (const auto& detailed_timing_descriptor : base_block.detailed_timing_descriptors) {
-      if (detailed_timing_descriptor.has_value()) {
-        auto dtd = make_dtd(detailed_timing_descriptor.value());
-        std::move(dtd.begin(), dtd.end(), result.begin() + pos);
-        pos += dtd.size();
-      } else {
-        mark_as_dummy();
-      }
-    }
-
-    if (base_block.display_range_limits.has_value()) {
-      insert_display_range_limits(base_block.display_range_limits.value());
-    } else {
-      mark_as_dummy();
-    }
-
-    if (base_block.display_name.has_value()) {
-      insert_display_name(base_block.display_name.value());
-    } else {
-      mark_as_dummy();
+      std::move(block.begin(), block.end(), result.begin() + pos);
+      pos += block.size();
     }
 
     // Extension blocks
@@ -374,80 +423,35 @@ namespace Edid {
       pos += 2;
     }
 
-    // 18 byte descriptors
-    auto parse_display_range_limits = [&base_block](int descriptor_num) -> DisplayRangeLimits {
-      int pos = BASE_18_BYTE_DESCRIPTORS_OFFSET + descriptor_num * 18;
-      DisplayRangeLimits result;
-      bool add_255_to_h_max = false;
-      bool add_255_to_h_min = false;
-      bool add_255_to_v_max = false;
-      bool add_255_to_v_min = false;
-      pos += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE - 1; // Only for Display Range Limits Descriptor
-      if (base_block[pos] >> 2 & BITMASK_TRUE(2) == 0b10) {
-        add_255_to_h_max = true;
-      } else if (base_block[pos] >> 2 & BITMASK_TRUE(2) == 0b11) {
-        add_255_to_h_max = true;
-        add_255_to_h_min = true;
-      }
-      if (base_block[pos] & BITMASK_TRUE(2) == 0b10) {
-        add_255_to_v_max = true;
-      } else if (base_block[pos] & BITMASK_TRUE(2) == 0b11) {
-        add_255_to_v_max = true;
-        add_255_to_v_min = true;
-      }
-      result.min_v_rate_hz = base_block[++pos];
-      result.max_v_rate_hz = base_block[++pos];
-      result.min_h_rate_khz = base_block[++pos];
-      result.max_h_rate_khz = base_block[++pos];
-      if (add_255_to_v_min)
-        result.min_v_rate_hz += 255;
-      if (add_255_to_v_max)
-        result.max_v_rate_hz += 255;
-      if (add_255_to_h_min)
-        result.min_h_rate_khz += 255;
-      if (add_255_to_h_max)
-        result.max_h_rate_khz += 255;
-      result.max_pixel_clock_rate_mhz = base_block[++pos] * 10;
-      result.vts = VideoTimingSupport(base_block[++pos]);
-      return result;
-    };
-
-    auto parse_display_name = [&base_block](int descriptor_num) -> std::string {
-      int pos = BASE_18_BYTE_DESCRIPTORS_OFFSET + descriptor_num * 18;
-      std::string result;
-      pos += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
-      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
-        if (base_block[pos + i] != ' ' && base_block[pos + i] != '\n')
-          result.push_back(base_block[pos + i]);
-      }
-      return result;
-    };
-
-    int dtd_timing_i = 0;
+    int eighteen_byte_descriptor_i = 0;
     for (int i = 0; i < BASE_18_BYTE_DESCRIPTORS; ++i) {
+      std::optional<EighteenByteDescriptor> descriptor;
       if (base_block[pos] == 0x0 && base_block[pos + 1] == 0x0 && base_block[pos + 2] == 0x0) {
         uint8_t display_descriptor_type = base_block[pos + 3];
         if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
-          result_struct.display_range_limits = parse_display_range_limits(i);
+          descriptor = DisplayRangeLimits::parse_byte_block(base_block.begin() + pos);
         } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_NAME_TYPE) {
-          result_struct.display_name = parse_display_name(i);
+          descriptor = DisplayName::parse_byte_block(base_block.begin() + pos);
         } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE) {
-          result_struct.display_serial_number = parse_display_name(i);
-        } else if (display_descriptor_type != BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
+          descriptor = DisplaySerialNumber::parse_byte_block(base_block.begin() + pos);
+        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
+          descriptor = std::nullopt;
+        } else {
           throw EdidException(__FUNCTION__,
             "Display Descriptor at position " + std::to_string(i) +
             " has unknown Display Descriptor Type " + std::to_string(display_descriptor_type));
         }
       } else {
-        std::array<uint8_t, DTD_BLOCK_SIZE> dtd_binary;
+        std::array<uint8_t, EIGHTEEN_BYTES> dtd_binary;
         std::move(
           base_block.begin() + pos,
-          base_block.begin() + pos + DTD_BLOCK_SIZE,
+          base_block.begin() + pos + EIGHTEEN_BYTES,
           dtd_binary.begin()
         );
-        result_struct.detailed_timing_descriptors[dtd_timing_i++] = parse_dtd(dtd_binary);
+        descriptor = DetailedTimingDescriptor::parse_byte_block(dtd_binary);
       }
-      pos += DTD_BLOCK_SIZE;
+      result_struct.eighteen_byte_descriptors[eighteen_byte_descriptor_i++] = descriptor;
+      pos += EIGHTEEN_BYTES;
     }
 
     result_ext_blocks = base_block[pos];
@@ -459,6 +463,43 @@ namespace Edid {
     os << std_timing.x_resolution << ' '
       << to_string(std_timing.aspect_ratio) << ' '
       << static_cast<int>(std_timing.v_frequency) << " Hz\n";
+  }
+
+  void DisplayRangeLimits::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent;
+    for (int i = 0; i < tabs; ++i)
+      indent.push_back('\t');
+
+    os << indent << "Display Range Limits: "
+      << min_v_rate_hz << '-'
+      << max_v_rate_hz << " Hz V, "
+      << min_h_rate_khz << '-'
+      << max_h_rate_khz << " kHz H, "
+      << max_pixel_clock_rate_mhz << " MHz\n";
+  }
+
+  void DisplayName::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent;
+    for (int i = 0; i < tabs; ++i)
+      indent.push_back('\t');
+
+    os << indent << "Display Name: " << name << '\n';
+  }
+
+  void DisplaySerialNumber::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent;
+    for (int i = 0; i < tabs; ++i)
+      indent.push_back('\t');
+
+    os << indent << "Display Serial Number: " << display_serial_number << '\n';
+  }
+
+  void DummyDescriptor::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent;
+    for (int i = 0; i < tabs; ++i)
+      indent.push_back('\t');
+
+    os << indent << "Dummy Descriptor\n";
   }
 
   void print_base_block(std::ostream& os, const BaseBlock& base_block) {
@@ -517,24 +558,18 @@ namespace Edid {
       }
     }
 
-    os << "Detailed Timing Descriptors:\n";
-    for (const auto& detailed_timing_descriptor : base_block.detailed_timing_descriptors) {
-      if (detailed_timing_descriptor.has_value()) {
-        print_detailed_timing_descriptor(os, detailed_timing_descriptor.value());
+    os << "18 Byte Descriptors:\n";
+    for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
+      if (descriptor.has_value()) {
+        std::visit([&os](const auto& d) {
+          d.print(os);
+        }, descriptor.value());
+      }
+      else {
+        os << '\t' << "Dummy Descriptor\n";
       }
     }
 
-    if (base_block.display_range_limits.has_value()) {
-      os << "Display Range Limits: "
-        << base_block.display_range_limits->min_v_rate_hz << '-'
-        << base_block.display_range_limits->max_v_rate_hz << " Hz V, "
-        << base_block.display_range_limits->min_h_rate_khz << '-'
-        << base_block.display_range_limits->max_h_rate_khz << " kHz H, "
-        << base_block.display_range_limits->max_pixel_clock_rate_mhz << " MHz\n";
-    }
 
-    if (base_block.display_name.has_value()) {
-      os << "Display Name: " << base_block.display_name.value() << '\n';
-    }
   }
 }
