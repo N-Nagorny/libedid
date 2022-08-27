@@ -35,6 +35,40 @@ TEST(EqualityOperatorTests, EdidBaseIsEqualToItself) {
   EXPECT_EQ(make_edid_base(), make_edid_base());
 }
 
+TEST(EqualityOperatorTests, Cta861BlockIsEqualToItself) {
+  EXPECT_EQ(make_cta861_ext(), make_cta861_ext());
+}
+
+TEST(DisplayRangeLimits, Generating) {
+  std::array<uint8_t, EIGHTEEN_BYTES> drl_binary{
+    0x00, 0x00, 0x00, 0xfd, 0x00, 0x18, 0x4b, 0x0f, 0x8c, 0x32, 0x00, 0x0a, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
+  };
+  DisplayRangeLimits limits = DisplayRangeLimits{24, 75, 15, 140, 500, VideoTimingSupport::VTS_DEFAULT_GTF};
+  EXPECT_EQ(drl_binary, limits.generate_byte_block());
+}
+
+TEST(DisplayRangeLimits, Parsing) {
+  std::array<uint8_t, EIGHTEEN_BYTES> drl_binary{
+    0x00, 0x00, 0x00, 0xfd, 0x00, 0x18, 0x4b, 0x0f, 0x8c, 0x32, 0x00, 0x0a, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
+  };
+  DisplayRangeLimits limits = DisplayRangeLimits{24, 75, 15, 140, 500, VideoTimingSupport::VTS_DEFAULT_GTF};
+  EXPECT_EQ(DisplayRangeLimits::parse_byte_block(drl_binary.begin()), limits);
+}
+
+TEST(DisplayRangeLimits, CircularTest) {
+  DisplayRangeLimits limits = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
+  auto limits_binary = limits.generate_byte_block();
+  auto limits_parsed = DisplayRangeLimits::parse_byte_block(limits_binary.begin());
+  EXPECT_EQ(limits, limits_parsed);
+}
+
+TEST(CommonCircularTests, DisplayName) {
+  auto name = DisplayName{"TEST_NAME"};
+  auto name_binary = name.generate_byte_block();
+  auto name_parsed = DisplayName::parse_byte_block(name_binary.begin());
+  EXPECT_EQ(name, name_parsed);
+}
+
 TEST(CommonCircularTests, BaseEdid) {
   EdidData edid;
   edid.base_block = make_edid_base();
