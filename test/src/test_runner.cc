@@ -2,7 +2,7 @@
 #include <iostream>
 #include <optional>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "edid/base_block.hh"
 #include "edid/edid.hh"
