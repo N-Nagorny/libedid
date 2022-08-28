@@ -40,33 +40,35 @@ namespace Edid {
   })
 
   enum VideoInterface {
-    UNDEFINED = 0b0000,
-    HDMIa = 0b0010,
-    HDMIb = 0b0011,
-    MDDI = 0b0100,
-    DisplayPort = 0b101
+    VI_UNDEFINED = 0b0000,
+    VI_DVI = 0b0001,
+    VI_HDMIa = 0b0010,
+    VI_HDMIb = 0b0011,
+    VI_MDDI = 0b0100,
+    VI_DisplayPort = 0b101
   };
 
   STRINGIFY_ENUM(VideoInterface, {
-    {UNDEFINED, "Undefined"},
-    {HDMIa, "HDMIa"},
-    {HDMIb, "HDMIb"},
-    {MDDI, "MDDI"},
-    {DisplayPort, "DisplayPort"},
+    {VI_UNDEFINED, "Undefined"},
+    {VI_DVI, "DVI"},
+    {VI_HDMIa, "HDMIa"},
+    {VI_HDMIb, "HDMIb"},
+    {VI_MDDI, "MDDI"},
+    {VI_DisplayPort, "DisplayPort"},
   })
 
   enum DigitalDisplayType {
-    RGB444 = 0b00,
-    RGB444_YCrCb444 = 0b01,
-    RGB444_YCrCb422 = 0b10,
-    RGB444_YCrCb444_YCrCb422 = 0b11
+    DDT_RGB444 = 0b00,
+    DDT_RGB444_YCrCb444 = 0b01,
+    DDT_RGB444_YCrCb422 = 0b10,
+    DDT_RGB444_YCrCb444_YCrCb422 = 0b11
   };
 
   STRINGIFY_ENUM(DigitalDisplayType, {
-    {RGB444, "RGB 4:4:4"},
-    {RGB444_YCrCb444, "RGB 4:4:4, YCrCb 4:4:4"},
-    {RGB444_YCrCb422, "RGB 4:4:4, YCrCb 4:2:2"},
-    {RGB444_YCrCb444_YCrCb422, "RGB 4:4:4, YCrCb 4:4:4, YCrCb 4:2:2"},
+    {DDT_RGB444, "RGB 4:4:4"},
+    {DDT_RGB444_YCrCb444, "RGB 4:4:4, YCrCb 4:4:4"},
+    {DDT_RGB444_YCrCb422, "RGB 4:4:4, YCrCb 4:2:2"},
+    {DDT_RGB444_YCrCb444_YCrCb422, "RGB 4:4:4, YCrCb 4:4:4, YCrCb 4:2:2"},
   })
 
   enum EstablishedTiming1 {
@@ -280,7 +282,7 @@ namespace Edid {
   struct BaseBlock {
     // Header
     std::array<char, 3> manufacturer_id;
-    uint16_t manufacturer_product_code = 0;
+    uint16_t product_code = 0;
     uint32_t serial_number = 0;
     uint8_t manufacture_week = 0;
     uint16_t manufacture_year = 2000;  // This value becomes uint8_t in EDID by subtracting 1990 from it
@@ -289,14 +291,14 @@ namespace Edid {
     // Basic Display Parameters
     // NOTE: Only Digital Input supported
     BitDepth bits_per_color = BitDepth::BD_UNDEFINED;
-    VideoInterface video_interface = VideoInterface::UNDEFINED;
+    VideoInterface video_interface = VideoInterface::VI_UNDEFINED;
     uint8_t h_screen_size = 0;        // Horizontal screen size in cm - usually just choose values to set aspect ratio
     uint8_t v_screen_size = 0;
     uint8_t gamma = 0;
     bool dpms_standby = false;
     bool dpms_suspend = false;
     bool dpms_active_off = false;
-    DigitalDisplayType display_type = DigitalDisplayType::RGB444;
+    DigitalDisplayType display_type = DigitalDisplayType::DDT_RGB444;
     bool standard_srgb = false;
     bool preferred_timing_mode = true;
     bool continuous_timings = false;

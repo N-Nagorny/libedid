@@ -5,11 +5,11 @@ using namespace Edid;
 BaseBlock make_edid_base() {
   BaseBlock edid_base;
   edid_base.manufacturer_id = {'A', 'B', 'C'};
-  edid_base.manufacturer_product_code = 1234;
+  edid_base.product_code = 1234;
   edid_base.manufacture_week = 2;
   edid_base.manufacture_year = 2020;
   edid_base.bits_per_color = BitDepth::BD_8;
-  edid_base.display_type = DigitalDisplayType::RGB444_YCrCb444;
+  edid_base.display_type = DigitalDisplayType::DDT_RGB444_YCrCb444;
   edid_base.gamma = 1;
   edid_base.chromaticity = {0xEE, 0x91, 0xA3, 0x54, 0x4C, 0x99, 0x26, 0x0F, 0x50, 0x54};
   edid_base.established_timings_1 |= EstablishedTiming1::ET_800x600_56;

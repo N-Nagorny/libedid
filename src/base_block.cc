@@ -44,7 +44,7 @@ namespace Edid {
 
     if (lhs.manufacturer_id != rhs.manufacturer_id)
       return false;
-    if (lhs.manufacturer_product_code != rhs.manufacturer_product_code)
+    if (lhs.product_code != rhs.product_code)
       return false;
     if (lhs.serial_number != rhs.serial_number)
       return false;
@@ -246,8 +246,8 @@ namespace Edid {
     result[pos++] |= ascii_char_to_edid(base_block.manufacturer_id.at(2));
 
     // Product code
-    result[pos++] = base_block.manufacturer_product_code & BITMASK_TRUE(8);
-    result[pos++] = (base_block.manufacturer_product_code >> 8) & BITMASK_TRUE(8);
+    result[pos++] = base_block.product_code & BITMASK_TRUE(8);
+    result[pos++] = (base_block.product_code >> 8) & BITMASK_TRUE(8);
 
     // Serial number
     result[pos++] = base_block.serial_number & BITMASK_TRUE(8);
@@ -367,8 +367,8 @@ namespace Edid {
     result_struct.manufacturer_id[2] = edid_char_to_ascii(base_block[++pos] & BITMASK_TRUE(5));
 
     // Product code
-    result_struct.manufacturer_product_code = base_block[++pos];
-    result_struct.manufacturer_product_code |= base_block[++pos] << 8;
+    result_struct.product_code = base_block[++pos];
+    result_struct.product_code |= base_block[++pos] << 8;
 
     // Serial number
     result_struct.serial_number = base_block[++pos];
@@ -508,7 +508,7 @@ namespace Edid {
       << base_block.manufacturer_id.at(1)
       << base_block.manufacturer_id.at(2)
       << '\n';
-    os << "Manufacturer Product Code: " << base_block.manufacturer_product_code << '\n';
+    os << "Product Code: " << base_block.product_code << '\n';
     os << "Serial Number: " << base_block.serial_number << '\n';
     os << "Manufacture Week: " << static_cast<int>(base_block.manufacture_week) << '\n';
     os << "Manufacture Year: " << base_block.manufacture_year << '\n';

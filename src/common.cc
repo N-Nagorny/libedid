@@ -27,10 +27,10 @@ namespace Edid {
       lhs.pixel_clock_hz,
       lhs.h_res,
       lhs.v_res,
-      lhs.h_blank_pixels,
-      lhs.v_blank_lines,
-      lhs.h_sync_offset,
-      lhs.v_sync_offset,
+      lhs.h_blanking,
+      lhs.v_blanking,
+      lhs.h_front_porch,
+      lhs.v_front_porch,
       lhs.h_sync_width,
       lhs.v_sync_width,
       lhs.h_image_size,
@@ -42,10 +42,10 @@ namespace Edid {
       rhs.pixel_clock_hz,
       rhs.h_res,
       rhs.v_res,
-      rhs.h_blank_pixels,
-      rhs.v_blank_lines,
-      rhs.h_sync_offset,
-      rhs.v_sync_offset,
+      rhs.h_blanking,
+      rhs.v_blanking,
+      rhs.h_front_porch,
+      rhs.v_front_porch,
       rhs.h_sync_width,
       rhs.v_sync_width,
       rhs.h_image_size,
@@ -128,22 +128,22 @@ namespace Edid {
     result[pos++] = (pixel_clock >> 8) & BITMASK_TRUE(8);
 
     result[pos++] = h_res & BITMASK_TRUE(8);
-    result[pos++] = h_blank_pixels & BITMASK_TRUE(8);
+    result[pos++] = h_blanking & BITMASK_TRUE(8);
     result[pos] = ((h_res >> 8) & BITMASK_TRUE(4)) << 4;
-    result[pos++] |= (h_blank_pixels >> 8) & BITMASK_TRUE(4);
+    result[pos++] |= (h_blanking >> 8) & BITMASK_TRUE(4);
 
     result[pos++] = v_res & BITMASK_TRUE(8);
-    result[pos++] = v_blank_lines & BITMASK_TRUE(8);
+    result[pos++] = v_blanking & BITMASK_TRUE(8);
     result[pos] = ((v_res >> 8) & BITMASK_TRUE(4)) << 4;
-    result[pos++] |= (v_blank_lines >> 8) & BITMASK_TRUE(4);
+    result[pos++] |= (v_blanking >> 8) & BITMASK_TRUE(4);
 
-    result[pos++] = h_sync_offset & BITMASK_TRUE(8);
+    result[pos++] = h_front_porch & BITMASK_TRUE(8);
     result[pos++] = h_sync_width & BITMASK_TRUE(8);
-    result[pos] = (v_sync_offset & BITMASK_TRUE(4)) << 4;
+    result[pos] = (v_front_porch & BITMASK_TRUE(4)) << 4;
     result[pos++] |= v_sync_width & BITMASK_TRUE(4);
-    result[pos] = ((h_sync_offset >> 8) & BITMASK_TRUE(2)) << 6;
+    result[pos] = ((h_front_porch >> 8) & BITMASK_TRUE(2)) << 6;
     result[pos] |= ((h_sync_width >> 8) & BITMASK_TRUE(2)) << 4;
-    result[pos] |= ((v_sync_offset >> 4) & BITMASK_TRUE(2)) << 2;
+    result[pos] |= ((v_front_porch >> 4) & BITMASK_TRUE(2)) << 2;
     result[pos++] |= ((v_sync_width >> 4) & BITMASK_TRUE(2)) << 0;
 
     result[pos++] = h_image_size & BITMASK_TRUE(8);
@@ -168,22 +168,22 @@ namespace Edid {
     result.pixel_clock_hz *= 10'000;
 
     result.h_res = block[pos++];
-    result.h_blank_pixels = block[pos++];
+    result.h_blanking = block[pos++];
     result.h_res |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.h_blank_pixels |= (block[pos++] & BITMASK_TRUE(4)) << 8;
+    result.h_blanking |= (block[pos++] & BITMASK_TRUE(4)) << 8;
 
     result.v_res = block[pos++];
-    result.v_blank_lines = block[pos++];
+    result.v_blanking = block[pos++];
     result.v_res |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.v_blank_lines |= (block[pos++] & BITMASK_TRUE(4)) << 8;
+    result.v_blanking |= (block[pos++] & BITMASK_TRUE(4)) << 8;
 
-    result.h_sync_offset = block[pos++];
+    result.h_front_porch = block[pos++];
     result.h_sync_width = block[pos++];
-    result.v_sync_offset = block[pos] >> 4 & BITMASK_TRUE(4);
+    result.v_front_porch = block[pos] >> 4 & BITMASK_TRUE(4);
     result.v_sync_width = block[pos++] & BITMASK_TRUE(4);
-    result.h_sync_offset |= (block[pos] >> 6 & BITMASK_TRUE(2)) << 8;
+    result.h_front_porch |= (block[pos] >> 6 & BITMASK_TRUE(2)) << 8;
     result.h_sync_width |= (block[pos] >> 4 & BITMASK_TRUE(2)) << 8;
-    result.v_sync_offset |= (block[pos] >> 2 & BITMASK_TRUE(2)) << 4;
+    result.v_front_porch |= (block[pos] >> 2 & BITMASK_TRUE(2)) << 4;
     result.v_sync_width |= (block[pos++] & BITMASK_TRUE(2)) << 4;
 
     result.h_image_size = block[pos++];
@@ -210,12 +210,12 @@ namespace Edid {
       << h_image_size << " mm x "
       << v_image_size << " mm)\n";
 
-    os << second_level_indent << h_blank_pixels << " blank H pixels\n";
-    os << second_level_indent << v_blank_lines << " blank V lines\n";
-    os << second_level_indent << "Hfront " << h_sync_offset
+    os << second_level_indent << h_blanking << " blank H pixels\n";
+    os << second_level_indent << v_blanking << " blank V lines\n";
+    os << second_level_indent << "Hfront " << h_front_porch
       << " Hsync " << h_sync_width
       << " Hborder " << (int)h_border_pixels << '\n';
-    os << second_level_indent << "Vfront " << (int)v_sync_offset
+    os << second_level_indent << "Vfront " << (int)v_front_porch
       << " Vsync " << (int)v_sync_width
       << " Vborder " << (int)v_border_lines << '\n';
   }

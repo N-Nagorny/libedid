@@ -330,14 +330,14 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
 
   BaseBlock edid_base;
   edid_base.manufacturer_id = {'K', 'G', 'N'};
-  edid_base.manufacturer_product_code = 9216;
+  edid_base.product_code = 9216;
   edid_base.manufacture_week = 28;
   edid_base.manufacture_year = 2016;
   edid_base.bits_per_color = BitDepth::BD_8;
-  edid_base.video_interface = VideoInterface::HDMIa;
+  edid_base.video_interface = VideoInterface::VI_HDMIa;
   edid_base.h_screen_size = 52;
   edid_base.v_screen_size = 32;
-  edid_base.display_type = DigitalDisplayType::RGB444_YCrCb444;
+  edid_base.display_type = DigitalDisplayType::DDT_RGB444_YCrCb444;
   edid_base.gamma = 120;
   edid_base.dpms_active_off = true;
   edid_base.standard_srgb = true;

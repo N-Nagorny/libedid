@@ -210,7 +210,7 @@ namespace Edid {
     return VideoTimingMode{
       static_cast<uint16_t>(dtd.h_res / pixel_repetition_factor),
       static_cast<uint16_t>(dtd.v_res * (dtd.features_bitmap.interlaced ? 2 : 1)),
-      std::make_pair(dtd.pixel_clock_hz, (dtd.v_res + dtd.v_blank_lines) * (dtd.h_res + dtd.h_blank_pixels)),
+      std::make_pair(dtd.pixel_clock_hz, (dtd.v_res + dtd.v_blanking) * (dtd.h_res + dtd.h_blanking)),
       dtd.features_bitmap.interlaced
     };
   }

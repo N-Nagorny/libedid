@@ -82,11 +82,11 @@ namespace Edid {
     uint64_t pixel_clock_hz; // This value becomes uint16_t in EDID by dividing by 10'000
     uint16_t h_res;
     uint16_t v_res;
-    uint16_t h_blank_pixels;
-    uint16_t v_blank_lines;
-    uint16_t h_sync_offset; // Horizontal front porch in other words
+    uint16_t h_blanking;
+    uint16_t v_blanking;
+    uint16_t h_front_porch;
     uint16_t h_sync_width;
-    uint8_t v_sync_offset; // Vertical front porch in other words
+    uint8_t v_front_porch;
     uint8_t v_sync_width;
     uint16_t h_image_size;
     uint16_t v_image_size;
