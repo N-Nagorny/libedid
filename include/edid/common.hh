@@ -7,6 +7,8 @@
 #include <ostream>
 #include <variant>
 
+#include <nlohmann/json.hpp>
+
 #include "eighteen_byte_descriptor.hh"
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
@@ -14,6 +16,7 @@
 #define BITMASK_TRUE(length) static_cast<uint8_t>(std::pow(2.0, length) - 1)
 
 #define STRINGIFY_ENUM(ENUM_TYPE, ...)                                             \
+  NLOHMANN_JSON_SERIALIZE_ENUM(ENUM_TYPE, __VA_ARGS__)                             \
   inline std::string to_string(const ENUM_TYPE& e)                                 \
   {                                                                                \
     static_assert(std::is_enum<ENUM_TYPE>::value, #ENUM_TYPE " must be an enum!"); \
@@ -31,6 +34,12 @@
 #define NTSC_FACTOR_DENOMINATOR 1001
 
 namespace Edid {
+  template<typename ... Ts>
+  struct Overload : Ts ... {
+      using Ts::operator() ...;
+  };
+  template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
   enum StereoMode {
     NO_STEREO = 0b000,
     FIELD_SEQUENTIAL_L_R = 0b010,

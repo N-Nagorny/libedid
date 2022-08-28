@@ -4,7 +4,7 @@ project (edid LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(ENABLE_BCP00501 ON CACHE BOOL "Enable EDID to NMOS Receiver Capabilities conversion functions")
+set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
 
 set(SOURCES
     src/base_block.cc
@@ -14,9 +14,10 @@ set(SOURCES
     src/timing_modes.cc
 )
 
-if (ENABLE_BCP00501)
+if (ENABLE_JSON)
     find_package(nlohmann_json 3.2.0 REQUIRED)
     list(APPEND SOURCES src/bcp00501.cc)
+    list(APPEND SOURCES src/json.cc)
 endif()
 
 set(HEADERS
@@ -29,7 +30,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${HEADERS}
 )
 
-if (ENABLE_BCP00501)
+if (ENABLE_JSON)
     target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 endif()
 
@@ -49,8 +50,9 @@ set(TEST_SOURCES
     test/src/test_runner.cc
 )
 
-if (ENABLE_BCP00501)
+if (ENABLE_JSON)
     list(APPEND TEST_SOURCES test/src/bcp00501_tests.cc)
+    list(APPEND TEST_SOURCES test/src/json_tests.cc)
 endif()
 
 add_executable(test-runner ${TEST_SOURCES})
