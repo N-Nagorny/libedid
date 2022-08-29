@@ -45,9 +45,7 @@ Cta861Block make_cta861_ext() {
   video_data_block.vics[4] = 2;
   video_data_block.vics[5] = 18;
   video_data_block.vics[6] = 1;
-  cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_VIDEO_DATA_BLOCK_TAG, video_data_block.size(), std::make_shared<VideoDataBlock>(std::move(video_data_block))}
-  );
+  cta861.data_block_collection.push_back(video_data_block);
 
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
@@ -59,9 +57,7 @@ Cta861Block make_cta861_ext() {
 
   AudioDataBlock audio_data_block;
   audio_data_block.sads[0] = sad;
-  cta861.data_block_collection.push_back(
-    CtaDataBlockWrapper{CTA861_AUDIO_DATA_BLOCK_TAG, audio_data_block.size(), std::make_shared<AudioDataBlock>(std::move(audio_data_block))}
-  );
+  cta861.data_block_collection.push_back(audio_data_block);
 
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,

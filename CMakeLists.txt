@@ -9,6 +9,7 @@ set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Ca
 set(SOURCES
     src/base_block.cc
     src/common.cc
+    src/cta_data_block.cc
     src/cta861_block.cc
     src/edid.cc
     src/timing_modes.cc

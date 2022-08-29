@@ -107,9 +107,9 @@ namespace Edid {
 
   template <class Function>
   Function for_each_mode(const Cta861Block& cta861_block, Function fn) {
-    for (const auto& wrapper : cta861_block.data_block_collection) {
-      if (wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG) {
-        const auto& vics = std::dynamic_pointer_cast<VideoDataBlock>(wrapper.data_block_ptr)->vics;
+    for (const auto& data_block : cta861_block.data_block_collection) {
+      if (std::visit(is_vdb_visitor, data_block)) {
+        const auto& vics = std::get<VideoDataBlock>(data_block).vics;
         for (const std::optional<uint8_t>& vic : vics) {
           if (vic.has_value()) {
             auto mode = get_cta861_video_timing_mode(vic.value());
@@ -139,9 +139,9 @@ namespace Edid {
 
   template <class Function>
   void remove_mode_if(Cta861Block& cta861_block, Function fn) {
-    for (const auto& wrapper : cta861_block.data_block_collection) {
-      if (wrapper.data_block_tag == CTA861_VIDEO_DATA_BLOCK_TAG) {
-        auto& vics = std::dynamic_pointer_cast<VideoDataBlock>(wrapper.data_block_ptr)->vics;
+    for (auto& data_block : cta861_block.data_block_collection) {
+      if (std::visit(is_vdb_visitor, data_block)) {
+        auto& vics = std::get<VideoDataBlock>(data_block).vics;
         for (std::optional<uint8_t>& vic : vics) {
           if (vic.has_value()) {
             auto mode = get_cta861_video_timing_mode(vic.value());
