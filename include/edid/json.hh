@@ -2,9 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "base_block.hh"
-#include "common.hh"
-#include "cta861_block.hh"
+#include "edid.hh"
 
 namespace Edid {
   NLOHMANN_JSON_SERIALIZE_ENUM(StereoMode, {
@@ -19,9 +17,11 @@ namespace Edid {
 
   void from_json(const nlohmann::json& j, BaseBlock&);
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor&);
+  void from_json(const nlohmann::json& j, EdidData&);
 
   void to_json(nlohmann::json& j, const BaseBlock&);
   void to_json(nlohmann::json& j, const DetailedTimingDescriptor&);
+  void to_json(nlohmann::json& j, const EdidData&);
 
   void from_json(const nlohmann::json& j, UnknownDataBlock&);
   void from_json(const nlohmann::json& j, VideoDataBlock&);

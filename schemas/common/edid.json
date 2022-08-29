@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes EDID metadata",
+  "additionalProperties": false,
+  "required": [
+    "base_block"
+  ],
+  "properties": {
+    "base_block": { "$ref": "base_block.json" },
+    "extension_blocks": {
+      "type": "array",
+      "items": { "$ref": "cta861_block.json" }
+    }
+  }
+}

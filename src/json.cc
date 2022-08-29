@@ -1,4 +1,3 @@
-#include "edid/base_block.hh"
 #include "edid/json.hh"
 
 namespace Edid {
@@ -355,6 +354,20 @@ namespace Edid {
     }
     for (const auto& timing : block.detailed_timing_descriptors) {
       j["detailed_timing_descriptors"].push_back(timing);
+    }
+  }
+
+  void from_json(const nlohmann::json& j, EdidData& result) {
+    result.base_block = j.at("base_block");
+    if (j.contains("extension_blocks")) {
+      result.extension_blocks = j.at("extension_blocks").get<std::vector<Cta861Block>>();
+    }
+  }
+
+  void to_json(nlohmann::json& j, const EdidData& block) {
+    j["base_block"] = block.base_block;
+    if (block.extension_blocks.has_value()) {
+      j["extension_blocks"] = block.extension_blocks.value();
     }
   }
 }

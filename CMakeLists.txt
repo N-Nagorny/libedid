@@ -21,6 +21,7 @@ set(JSON_SCHEMAS_FILES
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_name.json
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_range_limits.json
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_serial_number.json
+    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/edid.json
 
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/audio_data_block.json
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/cta861_block.json
