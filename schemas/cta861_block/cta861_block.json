@@ -27,17 +27,17 @@
       "type": "array",
       "items": {
         "oneOf": [
-          {"$ref": "cta861_block/video_data_block.json"},
-          {"$ref": "cta861_block/audio_data_block.json"},
-          {"$ref": "cta861_block/speaker_allocation_data_block.json"},
-          {"$ref": "cta861_block/unknown_data_block.json"}
+          {"$ref": "video_data_block.json"},
+          {"$ref": "audio_data_block.json"},
+          {"$ref": "speaker_allocation_data_block.json"},
+          {"$ref": "unknown_data_block.json"}
         ]
       }
     },
     "detailed_timing_descriptors": {
       "description": "Detailed Timing Descriptors",
       "type": "array",
-      "items": { "$ref": "common/detailed_timing_descriptor.json" }
+      "items": { "$ref": "detailed_timing_descriptor.json" }
     }
   }
 }

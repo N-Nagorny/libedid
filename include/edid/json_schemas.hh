@@ -32,19 +32,19 @@ namespace Edid {
     }
 
     static const std::map<json_uri, json> schemas = {
-      { json_uri{"base_block/base_block.json"}, json::parse(base_block::base_block) },
-      { json_uri{"base_block/standard_timing.json"}, json::parse(base_block::standard_timing) },
+      { json_uri{"base_block.json"}, json::parse(base_block::base_block) },
+      { json_uri{"standard_timing.json"}, json::parse(base_block::standard_timing) },
 
-      { json_uri{"common/detailed_timing_descriptor.json"}, json::parse(common::detailed_timing_descriptor) },
-      { json_uri{"common/display_name.json"}, json::parse(common::display_name) },
-      { json_uri{"common/display_range_limits.json"}, json::parse(common::display_range_limits) },
-      { json_uri{"common/display_serial_number.json"}, json::parse(common::display_serial_number) },
+      { json_uri{"detailed_timing_descriptor.json"}, json::parse(common::detailed_timing_descriptor) },
+      { json_uri{"display_name.json"}, json::parse(common::display_name) },
+      { json_uri{"display_range_limits.json"}, json::parse(common::display_range_limits) },
+      { json_uri{"display_serial_number.json"}, json::parse(common::display_serial_number) },
 
-      { json_uri{"cta861_block/audio_data_block.json"}, json::parse(cta861_block::audio_data_block) },
-      { json_uri{"cta861_block/cta861_block.json"}, json::parse(cta861_block::cta861_block) },
-      { json_uri{"cta861_block/speaker_allocation_data_block.json"}, json::parse(cta861_block::speaker_allocation_data_block) },
-      { json_uri{"cta861_block/unknown_data_block.json"}, json::parse(cta861_block::unknown_data_block) },
-      { json_uri{"cta861_block/video_data_block.json"}, json::parse(cta861_block::video_data_block) },
+      { json_uri{"audio_data_block.json"}, json::parse(cta861_block::audio_data_block) },
+      { json_uri{"cta861_block.json"}, json::parse(cta861_block::cta861_block) },
+      { json_uri{"speaker_allocation_data_block.json"}, json::parse(cta861_block::speaker_allocation_data_block) },
+      { json_uri{"unknown_data_block.json"}, json::parse(cta861_block::unknown_data_block) },
+      { json_uri{"video_data_block.json"}, json::parse(cta861_block::video_data_block) },
     };
 
     static nlohmann::json_schema::schema_loader schema_loader = [](const json_uri& id, json& value) {
