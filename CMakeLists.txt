@@ -32,6 +32,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 if (ENABLE_JSON)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_JSON)
     target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 endif()
 
@@ -61,6 +62,10 @@ add_executable(test-runner ${TEST_SOURCES})
 target_include_directories(test-runner PUBLIC
     ${TEST_HEADERS}
 )
+
+if (ENABLE_JSON)
+    target_compile_definitions(test-runner PRIVATE ENABLE_JSON)
+endif()
 
 target_link_libraries(test-runner PRIVATE
     ${PROJECT_NAME}

@@ -4,6 +4,10 @@
 #include <optional>
 #include <string>
 
+#ifdef ENABLE_JSON
+#include <nlohmann/json.hpp>
+#endif
+
 #include "common.hh"
 
 #define BASE_START_MANUFACTURE_YEAR 1990
@@ -143,6 +147,10 @@ namespace Edid {
     uint16_t x_resolution; // This value becomes uint8_t in EDID by dividing by 8 and subtracting 31 from it
     AspectRatio aspect_ratio;
     uint8_t v_frequency;
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StandardTiming, x_resolution, aspect_ratio, v_frequency)
+#endif
   };
 
   bool operator==(const StandardTiming& lhs, const StandardTiming& rhs);
@@ -167,7 +175,18 @@ namespace Edid {
     uint16_t min_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_pixel_clock_rate_mhz = 10; // Range is 10..2550 MHz with step of 10 MHz
-    VideoTimingSupport vts;
+    VideoTimingSupport video_timing_support;
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplayRangeLimits,
+      min_v_rate_hz,
+      max_v_rate_hz,
+      min_h_rate_khz,
+      max_h_rate_khz,
+      max_pixel_clock_rate_mhz,
+      video_timing_support
+    )
+#endif
 
     uint8_t type() const {
       return BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE;
@@ -211,7 +230,7 @@ namespace Edid {
       if (add_255_to_h_max)
         result.max_h_rate_khz += 255;
       result.max_pixel_clock_rate_mhz = *(start + ++pos) * 10;
-      result.vts = VideoTimingSupport(*(start + ++pos));
+      result.video_timing_support = VideoTimingSupport(*(start + ++pos));
       return result;
     }
   };
@@ -219,7 +238,11 @@ namespace Edid {
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
 
   struct DisplayName {
-    std::string name; // Maximum is 12 chars
+    std::string display_product_name; // Maximum is 12 chars
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplayName, display_product_name)
+#endif
 
     uint8_t type() const {
       return BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
@@ -235,7 +258,7 @@ namespace Edid {
 
       for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
         if (*(start + i) != ' ' && *(start + i) != '\n')
-          result.name.push_back(*(start + i));
+          result.display_product_name.push_back(*(start + i));
       }
       return result;
     };
@@ -245,6 +268,10 @@ namespace Edid {
 
   struct DisplaySerialNumber {
     std::string display_serial_number; // Maximum is 12 chars
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplaySerialNumber, display_serial_number)
+#endif
 
     uint8_t type() const {
       return BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE;

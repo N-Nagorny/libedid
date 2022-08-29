@@ -18,16 +18,8 @@ namespace Edid {
   })
 
   void from_json(const nlohmann::json& j, BaseBlock&);
-  void from_json(const nlohmann::json& j, StandardTiming&);
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor&);
-  void from_json(const nlohmann::json& j, DisplayName&);
-  void from_json(const nlohmann::json& j, DisplayRangeLimits&);
-  void from_json(const nlohmann::json& j, DisplaySerialNumber&);
 
   void to_json(nlohmann::json& j, const BaseBlock&);
-  void to_json(nlohmann::json& j, const StandardTiming&);
   void to_json(nlohmann::json& j, const DetailedTimingDescriptor&);
-  void to_json(nlohmann::json& j, const DisplayName&);
-  void to_json(nlohmann::json& j, const DisplayRangeLimits&);
-  void to_json(nlohmann::json& j, const DisplaySerialNumber&);
 }

@@ -2,74 +2,6 @@
 #include "edid/json.hh"
 
 namespace Edid {
-  void from_json(const nlohmann::json& j, StandardTiming& timing) {
-    StandardTiming result;
-
-    result.x_resolution = j.at("x_resolution");
-    result.aspect_ratio = AspectRatio(j.at("aspect_ratio"));
-    result.v_frequency = j.at("v_frequency");
-
-    timing = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const StandardTiming& timing) {
-    nlohmann::json result;
-    result["x_resolution"] = timing.x_resolution;
-    result["aspect_ratio"] = to_string(timing.aspect_ratio);
-    result["v_frequency"] = timing.v_frequency;
-    j = std::move(result);
-  }
-
-  void from_json(const nlohmann::json& j, AnalogCompositeSync& sync) {
-    AnalogCompositeSync result;
-
-    result.bipolar = j.at("bipolar");
-    result.serrations = j.at("serrations");
-    result.sync_on_rgb_signals = j.at("sync_on_rgb_signals");
-
-    sync = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const AnalogCompositeSync& timing) {
-    nlohmann::json result;
-    result["bipolar"] = timing.bipolar;
-    result["serrations"] = timing.serrations;
-    result["sync_on_rgb_signals"] = timing.sync_on_rgb_signals;
-    j = std::move(result);
-  }
-
-  void from_json(const nlohmann::json& j, DigitalCompositeSync& sync) {
-    DigitalCompositeSync result;
-
-    result.serrations = j.at("serrations");
-    result.h_sync_polarity = j.at("h_sync_polarity");
-
-    sync = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const DigitalCompositeSync& timing) {
-    nlohmann::json result;
-    result["serrations"] = timing.serrations;
-    result["h_sync_polarity"] = timing.h_sync_polarity;
-    j = std::move(result);
-  }
-
-  void from_json(const nlohmann::json& j, DigitalSeparateSync& sync) {
-    DigitalSeparateSync result;
-
-    result.v_sync_polarity = j.at("v_sync_polarity");
-    result.h_sync_polarity = j.at("h_sync_polarity");
-
-    sync = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const DigitalSeparateSync& timing) {
-    nlohmann::json result;
-    result["v_sync_polarity"] = timing.v_sync_polarity;
-    result["h_sync_polarity"] = timing.h_sync_polarity;
-    j = std::move(result);
-  }
-
   void from_json(const nlohmann::json& j, std::variant<AnalogCompositeSync, DigitalCompositeSync, DigitalSeparateSync>& sync) {
     if (j.contains("bipolar")) {
       AnalogCompositeSync subresult;
@@ -135,62 +67,6 @@ namespace Edid {
       to_json(result, sync);
       return result;
     }, dtd.features_bitmap.sync);
-    j = std::move(result);
-  }
-
-  void from_json(const nlohmann::json& j, DisplayName& display_name) {
-    DisplayName result;
-
-    result.name = j.at("display_product_name");
-
-    display_name = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const DisplayName& display_name) {
-    nlohmann::json result;
-    result["display_product_name"] = display_name.name;
-    j = std::move(result);
-  }
-
-  void from_json(const nlohmann::json& j, DisplayRangeLimits& limits) {
-    DisplayRangeLimits result;
-
-    result.min_v_rate_hz = j.at("min_v_rate_hz");
-    result.max_v_rate_hz = j.at("max_v_rate_hz");
-    result.min_h_rate_khz = j.at("min_h_rate_khz");
-    result.max_h_rate_khz = j.at("max_h_rate_khz");
-    result.max_pixel_clock_rate_mhz = j.at("max_pixel_clock_rate_mhz");
-    result.vts = VideoTimingSupport(j.at("video_timing_support"));
-
-    limits = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const DisplayRangeLimits& limits) {
-    nlohmann::json result;
-
-    result["min_v_rate_hz"] = limits.min_v_rate_hz;
-    result["max_v_rate_hz"] = limits.max_v_rate_hz;
-    result["min_h_rate_khz"] = limits.min_h_rate_khz;
-    result["max_h_rate_khz"] = limits.max_h_rate_khz;
-    result["max_pixel_clock_rate_mhz"] = limits.max_pixel_clock_rate_mhz;
-    result["video_timing_support"] = to_string(limits.vts);
-
-    j = std::move(result);
-  }
-
-  void from_json(const nlohmann::json& j, DisplaySerialNumber& display_serial_number) {
-    DisplaySerialNumber result;
-
-    result.display_serial_number = j.at("serial_number");
-
-    display_serial_number = std::move(result);
-  }
-
-  void to_json(nlohmann::json& j, const DisplaySerialNumber& display_serial_number) {
-    nlohmann::json result;
-
-    result["serial_number"] = display_serial_number.display_serial_number;
-
     j = std::move(result);
   }
 
@@ -308,7 +184,7 @@ namespace Edid {
         result["standard_timings"].push_back(timing.value());
       }
     }
-    auto TypeOfIntegral = Overload {                                      // (2)
+    auto TypeOfIntegral = Overload {
       [](const DummyDescriptor&) -> std::optional<nlohmann::json> {
         return std::nullopt;
       },

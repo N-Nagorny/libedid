@@ -54,6 +54,10 @@ namespace Edid {
     bool bipolar;
     bool serrations;
     bool sync_on_rgb_signals;
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(AnalogCompositeSync, bipolar, serrations, sync_on_rgb_signals)
+#endif
   };
 
   namespace details {
@@ -68,6 +72,10 @@ namespace Edid {
   struct DigitalCompositeSync {
     bool serrations;
     bool h_sync_polarity;
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalCompositeSync, serrations, h_sync_polarity)
+#endif
   };
 
   bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
@@ -75,6 +83,10 @@ namespace Edid {
   struct DigitalSeparateSync {
     bool v_sync_polarity;
     bool h_sync_polarity;
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalSeparateSync, v_sync_polarity, h_sync_polarity)
+#endif
   };
 
   bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);

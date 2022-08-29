@@ -16,19 +16,19 @@ namespace Edid {
       lhs.min_h_rate_khz,
       lhs.max_h_rate_khz,
       lhs.max_pixel_clock_rate_mhz,
-      lhs.vts
+      lhs.video_timing_support
     ) == std::tie(
       rhs.min_v_rate_hz,
       rhs.max_v_rate_hz,
       rhs.min_h_rate_khz,
       rhs.max_h_rate_khz,
       rhs.max_pixel_clock_rate_mhz,
-      rhs.vts
+      rhs.video_timing_support
     );
   }
 
   bool operator==(const DisplayName& lhs, const DisplayName& rhs) {
-    return lhs.name == rhs.name;
+    return lhs.display_product_name == rhs.display_product_name;
   }
 
   bool operator==(const DisplaySerialNumber& lhs, const DisplaySerialNumber& rhs) {
@@ -152,7 +152,7 @@ namespace Edid {
     result[pos++] = max_h_rate;
     result[pos++] = max_pixel_clock_rate_mhz / 10;
 
-    result[pos++] = vts;
+    result[pos++] = video_timing_support;
     result[pos++] = 0x0A;
     for (int i = 0; i < 6; ++i)
       result[pos++] = 0x20;
@@ -165,9 +165,9 @@ namespace Edid {
     result.fill(0x0);
     int pos = 0;
 
-    if (name.size() > MAX_DISPLAY_NAME_CHARS)
+    if (display_product_name.size() > MAX_DISPLAY_NAME_CHARS)
       throw EdidException("Display Name is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
-    if (name.find(' ') != std::string::npos)
+    if (display_product_name.find(' ') != std::string::npos)
       throw EdidException("Display Name contains spaces.");
 
     result[pos++] = 0x0;
@@ -176,10 +176,10 @@ namespace Edid {
     result[pos++] = BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
     result[pos++] = 0x0;
 
-    for (int i = 0; i < name.size(); ++i)
-      result[pos++] = name[i];
+    for (int i = 0; i < display_product_name.size(); ++i)
+      result[pos++] = display_product_name[i];
     result[pos++] = '\n';
-    for (int i = name.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
+    for (int i = display_product_name.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
       result[pos++] = ' ';
 
     return result;
@@ -483,7 +483,7 @@ namespace Edid {
     for (int i = 0; i < tabs; ++i)
       indent.push_back('\t');
 
-    os << indent << "Display Name: " << name << '\n';
+    os << indent << "Display Name: " << display_product_name << '\n';
   }
 
   void DisplaySerialNumber::print(std::ostream& os, uint8_t tabs) const {
@@ -569,7 +569,5 @@ namespace Edid {
         os << '\t' << "Dummy Descriptor\n";
       }
     }
-
-
   }
 }
