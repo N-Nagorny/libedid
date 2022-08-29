@@ -93,6 +93,103 @@ namespace Edid {
     }
   }
 
+  void from_json(const nlohmann::json& j, VideoDataBlock& result) {
+    auto vics = j.at("vics").get<std::vector<uint8_t>>();
+    for (int i = 0; i < vics.size(); ++i) {
+      result.vics[i] = vics.at(i);
+    }
+  }
+
+  void to_json(nlohmann::json& j, const VideoDataBlock& block) {
+    for (const auto& vic : block.vics) {
+      if (vic.has_value()) {
+        j["vics"].push_back(vic.value());
+      }
+    }
+  }
+
+  void from_json(const nlohmann::json& j, SpeakerAllocationDataBlock& result) {
+    auto speakers = j.at("speaker_allocation").get<std::vector<Speaker>>();
+    for (auto speaker : speakers) {
+      result.speaker_allocation |= speaker;
+    }
+  }
+
+  void to_json(nlohmann::json& j, const SpeakerAllocationDataBlock& block) {
+    for (Speaker speaker : bitfield_to_enums<Speaker>(block.speaker_allocation))
+      j["speaker_allocation"].push_back(to_string(speaker));
+  }
+
+  void from_json(const nlohmann::json& j, UnknownDataBlock& result) {
+    result.raw_data = j.at("raw_data").get<std::vector<uint8_t>>();
+    result.data_block_tag = j.at("tag");
+  }
+
+  void to_json(nlohmann::json& j, const UnknownDataBlock& block) {
+    j["raw_data"] = block.raw_data;
+    j["tag"] = block.data_block_tag;
+  }
+
+  void from_json(const nlohmann::json& j, ShortAudioDescriptor& result) {
+    result.audio_format = j.at("audio_format");
+    result.channels = AudioChannels(j.at("channels").get<uint8_t>() - 1);
+    auto freqs = j.at("sampling_freqs").get<std::vector<SamplingFrequence>>();
+    for (auto freq : freqs) {
+      result.sampling_freqs |= freq;
+    }
+    if (j.contains("lpcm_bit_depths")) {
+      auto depths = j.at("lpcm_bit_depths").get<std::vector<uint8_t>>();
+      for (auto depth : depths) {
+        switch (depth) {
+          case 24:
+            result.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_24;
+            break;
+          case 20:
+            result.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_20;
+            break;
+          case 16:
+            result.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
+            break;
+        }
+      }
+    }
+  }
+
+  void to_json(nlohmann::json& j, const ShortAudioDescriptor& block) {
+    j["audio_format"] = block.audio_format;
+    j["channels"] = block.channels + 1;
+    for (SamplingFrequence freq : bitfield_to_enums<SamplingFrequence>(block.sampling_freqs))
+      j["sampling_freqs"].push_back(to_string(freq));
+    for (LpcmBitDepth depth : bitfield_to_enums<LpcmBitDepth>(block.lpcm_bit_depths)) {
+      switch (depth) {
+        case LPCM_BD_24:
+          j["lpcm_bit_depths"].push_back(24);
+          break;
+        case LPCM_BD_20:
+          j["lpcm_bit_depths"].push_back(20);
+          break;
+        case LPCM_BD_16:
+          j["lpcm_bit_depths"].push_back(16);
+          break;
+      }
+    }
+  }
+
+  void from_json(const nlohmann::json& j, AudioDataBlock& result) {
+    auto sads = j.at("sads").get<std::vector<ShortAudioDescriptor>>();
+    for (int i = 0; i < sads.size(); ++i) {
+      result.sads[i] = sads.at(i);
+    }
+  }
+
+  void to_json(nlohmann::json& j, const AudioDataBlock& block) {
+    for (const auto& sad : block.sads) {
+      if (sad.has_value()) {
+        j["sads"].push_back(sad.value());
+      }
+    }
+  }
+
   void from_json(const nlohmann::json& j, BaseBlock& base_block) {
     BaseBlock result;
 
@@ -184,7 +281,7 @@ namespace Edid {
         result["standard_timings"].push_back(timing.value());
       }
     }
-    auto TypeOfIntegral = Overload {
+    auto eighteen_byte_descriptor_visitor = Overload {
       [](const DummyDescriptor&) -> std::optional<nlohmann::json> {
         return std::nullopt;
       },
@@ -196,11 +293,68 @@ namespace Edid {
     };
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
       if (descriptor.has_value()) {
-        auto d_json = std::visit(TypeOfIntegral, descriptor.value());
+        auto d_json = std::visit(eighteen_byte_descriptor_visitor, descriptor.value());
         if (d_json.has_value())
           result["eighteen_byte_descriptors"].push_back(d_json.value());
       }
     }
     j = std::move(result);
+  }
+
+  void from_json(const nlohmann::json& j, CtaDataBlock& descriptor) {
+    if (j.contains("sads")) {
+      AudioDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("vics")) {
+      VideoDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("speaker_allocation")) {
+      SpeakerAllocationDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("raw_data")) {
+      UnknownDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+  }
+
+  void from_json(const nlohmann::json& j, Cta861Block& result) {
+    result.underscan = j.at("underscan");
+    result.basic_audio = j.at("basic_audio");
+    result.ycbcr_444 = j.at("ycbcr_444");
+    result.ycbcr_422 = j.at("ycbcr_422");
+    auto data_block_collection = j.at("data_block_collection").get<DataBlockCollection>();
+    for (const auto& data_block : data_block_collection) {
+      result.data_block_collection.push_back(data_block);
+    }
+    auto detailed_timing_descriptors = j.at("detailed_timing_descriptors").get<std::vector<DetailedTimingDescriptor>>();
+    for (const auto& detailed_timing_descriptor : detailed_timing_descriptors) {
+      result.detailed_timing_descriptors.push_back(detailed_timing_descriptor);
+    }
+  }
+
+  void to_json(nlohmann::json& j, const Cta861Block& block) {
+    j["underscan"] = block.underscan;
+    j["basic_audio"] = block.basic_audio;
+    j["ycbcr_444"] = block.ycbcr_444;
+    j["ycbcr_422"] = block.ycbcr_422;
+
+    for (const CtaDataBlock& data_block : block.data_block_collection) {
+      auto d_json = std::visit([](const auto& d) -> nlohmann::json {
+        nlohmann::json result;
+        to_json(result, d);
+        return result;
+      }, data_block);
+      j["data_block_collection"].push_back(d_json);
+    }
+    for (const auto& timing : block.detailed_timing_descriptors) {
+      j["detailed_timing_descriptors"].push_back(timing);
+    }
   }
 }

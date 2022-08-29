@@ -166,3 +166,144 @@ TEST(JsonTests, BaseBlockCircularTest) {
   EXPECT_EQ(j, json);
   EXPECT_EQ(base_block, make_edid_base());
 }
+
+TEST(ShortAudioDescriptorTests, JsonCircularTest) {
+  nlohmann::json j = R"(
+    {
+      "audio_format":"L-PCM",
+      "channels":1,
+      "lpcm_bit_depths":[
+        20
+      ],
+      "sampling_freqs":[
+        "32 kHz",
+        "44.1 kHz",
+        "48 kHz"
+      ]
+    }
+  )"_json;
+  ShortAudioDescriptor sad = j;
+  nlohmann::json j1 = sad;
+  EXPECT_EQ(j, j1);
+}
+
+TEST(ShortAudioDescriptorTests, Parsing) {
+  nlohmann::json j = R"(
+    {
+      "audio_format":"L-PCM",
+      "channels": 2,
+      "lpcm_bit_depths":[
+        20
+      ],
+      "sampling_freqs":[
+        "32 kHz",
+        "44.1 kHz",
+        "48 kHz"
+      ]
+    }
+  )"_json;
+  ShortAudioDescriptor sad;
+  sad.audio_format = AudioFormatCode::LPCM;
+  sad.channels = AudioChannels::AC_2;
+  sad.sampling_freqs |= SamplingFrequence::SF_48;
+  sad.sampling_freqs |= SamplingFrequence::SF_44_1;
+  sad.sampling_freqs |= SamplingFrequence::SF_32;
+  sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_20;
+
+  ShortAudioDescriptor sad1 = j;
+  EXPECT_EQ(sad, sad1);
+}
+
+TEST(ShortAudioDescriptorTests, Generating) {
+  nlohmann::json j = R"(
+    {
+      "audio_format":"L-PCM",
+      "channels": 2,
+      "lpcm_bit_depths":[
+        20
+      ],
+      "sampling_freqs":[
+        "32 kHz",
+        "44.1 kHz",
+        "48 kHz"
+      ]
+    }
+  )"_json;
+  ShortAudioDescriptor sad;
+  sad.audio_format = AudioFormatCode::LPCM;
+  sad.channels = AudioChannels::AC_2;
+  sad.sampling_freqs |= SamplingFrequence::SF_48;
+  sad.sampling_freqs |= SamplingFrequence::SF_44_1;
+  sad.sampling_freqs |= SamplingFrequence::SF_32;
+  sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_20;
+
+  nlohmann::json j1 = sad;
+  EXPECT_EQ(j, j1);
+}
+
+
+TEST(JsonTests, Cta861CircularTest) {
+  nlohmann::json j = R"(
+    {
+      "basic_audio":true,
+      "data_block_collection":[
+        {
+          "vics":[
+            16,
+            4,
+            31,
+            19,
+            2,
+            18,
+            1
+          ]
+        },
+        {
+          "sads":[
+            {
+              "audio_format":"L-PCM",
+              "channels": 2,
+              "lpcm_bit_depths":[ 16 ],
+              "sampling_freqs":[
+                "32 kHz",
+                "44.1 kHz",
+                "48 kHz"
+              ]
+            }
+          ]
+        }
+      ],
+      "detailed_timing_descriptors":[
+        {
+          "h_blanking":280,
+          "h_border":0,
+          "h_front_porch":88,
+          "h_image_size":1039,
+          "h_res":1920,
+          "h_sync_width":44,
+          "interlaced":false,
+          "pixel_clock":14850,
+          "stereo_mode":"NO_STEREO",
+          "sync":{
+            "h_sync_polarity":true,
+            "v_sync_polarity":true
+          },
+          "v_blanking":45,
+          "v_border":0,
+          "v_front_porch":4,
+          "v_image_size":584,
+          "v_res":1080,
+          "v_sync_width":5
+        }
+      ],
+      "underscan":true,
+      "ycbcr_422":true,
+      "ycbcr_444":true
+    }
+  )"_json;
+  nlohmann::json json = make_cta861_ext();
+  Cta861Block base_block = json;
+
+  EXPECT_EQ(j, json);
+  EXPECT_EQ(base_block, make_cta861_ext());
+}
