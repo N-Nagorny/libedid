@@ -269,12 +269,16 @@ namespace Edid {
     for (const auto& byte : base_block.chromaticity) {
       result["chromaticity"].push_back(byte);
     }
+    result["established_timings_1"] = nlohmann::json::array();
+    result["established_timings_2"] = nlohmann::json::array();
+    result["established_timings_3"] = nlohmann::json::array();
     for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1))
       result["established_timings_1"].push_back(to_string(et));
     for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2))
       result["established_timings_2"].push_back(to_string(et));
     for (EstablishedTiming3 et : bitfield_to_enums<EstablishedTiming3>(base_block.established_timings_3))
       result["established_timings_3"].push_back(to_string(et));
+    result["standard_timings"] = nlohmann::json::array();
     for (const auto& timing : base_block.standard_timings) {
       if (timing.has_value()) {
         result["standard_timings"].push_back(timing.value());
@@ -344,6 +348,8 @@ namespace Edid {
     j["ycbcr_444"] = block.ycbcr_444;
     j["ycbcr_422"] = block.ycbcr_422;
 
+    j["data_block_collection"] = nlohmann::json::array();
+    j["detailed_timing_descriptors"] = nlohmann::json::array();
     for (const CtaDataBlock& data_block : block.data_block_collection) {
       auto d_json = std::visit([](const auto& d) -> nlohmann::json {
         nlohmann::json result;
