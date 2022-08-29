@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes a Detailed Timing Descriptor",
+  "title": "Detailed Timing Descriptor",
+  "additionalProperties": false,
+  "minProperties": 16,
+  "properties": {
+    "pixel_clock": {
+      "description": "Pixel clock, in kHz",
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 655350,
+      "multipleOf": 10
+    },
+    "h_res": {
+      "description": "Horizontal addressable video, in pixels",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4095
+    },
+    "v_res": {
+      "description": "Vertical addressable video, in lines",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4095
+    },
+    "h_blanking": {
+      "description": "Horizontal blanking, in pixels",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4095
+    },
+    "v_blanking": {
+      "description": "Vertical blanking, in lines",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4095
+    },
+    "h_front_porch": {
+      "description": "Horizontal front porch, in pixels",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1023
+    },
+    "v_front_porch": {
+      "description": "Vertical front porch, in lines",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 63
+    },
+    "h_sync_width": {
+      "description": "Horizontal sync pulse width, in pixels",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1023
+    },
+    "v_sync_width": {
+      "description": "Vertical sync pulse width, in lines",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 63
+    },
+    "h_image_size": {
+      "description": "Horizontal addressable video image size, in millimetres",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4095
+    },
+    "v_image_size": {
+      "description": "Vertical addressable video image size, in millimetres",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4095
+    },
+    "h_border": {
+      "description": "Left or right horizontal border, in pixels",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "v_border": {
+      "description": "Top or bottom vertical border, in lines",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "interlaced": {
+      "description": "Interlaced",
+      "type": "boolean"
+    },
+    "stereo_mode": {
+      "description": "Stereo viewing support",
+      "type": "string",
+      "enum": [
+        "NO_STEREO",
+        "FIELD_SEQUENTIAL_L_R",
+        "FIELD_SEQUENTIAL_R_L",
+        "INTERLEAVED_RIGHT_EVEN",
+        "INTERLEAVED_LEFT_EVEN",
+        "FOUR_WAY_INTERLEAVED",
+        "SIDE_BY_SIDE_INTERLEAVED"
+      ]
+    },
+    "sync": {
+      "description": "Sync signal definitions",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Describes analog sync",
+          "minProperties": 3,
+          "additionalProperties": false,
+          "properties": {
+            "bipolar": {
+              "description": "Inication whether the sync is bipolar",
+              "type": "boolean"
+            },
+            "serrations": {
+              "description": "Indication whether the sync is with serrations",
+              "type": "boolean"
+            },
+            "sync_on_rgb_signal": {
+              "description": "Indication whether sync on all three (RGB) signals or green signal only",
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Describes digital composite sync",
+          "minProperties": 2,
+          "additionalProperties": false,
+          "properties": {
+            "serrations": {
+              "description": "Indication whether the sync is with serrations",
+              "type": "boolean"
+            },
+            "h_sync_polarity": {
+              "description": "Horizontal sync polarity",
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Describes digital separate sync",
+          "minProperties": 2,
+          "additionalProperties": false,
+          "properties": {
+            "v_sync_polarity": {
+              "description": "Vertical sync polarity",
+              "type": "boolean"
+            },
+            "h_sync_polarity": {
+              "description": "Horizontal sync polarity",
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

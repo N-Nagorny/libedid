@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Speaker Allocation Data Block",
+  "description": "Describes a Speaker Allocation Data Block",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "speaker_allocation": {
+      "description": "Speaker Allocation",
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "enum": [
+          "RESERVED",
+          "REAR_LEFT_AND_RIGHT_CENTER",
+          "FRONT_LEFT_AND_RIGHT_CENTER",
+          "REAR_CENTER",
+          "REAR_LEFT_AND_RIGHT",
+          "FRONT_CENTER",
+          "LFE",
+          "FRONT_LEFT_AND_RIGHT"
+        ]
+      }
+    }
+  }
+}

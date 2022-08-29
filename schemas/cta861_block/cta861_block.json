@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "CTA-861 Extension Block",
+  "description": "Describes a CTA-861 Extension Block",
+  "additionalProperties": false,
+  "minProperties": 6,
+  "properties": {
+    "underscan": {
+      "description": "Indication whether Sink underscans IT video formats by default",
+      "type": "boolean"
+    },
+    "basic_audio": {
+      "description": "Basic Audio support",
+      "type": "boolean"
+    },
+    "ycbcr_444": {
+      "description": "YCbCr 4:4:4 support in addition to RGB",
+      "type": "boolean"
+    },
+    "ycbcr_422": {
+      "description": "YCbCr 4:2:2 support in addition to RGB",
+      "type": "boolean"
+    },
+    "data_block_collection": {
+      "description": "Data Block Collection",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {"$ref": "cta861_block/video_data_block.json"},
+          {"$ref": "cta861_block/audio_data_block.json"},
+          {"$ref": "cta861_block/speaker_allocation_data_block.json"},
+          {"$ref": "cta861_block/unknown_data_block.json"}
+        ]
+      }
+    },
+    "detailed_timing_descriptors": {
+      "description": "Detailed Timing Descriptors",
+      "type": "array",
+      "items": { "$ref": "common/detailed_timing_descriptor.json" }
+    }
+  }
+}

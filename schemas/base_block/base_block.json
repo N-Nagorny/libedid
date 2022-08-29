@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes the Base Block of Enhanced EDID",
+  "title": "Base Block",
+  "additionalProperties": false,
+  "minProperties": 25,
+  "properties": {
+    "manufacturer_id": {
+      "description": "Manufacturer Name ID",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+    },
+    "product_code": {
+      "description": "Manufacturer assigned product code",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "serial_number": {
+      "description": "Serial number",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "week_of_manufacture": {
+      "description": "Week of manufacture",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 54
+    },
+    "year_of_manufacture": {
+      "description": "Year of manufacture",
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2245
+    },
+    "edid_major_version": {
+      "description": "EDID structure version number (x.4)",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "edid_minor_version": {
+      "description": "EDID structure revision number (1.x)",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "bit_depth": {
+      "description": "Bit depth per primary color",
+      "type": "string",
+      "enum": [
+        "Undefined",
+        "6",
+        "8",
+        "10",
+        "12",
+        "14",
+        "16",
+        "Reserved"
+      ]
+    },
+    "video_interface": {
+      "description": "Digital video interface standard",
+      "type": "string",
+      "enum": [
+        "Undefined",
+        "DVI",
+        "HDMIa",
+        "HDMIb",
+        "MDDI",
+        "DisplayPort"
+      ]
+    },
+    "h_screen_size": {
+      "description": "Horizontal screen size, in centimetres",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "v_screen_size": {
+      "description": "Vertical screen size, in centimetres",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "gamma": {
+      "description": "Display transfer characteristic * 100 - 100",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "dpms_standby": {
+      "description": "Standby Mode support (Display Power Management Signaling)",
+      "type": "boolean"
+    },
+    "dpms_suspend": {
+      "description": "Suspend Mode support (Display Power Management Signaling)",
+      "type": "boolean"
+    },
+    "dpms_active_off": {
+      "description": "Active Off support (Display Power Management Signaling)",
+      "type": "boolean"
+    },
+    "digital_display_type": {
+      "description": "Supported color encoding formats",
+      "type": "string",
+      "enum": [
+        "RGB 4:4:4",
+        "RGB 4:4:4, YCrCb 4:4:4",
+        "RGB 4:4:4, YCrCb 4:2:2",
+        "RGB 4:4:4, YCrCb 4:4:4, YCrCb 4:2:2"
+      ]
+    },
+    "srgb_is_primary": {
+      "description": "Indication whether sRGB color space is the default color space",
+      "type": "boolean"
+    },
+    "preferred_timing_mode": {
+      "description": "Indication whether Preferred Timing Mode includes the native pixel format and preferred refresh rate",
+      "type": "boolean"
+    },
+    "continuous_timings": {
+      "description": "Indication whether the display is continous frequency",
+      "type": "boolean"
+    },
+    "chromaticity": {
+      "description": "Chromaticity and Default White Point coordinates",
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    },
+    "established_timings_1": {
+      "description": "Established Timings byte 1",
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "720x400@70Hz",
+          "720x400@88Hz",
+          "640x480@60Hz",
+          "640x480@67Hz",
+          "640x480@72Hz",
+          "640x480@75Hz",
+          "800x600@56Hz",
+          "800x600@60Hz"
+        ]
+      }
+    },
+    "established_timings_2": {
+      "description": "Established Timings byte 2",
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "800x600@72Hz",
+          "800x600@75Hz",
+          "832x624@75Hz",
+          "1024x768@87Hz interlaced",
+          "1024x768@60Hz",
+          "1024x768@70Hz",
+          "1024x768@75Hz",
+          "1280x1024@75Hz"
+        ]
+      }
+    },
+    "established_timings_3": {
+      "description": "Established Timings byte 3",
+      "type": "array",
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "1152x870@75Hz"
+        ]
+      }
+    },
+    "standard_timings": {
+      "description": "Standard Timings",
+      "type": "array",
+      "maxItems": 8,
+      "items": { "$ref": "base_block/standard_timing.json" }
+    },
+    "eighteen_byte_descriptors": {
+      "description": "18 byte descriptors",
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "oneOf": [
+          { "$ref": "common/detailed_timing_descriptor.json" },
+          { "$ref": "common/display_range_limits.json" },
+          { "$ref": "common/display_name.json" },
+          { "$ref": "common/display_serial_number.json" }
+        ]
+      }
+    }
+  }
+}

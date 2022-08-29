@@ -6,6 +6,76 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
 
+# JSON schemas library
+
+set(JSON_SCHEMAS_HEADERS
+    include/edid/json_schemas.hh
+)
+
+set(JSON_SCHEMAS_BASE_BLOCK_FOLDER base_block)
+set(JSON_SCHEMAS_CTA861_BLOCK_FOLDER cta861_block)
+set(JSON_SCHEMAS_COMMON_FOLDER common)
+
+set(JSON_SCHEMAS_FILES
+    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/detailed_timing_descriptor.json
+    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_name.json
+    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_range_limits.json
+    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_serial_number.json
+
+    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/audio_data_block.json
+    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/cta861_block.json
+    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/speaker_allocation_data_block.json
+    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/unknown_data_block.json
+    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/video_data_block.json
+
+    schemas/${JSON_SCHEMAS_BASE_BLOCK_FOLDER}/base_block.json
+    schemas/${JSON_SCHEMAS_BASE_BLOCK_FOLDER}/standard_timing.json
+)
+
+set(JSON_SCHEMAS_PATH_REGEX "schemas/([^/]+)/([^;]+)\\.json")
+set(JSON_SCHEMAS_SOURCE_REPLACE "${CMAKE_CURRENT_BINARY_DIR}/src/\\1/\\2.cc")
+string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}(;|$)" "${JSON_SCHEMAS_SOURCE_REPLACE}\\3" JSON_SCHEMAS_SOURCES "${JSON_SCHEMAS_FILES}")
+
+foreach(JSON ${JSON_SCHEMAS_FILES})
+    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "${JSON_SCHEMAS_SOURCE_REPLACE}" SOURCE "${JSON}")
+    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "\\1" NS "${JSON}")
+    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "\\2" VAR "${JSON}")
+    string(MAKE_C_IDENTIFIER "${NS}" NS)
+    string(MAKE_C_IDENTIFIER "${VAR}" VAR)
+
+    file(WRITE "${SOURCE}.in" "\
+// Auto-generated from: ${JSON}\n\
+\n\
+namespace Edid {\n\
+  namespace json_schemas {\n\
+    namespace ${NS} {\n\
+      const char* ${VAR} = R\"-auto-generated-(")
+
+    file(READ "${JSON}" RAW)
+    file(APPEND "${SOURCE}.in" "${RAW}")
+
+    file(APPEND "${SOURCE}.in" ")-auto-generated-\";\n\
+    }\n\
+  }\n\
+}\n")
+
+    configure_file("${SOURCE}.in" "${SOURCE}" COPYONLY)
+endforeach()
+
+list(APPEND JSON_SCHEMAS_SOURCES src/json_schemas.cc)
+
+add_library(
+    json_schemas STATIC
+    ${JSON_SCHEMAS_HEADERS}
+    ${JSON_SCHEMAS_SOURCES}
+)
+
+target_include_directories(json_schemas PRIVATE
+    include/
+)
+
+# libedid
+
 set(SOURCES
     src/base_block.cc
     src/common.cc
@@ -17,6 +87,7 @@ set(SOURCES
 
 if (ENABLE_JSON)
     find_package(nlohmann_json 3.2.0 REQUIRED)
+    find_package(nlohmann_json_schema_validator REQUIRED)
     list(APPEND SOURCES src/bcp00501.cc)
     list(APPEND SOURCES src/json.cc)
 endif()
@@ -33,7 +104,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 if (ENABLE_JSON)
     target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_JSON)
-    target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        json_schemas
+        nlohmann_json_schema_validator
+        nlohmann_json::nlohmann_json
+    )
 endif()
 
 install(DIRECTORY include/ DESTINATION include)

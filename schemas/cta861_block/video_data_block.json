@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Video Data Block",
+  "description": "Describes a Video Data Block",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "vics": {
+      "description": "Video Identification Codes",
+      "type": "array",
+      "maxItems": 31,
+      "items": {
+        "type": "integer"
+      }
+    }
+  }
+}

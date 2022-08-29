@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Audio Data Block",
+  "description": "Describes an Audio Data Block",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "sads": {
+      "description": "Short Audio Descriptors",
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audio_format",
+          "channels",
+          "sampling_freqs"
+        ],
+        "properties": {
+          "audio_format": {
+            "description": "Audio Format Code",
+            "type": "string",
+            "enum": [
+              "RESERVED_0",
+              "L-PCM",
+              "AC-3",
+              "MPEG-1",
+              "MP3",
+              "MPEG-2",
+              "AAC LC",
+              "DTS",
+              "ATRAC",
+              "One Bit Audio (Super Audio CD)",
+              "Enhanced AC-3 (a.k.a. Dolby Digital Plus)",
+              "DTS-HD",
+              "Dolby TrueHD (MLP compression, MAT transport)",
+              "DST",
+              "WMA Pro",
+              "RESERVED_15"
+            ]
+          },
+          "channels": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "sampling_freqs": {
+            "type": "array",
+            "maxItems": 8,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "SF_RESERVED",
+                "192 kHz",
+                "176 kHz",
+                "96 kHz",
+                "88 kHz",
+                "48 kHz",
+                "44.1 kHz",
+                "32 kHz"
+              ]
+            }
+          },
+          "lpcm_bit_depths": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "enum": [ 16, 20, 24 ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

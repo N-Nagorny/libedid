@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Unknown Data Block",
+  "description": "Describes an unknown Data Block",
+  "additionalProperties": false,
+  "minProperties": 2,
+  "properties": {
+    "raw_data": {
+      "description": "Raw data, in bytes",
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    },
+    "tag": {
+      "description": "Data Block Tag",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    }
+  }
+}

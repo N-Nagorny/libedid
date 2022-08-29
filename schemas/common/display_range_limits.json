@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes a Standard Timing",
+  "title": "Standard Timing",
+  "additionalProperties": false,
+  "minProperties": 6,
+  "properties": {
+    "min_v_rate_hz": {
+      "description": "Min. vertical rate, in Hz",
+      "minimum": 1,
+      "maximum": 510
+    },
+    "max_v_rate_hz": {
+      "description": "Max. vertical rate, in Hz",
+      "minimum": 1,
+      "maximum": 510
+    },
+    "min_h_rate_khz": {
+      "description": "Min. horizontal rate, in kHz",
+      "minimum": 1,
+      "maximum": 510
+    },
+    "max_h_rate_khz": {
+      "description": "Max. horizontal rate, in kHz",
+      "minimum": 1,
+      "maximum": 510
+    },
+    "max_pixel_clock_rate_mhz": {
+      "description": "Max. pixel clock rate, in MHz",
+      "minimum": 10,
+      "maximum": 2550,
+      "multipleOf": 10
+    },
+    "video_timing_support": {
+      "description": "Indicates support for additional video timings",
+      "type": "string",
+      "enum": [
+        "GTF",
+        "Bare Limits",
+        "Secondary GTF",
+        "CVT"
+      ]
+    }
+  }
+}

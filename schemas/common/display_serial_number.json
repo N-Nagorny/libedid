@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes a Display Product Serial Number Display Descriptor",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "serial_number": {
+      "description": "Display Product Serial Number",
+      "type": "string",
+      "maxLength": 12
+    }
+  }
+}

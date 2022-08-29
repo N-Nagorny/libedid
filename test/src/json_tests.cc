@@ -3,10 +3,12 @@
 #include <gtest/gtest.h>
 
 #include "edid/json.hh"
+#include "edid/json_schemas.hh"
 
 #include "common.hh"
 
 using namespace Edid;
+using Edid::json_schemas::is_json_satisfies_schema;
 
 TEST(JsonTests, DtdCircularTest) {
   nlohmann::json j = R"(
@@ -36,6 +38,9 @@ TEST(JsonTests, DtdCircularTest) {
   DetailedTimingDescriptor dtd = j;
   nlohmann::json new_j = dtd;
   EXPECT_EQ(j, new_j);
+  EXPECT_TRUE(
+    is_json_satisfies_schema("common/detailed_timing_descriptor.json", new_j)
+  );
 }
 
 TEST(JsonTests, StandardTimingCircularTest) {
@@ -50,6 +55,9 @@ TEST(JsonTests, StandardTimingCircularTest) {
   StandardTiming timing = j;
   nlohmann::json new_j = timing;
   EXPECT_EQ(j, new_j);
+  EXPECT_TRUE(
+    is_json_satisfies_schema("base_block/standard_timing.json", new_j)
+  );
 }
 
 TEST(JsonTests, BaseBlockCircularTest) {
@@ -165,6 +173,9 @@ TEST(JsonTests, BaseBlockCircularTest) {
 
   EXPECT_EQ(j, json);
   EXPECT_EQ(base_block, make_edid_base());
+  EXPECT_TRUE(
+    is_json_satisfies_schema("base_block/base_block.json", json)
+  );
 }
 
 TEST(ShortAudioDescriptorTests, JsonCircularTest) {
@@ -306,4 +317,7 @@ TEST(JsonTests, Cta861CircularTest) {
 
   EXPECT_EQ(j, json);
   EXPECT_EQ(base_block, make_cta861_ext());
+  EXPECT_TRUE(
+    is_json_satisfies_schema("cta861_block/cta861_block.json", json)
+  );
 }

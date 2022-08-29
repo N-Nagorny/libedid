@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes a Standard Timing",
+  "title": "Standard Timing",
+  "additionalProperties": false,
+  "minProperties": 3,
+  "properties": {
+    "x_resolution": {
+      "description": "Horizontal addressable pixels",
+      "type": "integer",
+      "minimum": 256,
+      "maximum": 2288,
+      "multipleOf": 8
+    },
+    "aspect_ratio": {
+      "description": "Image aspect ratio",
+      "type": "string",
+      "enum": [
+        "16:10",
+        "4:3",
+        "5:4",
+        "16:9"
+      ]
+    },
+    "v_frequency": {
+      "description": "Field refresh rate",
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 123
+    }
+  }
+}
