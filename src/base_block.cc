@@ -167,8 +167,6 @@ namespace Edid {
 
     if (display_product_name.size() > MAX_DISPLAY_NAME_CHARS)
       throw EdidException("Display Name is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
-    if (display_product_name.find(' ') != std::string::npos)
-      throw EdidException("Display Name contains spaces.");
 
     result[pos++] = 0x0;
     result[pos++] = 0x0;

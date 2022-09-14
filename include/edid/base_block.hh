@@ -257,8 +257,10 @@ namespace Edid {
       start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
 
       for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
-        if (*(start + i) != ' ' && *(start + i) != '\n')
+        if (*(start + i) != '\n')
           result.display_product_name.push_back(*(start + i));
+        else
+          break;
       }
       return result;
     };
@@ -283,8 +285,9 @@ namespace Edid {
     template<typename Iterator>
     static DisplaySerialNumber parse_byte_block(Iterator start) {
       DisplaySerialNumber result;
+      start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
 
-      for (int i = BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
+      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
         if (*(start + i) != ' ' && *(start + i) != '\n')
           result.display_serial_number.push_back(*(start + i));
       }

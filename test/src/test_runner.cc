@@ -62,6 +62,13 @@ TEST(DisplayRangeLimits, CircularTest) {
   EXPECT_EQ(limits, limits_parsed);
 }
 
+TEST(CommonCircularTests, DisplaySerialNumber) {
+  auto name = DisplaySerialNumber{"R8J00779SL0"};
+  auto name_binary = name.generate_byte_block();
+  auto name_parsed = DisplaySerialNumber::parse_byte_block(name_binary.begin());
+  EXPECT_EQ(name, name_parsed);
+}
+
 TEST(CommonCircularTests, DisplayName) {
   auto name = DisplayName{"TEST_NAME"};
   auto name_binary = name.generate_byte_block();
