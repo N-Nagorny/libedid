@@ -46,7 +46,7 @@ namespace Edid {
     os << "Video Data Block: ";
     for (const std::optional<uint8_t>& vic : vics)
       if (vic.has_value())
-      os << (int)vic.value() << " ";
+        os << (int)vic.value() << " ";
     os << '\n';
   }
 

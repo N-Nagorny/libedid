@@ -60,7 +60,7 @@ void circular_test(const string& path) {
   auto generated_edid_binary = Edid::generate_edid_binary(edid);
   bool success = edid_binary == generated_edid_binary;
   cout << path << " was" << (success ? "" : " NOT") <<
-    " successfully parsed" << endl;
+    " successfully parsed and generated back" << endl;
 }
 
 void print_json(const string& path_to_edid) {
@@ -70,6 +70,7 @@ void print_json(const string& path_to_edid) {
 }
 
 void generate_from_json(const string& path_to_json, const string& path_to_edid) {
+  // TODO: add validation against JSON Schema
   auto json = read_file(path_to_json);
   // TODO: replace it with something non-deprecated
   istrstream stream(reinterpret_cast<const char*>(json.data()), json.size());
