@@ -62,6 +62,29 @@ TEST(DisplayRangeLimits, CircularTest) {
   EXPECT_EQ(limits, limits_parsed);
 }
 
+TEST(YCbCr420CapabilityMapDataBlockTests, Generating) {
+  std::vector<uint8_t> capability_map_block = {0xe3, 0x0f, 0x83, 0x01};
+  YCbCr420CapabilityMapDataBlock block;
+  block.svd_indices = {1, 2, 8, 9};
+  auto edid_binary = block.generate_byte_block();
+  EXPECT_EQ(capability_map_block, edid_binary);
+}
+
+TEST(YCbCr420CapabilityMapDataBlockTests, Parsing) {
+  std::vector<uint8_t> capability_map_block = {0xe4, 0x0f, 0x03, 0x00, 0x00};
+  YCbCr420CapabilityMapDataBlock block;
+  block.svd_indices = {1, 2};
+  EXPECT_EQ(YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block.begin()), block);
+}
+
+TEST(YCbCr420CapabilityMapDataBlockTests, CircularTest) {
+  YCbCr420CapabilityMapDataBlock capability_map_block;
+  capability_map_block.svd_indices = {1, 2};
+  auto capability_map_block_binary = capability_map_block.generate_byte_block();
+  auto capability_map_block_parsed = YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block_binary.begin());
+  EXPECT_EQ(capability_map_block, capability_map_block_parsed);
+}
+
 TEST(CommonCircularTests, DisplaySerialNumber) {
   auto name = DisplaySerialNumber{"R8J00779SL0"};
   auto name_binary = name.generate_byte_block();
@@ -155,11 +178,13 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
 
   UnknownDataBlock unknown_block_1{
     std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00},
-    CTA861_VENDOR_DATA_BLOCK_TAG
+    CTA861_VENDOR_DATA_BLOCK_TAG,
+    std::nullopt
   };
   UnknownDataBlock unknown_block_2{
     std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00},
-    CTA861_VENDOR_DATA_BLOCK_TAG
+    CTA861_VENDOR_DATA_BLOCK_TAG,
+    std::nullopt
   };
 
   DataBlockCollection data_block_collection{

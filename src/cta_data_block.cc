@@ -7,6 +7,9 @@ namespace Edid {
 
     result[pos] = (data_block_tag & BITMASK_TRUE(3)) << 5;
     result[pos++] |= (size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
+    if (extended_tag.has_value()) {
+      result[pos++] = extended_tag.value();
+    }
 
     std::copy(raw_data.begin(), raw_data.end(), result.begin() + pos);
 
@@ -16,12 +19,13 @@ namespace Edid {
   void UnknownDataBlock::print(std::ostream& os, uint8_t tabs) const {
     os << "Unrecognized Data Block with tag " <<
       std::hex << unsigned(data_block_tag) <<
+      (extended_tag.has_value() ? std::to_string(extended_tag.value()) : std::string{}) <<
       std::dec << '\n';
   }
 
   bool operator==(const UnknownDataBlock& lhs, const UnknownDataBlock& rhs) {
-    return std::tie(lhs.raw_data, lhs.data_block_tag) ==
-      std::tie(rhs.raw_data, rhs.data_block_tag);
+    return std::tie(lhs.raw_data, lhs.data_block_tag, lhs.extended_tag) ==
+      std::tie(rhs.raw_data, rhs.data_block_tag, rhs.extended_tag);
   }
 
   std::vector<uint8_t> VideoDataBlock::generate_byte_block() const {
@@ -117,6 +121,34 @@ namespace Edid {
     os << "Speaker Allocation Data Block:\n";
     for (Speaker speaker : bitfield_to_enums<Speaker>(speaker_allocation))
       os << '\t' << to_string(speaker) << '\n';
+    os << '\n';
+  }
+
+  bool operator==(const YCbCr420CapabilityMapDataBlock& lhs, const YCbCr420CapabilityMapDataBlock& rhs) {
+    return lhs.svd_indices == rhs.svd_indices;
+  }
+
+  std::vector<uint8_t> YCbCr420CapabilityMapDataBlock::generate_byte_block() const {
+    std::vector<uint8_t> result(size(), 0x00);
+    int pos = 0;
+
+    result[pos] = CTA861_EXTENDED_TAG << 5;
+    result[pos++] |= (size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
+    result[pos++] = CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG;
+
+    for (uint8_t svd_index : svd_indices) {
+      uint8_t byte_index = (svd_index - 1) / 8;
+      uint8_t bit_index = (svd_index - 1) % 8;
+      result[pos + byte_index] |= BITMASK_TRUE(1) << bit_index;
+    }
+
+    return result;
+  }
+
+  void YCbCr420CapabilityMapDataBlock::print(std::ostream& os, uint8_t tabs) const {
+    os << "YCbCr420CapabilityMapDataBlock: ";
+    for (uint8_t svd_index : svd_indices)
+      os << (int)svd_index << " ";
     os << '\n';
   }
 }

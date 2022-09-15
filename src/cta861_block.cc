@@ -103,6 +103,21 @@ namespace Edid {
 
 
 
+  template<typename Iterator>
+  std::unique_ptr<CtaDataBlock> parse_extended_tag_data_block(Iterator iter_read) {
+    std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
+
+    uint8_t extended_tag = *(iter_read + 1);
+    switch (extended_tag) {
+      case CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG:
+        data_block_ptr = std::make_unique<CtaDataBlock>(std::move(YCbCr420CapabilityMapDataBlock::parse_byte_block(iter_read)));
+        break;
+      default:
+        data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));
+    }
+    return data_block_ptr;
+  }
+
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection) {
     DataBlockCollection result;
     auto iter_read = collection.begin();
@@ -119,6 +134,9 @@ namespace Edid {
           break;
         case CTA861_SPEAKERS_DATA_BLOCK_TAG:
           data_block_ptr = std::make_unique<CtaDataBlock>(std::move(SpeakerAllocationDataBlock::parse_byte_block(iter_read)));
+          break;
+        case CTA861_EXTENDED_TAG:
+          data_block_ptr = parse_extended_tag_data_block(iter_read);
           break;
         default:
           data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));

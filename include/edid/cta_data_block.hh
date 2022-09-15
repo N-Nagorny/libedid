@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <set>
 #include <variant>
 #include <vector>
 
@@ -8,34 +9,42 @@
 #include "exceptions.hh"
 
 #define CTA861_DATA_BLOCK_HEADER_SIZE 1
+#define CTA861_EXTENDED_TAG_SIZE 1
 
 #define CTA861_AUDIO_DATA_BLOCK_TAG 0b001
 #define CTA861_VIDEO_DATA_BLOCK_TAG 0b010
 #define CTA861_VENDOR_DATA_BLOCK_TAG 0b011
 #define CTA861_SPEAKERS_DATA_BLOCK_TAG 0b100
 #define CTA861_VESA_DISPLAY_TRANSFER_DATA_BLOCK_TAG 0b101
+#define CTA861_EXTENDED_TAG 0b111
+
+#define CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG 15
 
 #define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
 
 namespace Edid {
+  using CtaDataBlockType = std::pair<uint8_t, std::optional<uint8_t>>;
+
   static auto get_cta_data_block_size = [](const auto& cta_data_block) -> size_t {
     return cta_data_block.size();
   };
 
   static auto is_vdb_visitor = [](const auto& descriptor) -> bool {
-    return descriptor.type() == CTA861_VIDEO_DATA_BLOCK_TAG;
+    return descriptor.type() == CtaDataBlockType{CTA861_VIDEO_DATA_BLOCK_TAG, std::nullopt};
   };
+
 
   struct UnknownDataBlock {
     std::vector<uint8_t> raw_data;
     uint8_t data_block_tag;
+    std::optional<uint8_t> extended_tag;
 
-    uint8_t type() const {
-      return data_block_tag;
+    CtaDataBlockType type() const {
+      return {data_block_tag, extended_tag};
     }
 
     size_t size() const {
-      return raw_data.size() + CTA861_DATA_BLOCK_HEADER_SIZE;
+      return raw_data.size() + CTA861_DATA_BLOCK_HEADER_SIZE + (extended_tag.has_value() ? CTA861_EXTENDED_TAG_SIZE : 0);
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -48,6 +57,10 @@ namespace Edid {
 
       result.data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       int data_block_size = *(start + pos++) & BITMASK_TRUE(5);
+      if (result.data_block_tag == CTA861_EXTENDED_TAG) {
+        result.extended_tag = *(start + pos++);
+        --data_block_size;
+      }
       result.raw_data = std::vector<uint8_t>(data_block_size, 0x00);
 
       std::copy(start + pos, start + pos + data_block_size, result.raw_data.begin());
@@ -72,8 +85,8 @@ namespace Edid {
       return valid_vics() * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    uint8_t type() const {
-      return CTA861_VIDEO_DATA_BLOCK_TAG;
+    CtaDataBlockType type() const {
+      return {CTA861_VIDEO_DATA_BLOCK_TAG, std::nullopt};
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -232,8 +245,8 @@ namespace Edid {
       return valid_sads() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    uint8_t type() const {
-      return CTA861_AUDIO_DATA_BLOCK_TAG;
+    CtaDataBlockType type() const {
+      return {CTA861_AUDIO_DATA_BLOCK_TAG, std::nullopt};
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -304,8 +317,8 @@ namespace Edid {
       return CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    uint8_t type() const {
-      return CTA861_SPEAKERS_DATA_BLOCK_TAG;
+    CtaDataBlockType type() const {
+      return {CTA861_SPEAKERS_DATA_BLOCK_TAG, std::nullopt};
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -335,8 +348,62 @@ namespace Edid {
 
   bool operator==(const SpeakerAllocationDataBlock& lhs, const SpeakerAllocationDataBlock& rhs);
 
+  struct YCbCr420CapabilityMapDataBlock {
+    std::set<uint8_t> svd_indices;
+
+    size_t size() const {
+      if (!svd_indices.size())
+        return CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+      auto last_element = svd_indices.rbegin();
+      const size_t bytes = *last_element / 8 + (*last_element % 8 == 0 ? 0 : 1);
+      return bytes * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+    }
+
+    CtaDataBlockType type() const {
+      return {CTA861_EXTENDED_TAG, CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG};
+    }
+
+    std::vector<uint8_t> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    template<typename Iterator>
+    static YCbCr420CapabilityMapDataBlock parse_byte_block(Iterator start) {
+      YCbCr420CapabilityMapDataBlock result;
+
+      int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
+      if (data_block_tag != CTA861_EXTENDED_TAG)
+        throw EdidException(__FUNCTION__, "Extended Tag Data Block has incorrect Data Block Tag: " +
+          std::to_string(data_block_tag)
+        );
+
+      const int length = *start++ & BITMASK_TRUE(5);
+
+      int extended_tag = *start++;
+      if (extended_tag != CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG)
+        throw EdidException(__FUNCTION__, "YCbCr420CapabilityMapDataBlock has incorrect Extended Data Block Tag: " +
+          std::to_string(extended_tag)
+        );
+
+      uint8_t svd_index = 1;
+      for (int i = 0; i < length - 1; ++i) {
+        uint8_t byte = *(start + i);
+        for (int j = 0; j < 8; ++j) {
+          if (byte & BITMASK_TRUE(1) << j) {
+            result.svd_indices.insert(svd_index + j);
+          }
+        }
+        svd_index += 8;
+      }
+
+      return result;
+    }
+  };
+
+  bool operator==(const YCbCr420CapabilityMapDataBlock& lhs, const YCbCr420CapabilityMapDataBlock& rhs);
+
   using CtaDataBlock = std::variant<
     UnknownDataBlock, VideoDataBlock,
-    AudioDataBlock, SpeakerAllocationDataBlock
+    AudioDataBlock, SpeakerAllocationDataBlock,
+    YCbCr420CapabilityMapDataBlock
   >;
 }

@@ -119,14 +119,29 @@ namespace Edid {
       j["speaker_allocation"].push_back(to_string(speaker));
   }
 
+  void from_json(const nlohmann::json& j, YCbCr420CapabilityMapDataBlock& result) {
+    auto svd_indices = j.at("ycbcr420_capability_map").get<std::vector<uint8_t>>();
+    result.svd_indices = std::set<uint8_t>(svd_indices.begin(), svd_indices.end());
+  }
+
+  void to_json(nlohmann::json& j, const YCbCr420CapabilityMapDataBlock& block) {
+    for (uint8_t svd_index : block.svd_indices)
+      j["ycbcr420_capability_map"].push_back(svd_index);
+  }
+
   void from_json(const nlohmann::json& j, UnknownDataBlock& result) {
     result.raw_data = j.at("raw_data").get<std::vector<uint8_t>>();
     result.data_block_tag = j.at("tag");
+    if (j.contains("extended_tag")) {
+      result.extended_tag = j.at("extended_tag").get<uint8_t>();
+    }
   }
 
   void to_json(nlohmann::json& j, const UnknownDataBlock& block) {
     j["raw_data"] = block.raw_data;
     j["tag"] = block.data_block_tag;
+    if (block.extended_tag.has_value())
+      j["extended_tag"] = block.extended_tag.value();
   }
 
   void from_json(const nlohmann::json& j, ShortAudioDescriptor& result) {
@@ -317,6 +332,11 @@ namespace Edid {
     }
     else if (j.contains("speaker_allocation")) {
       SpeakerAllocationDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("ycbcr420_capability_map")) {
+      YCbCr420CapabilityMapDataBlock subresult;
       from_json(j, subresult);
       descriptor = subresult;
     }
