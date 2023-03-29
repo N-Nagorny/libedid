@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
+set(ENABLE_EXAMPLES OFF CACHE BOOL "Enable example applications")
 
 # JSON schemas library
 
@@ -150,12 +151,14 @@ target_link_libraries(test-runner PRIVATE
 
 # Example applications
 
-set(WORKSHOP_SOURCES
-    examples/edid-workshop/src/main.cc
-)
+if (ENABLE_EXAMPLES)
+    set(WORKSHOP_SOURCES
+        examples/edid-workshop/src/main.cc
+    )
 
-add_executable(edid-workshop ${WORKSHOP_SOURCES})
+    add_executable(edid-workshop ${WORKSHOP_SOURCES})
 
-target_link_libraries(edid-workshop PRIVATE
-    ${PROJECT_NAME}
-)
+    target_link_libraries(edid-workshop PRIVATE
+        ${PROJECT_NAME}
+    )
+endif()
