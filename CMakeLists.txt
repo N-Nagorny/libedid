@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
-set(ENABLE_EXAMPLES OFF CACHE BOOL "Enable example applications")
+set(BUILD_TESTS OFF CACHE BOOL "Enable test application")
+set(BUILD_EXAMPLES OFF CACHE BOOL "Enable example applications")
 
 # JSON schemas library
 
@@ -118,40 +119,42 @@ install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 # Test application
 
-include(GoogleTest)
+if (BUILD_TESTS)
+    include(GoogleTest)
 
-set(TEST_HEADERS
-    test/include/
-)
+    set(TEST_HEADERS
+        test/include/
+    )
 
-set(TEST_SOURCES
-    test/src/common.cc
-    test/src/test_runner.cc
-)
+    set(TEST_SOURCES
+        test/src/common.cc
+        test/src/test_runner.cc
+    )
 
-if (ENABLE_JSON)
-    list(APPEND TEST_SOURCES test/src/bcp00501_tests.cc)
-    list(APPEND TEST_SOURCES test/src/json_tests.cc)
+    if (ENABLE_JSON)
+        list(APPEND TEST_SOURCES test/src/bcp00501_tests.cc)
+        list(APPEND TEST_SOURCES test/src/json_tests.cc)
+    endif()
+
+    add_executable(test-runner ${TEST_SOURCES})
+
+    target_include_directories(test-runner PUBLIC
+        ${TEST_HEADERS}
+    )
+
+    if (ENABLE_JSON)
+        target_compile_definitions(test-runner PRIVATE ENABLE_JSON)
+    endif()
+
+    target_link_libraries(test-runner PRIVATE
+        ${PROJECT_NAME}
+        gtest
+    )
 endif()
-
-add_executable(test-runner ${TEST_SOURCES})
-
-target_include_directories(test-runner PUBLIC
-    ${TEST_HEADERS}
-)
-
-if (ENABLE_JSON)
-    target_compile_definitions(test-runner PRIVATE ENABLE_JSON)
-endif()
-
-target_link_libraries(test-runner PRIVATE
-    ${PROJECT_NAME}
-    gtest
-)
 
 # Example applications
 
-if (ENABLE_EXAMPLES)
+if (BUILD_EXAMPLES)
     set(WORKSHOP_SOURCES
         examples/edid-workshop/src/main.cc
     )
