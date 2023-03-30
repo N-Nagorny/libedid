@@ -39,6 +39,15 @@ namespace Edid {
     return true;
   }
 
+  bool operator==(const ManufactureDate& lhs, const ManufactureDate& rhs) {
+    return lhs.week_of_manufacture == rhs.week_of_manufacture
+      && lhs.year_of_manufacture == rhs.year_of_manufacture;
+  }
+
+  bool operator==(const ModelYear& lhs, const ModelYear& rhs) {
+    return lhs.model_year == rhs.model_year;
+  }
+
   bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
     using namespace details;
 
@@ -48,9 +57,7 @@ namespace Edid {
       return false;
     if (lhs.serial_number != rhs.serial_number)
       return false;
-    if (lhs.manufacture_week != rhs.manufacture_week)
-      return false;
-    if (lhs.manufacture_year != rhs.manufacture_year)
+    if (!std::operator==(lhs.manufacture_date_or_model_year, rhs.manufacture_date_or_model_year))
       return false;
     if (lhs.edid_major_version != rhs.edid_major_version)
       return false;
@@ -253,11 +260,21 @@ namespace Edid {
     result[pos++] = (base_block.serial_number >> 16) & BITMASK_TRUE(8);
     result[pos++] = (base_block.serial_number >> 24) & BITMASK_TRUE(8);
 
-    // Week of manufacture
-    result[pos++] = base_block.manufacture_week;
+    // Manufacture Date or Model Year
+    auto manufacture_date_or_model_year_visitor = Overload {
+      [](const ManufactureDate& md) -> std::pair<uint8_t, uint8_t> {
+        return { md.week_of_manufacture, md.year_of_manufacture };
+      },
+      [](const ModelYear& my) -> std::pair<uint8_t, uint8_t> {
+        return { 0xFF, my.model_year };
+      },
+    };
 
-    // Year of manufacture
-    result[pos++] = base_block.manufacture_year - BASE_START_MANUFACTURE_YEAR;
+    const std::pair<uint8_t, uint8_t> manufacture_date_or_model_year_bytes =
+      std::visit(manufacture_date_or_model_year_visitor, base_block.manufacture_date_or_model_year);
+
+    result[pos++] = manufacture_date_or_model_year_bytes.first;
+    result[pos++] = manufacture_date_or_model_year_bytes.second - BASE_START_MANUFACTURE_YEAR;
 
     // EDID version
     result[pos++] = base_block.edid_major_version;
@@ -374,11 +391,15 @@ namespace Edid {
     result_struct.serial_number |= base_block[++pos] << 16;
     result_struct.serial_number |= base_block[++pos] << 24;
 
-    // Week of manufacture
-    result_struct.manufacture_week = base_block[++pos];
-
-    // Year of manufacture
-    result_struct.manufacture_year = base_block[++pos] + BASE_START_MANUFACTURE_YEAR;
+    // Manufacture Date or Model Year
+    uint8_t week_of_manufacture = base_block[++pos];
+    uint16_t year = base_block[++pos] + BASE_START_MANUFACTURE_YEAR;
+    if (week_of_manufacture == 0xFF) {
+      result_struct.manufacture_date_or_model_year = ModelYear{year};
+    }
+    else {
+      result_struct.manufacture_date_or_model_year = ManufactureDate{week_of_manufacture, year};
+    }
 
     // EDID version
     result_struct.edid_major_version = base_block[++pos];
@@ -501,6 +522,18 @@ namespace Edid {
   }
 
   void print_base_block(std::ostream& os, const BaseBlock& base_block) {
+    auto manufacture_date_or_model_year_visitor = Overload {
+      [](const ManufactureDate& md) -> std::vector<std::string> {
+        return {
+          "Manufacture Week: " + static_cast<int>(md.week_of_manufacture),
+          "Manufacture Year: " + md.year_of_manufacture
+        };
+      },
+      [](const ModelYear& my) -> std::vector<std::string> {
+        return { "Model Year: " + my.model_year };
+      },
+    };
+
     os << "Manufacturer ID: "
       << base_block.manufacturer_id.at(0)
       << base_block.manufacturer_id.at(1)
@@ -508,8 +541,9 @@ namespace Edid {
       << '\n';
     os << "Product Code: " << base_block.product_code << '\n';
     os << "Serial Number: " << base_block.serial_number << '\n';
-    os << "Manufacture Week: " << static_cast<int>(base_block.manufacture_week) << '\n';
-    os << "Manufacture Year: " << base_block.manufacture_year << '\n';
+    for (const auto& line : std::visit(manufacture_date_or_model_year_visitor, base_block.manufacture_date_or_model_year)) {
+      os << line << '\n';
+    }
     os << "EDID version: "
       << static_cast<int>(base_block.edid_major_version)
       << '.'

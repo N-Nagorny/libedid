@@ -4,7 +4,7 @@
   "description": "Describes the Base Block of Enhanced EDID",
   "title": "Base Block",
   "additionalProperties": false,
-  "minProperties": 25,
+  "minProperties": 24,
   "properties": {
     "manufacturer_id": {
       "description": "Manufacturer Name ID",
@@ -24,17 +24,39 @@
       "minimum": 0,
       "maximum": 4294967295
     },
-    "week_of_manufacture": {
-      "description": "Week of manufacture",
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 54
-    },
-    "year_of_manufacture": {
-      "description": "Year of manufacture",
-      "type": "integer",
-      "minimum": 1990,
-      "maximum": 2245
+    "manufacture_date_or_model_year": {
+      "oneOf": [
+        {
+          "description": "Manufacture date",
+          "type":"object",
+          "additionalProperties": false,
+          "properties": {
+            "week_of_manufacture": {
+              "description": "Week of manufacture",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 54
+            },
+            "year_of_manufacture": {
+              "description": "Year of manufacture",
+              "type": "integer",
+              "minimum": 1990,
+              "maximum": 2245
+            }
+          }
+        },
+        {
+          "type":"object",
+          "additionalProperties": false,
+          "properties": {
+            "model_year": {
+              "description": "Model year",
+              "minimum": 1990,
+              "maximum": 2245
+            }
+          }
+        }
+      ]
     },
     "edid_major_version": {
       "description": "EDID structure version number (x.4)",

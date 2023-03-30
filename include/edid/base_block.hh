@@ -308,14 +308,39 @@ namespace Edid {
 
   bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs);
 
+  struct ManufactureDate {
+    uint8_t week_of_manufacture;
+    uint16_t year_of_manufacture;  // This value becomes uint8_t in EDID by subtracting 1990 from it
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ManufactureDate,
+      week_of_manufacture,
+      year_of_manufacture
+    )
+#endif
+  };
+
+  bool operator==(const ManufactureDate& lhs, const ManufactureDate& rhs);
+
+  struct ModelYear {
+    uint16_t model_year;  // This value becomes uint8_t in EDID by subtracting 1990 from it
+
+#ifdef ENABLE_JSON
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModelYear,
+      model_year
+    )
+#endif
+  };
+
+  bool operator==(const ModelYear& lhs, const ModelYear& rhs);
+
   // See https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
   struct BaseBlock {
     // Header
     std::array<char, 3> manufacturer_id;
     uint16_t product_code = 0;
     uint32_t serial_number = 0;
-    uint8_t manufacture_week = 0;
-    uint16_t manufacture_year = 2000;  // This value becomes uint8_t in EDID by subtracting 1990 from it
+    std::variant<ManufactureDate, ModelYear> manufacture_date_or_model_year = ManufactureDate{0, 1990};
     uint8_t edid_major_version = 1;
     uint8_t edid_minor_version = 4;
     // Basic Display Parameters

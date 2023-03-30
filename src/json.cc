@@ -19,6 +19,19 @@ namespace Edid {
     }
   }
 
+  void from_json(const nlohmann::json& j, std::variant<ManufactureDate, ModelYear>& manufacture_date_or_model_year) {
+    if (j.contains("model_year")) {
+      ModelYear subresult;
+      from_json(j, subresult);
+      manufacture_date_or_model_year = subresult;
+    }
+    else {
+      ManufactureDate subresult;
+      from_json(j, subresult);
+      manufacture_date_or_model_year = subresult;
+    }
+  }
+
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor& dtd) {
     DetailedTimingDescriptor result;
 
@@ -211,8 +224,7 @@ namespace Edid {
       result.manufacturer_id[i] = j.at("manufacturer_id").get<std::string>().at(i);
     result.product_code = j.at("product_code");
     result.serial_number = j.at("serial_number");
-    result.manufacture_week = j.at("week_of_manufacture");
-    result.manufacture_year = j.at("year_of_manufacture");
+    result.manufacture_date_or_model_year = j.at("manufacture_date_or_model_year");
     result.edid_major_version = j.at("edid_major_version");
     result.edid_minor_version = j.at("edid_minor_version");
     result.bits_per_color = BitDepth(j.at("bit_depth"));
@@ -265,8 +277,11 @@ namespace Edid {
     result["manufacturer_id"] = manufacturer_id;
     result["product_code"] = base_block.product_code;
     result["serial_number"] = base_block.serial_number;
-    result["week_of_manufacture"] = base_block.manufacture_week;
-    result["year_of_manufacture"] = base_block.manufacture_year;
+    result["manufacture_date_or_model_year"] = std::visit([](const auto& manufacture_date_or_model_year) -> nlohmann::json {
+      nlohmann::json result;
+      to_json(result, manufacture_date_or_model_year);
+      return result;
+    }, base_block.manufacture_date_or_model_year);
     result["edid_major_version"] = base_block.edid_major_version;
     result["edid_minor_version"] = base_block.edid_minor_version;
     result["bit_depth"] = to_string(base_block.bits_per_color);

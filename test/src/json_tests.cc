@@ -163,8 +163,10 @@ TEST(JsonTests, BaseBlockCircularTest) {
         ],
         "v_screen_size":0,
         "video_interface":"Undefined",
-        "week_of_manufacture":2,
-        "year_of_manufacture":2020
+        "manufacture_date_or_model_year": {
+          "week_of_manufacture":2,
+          "year_of_manufacture":2020
+        }
     }
   )"_json;
 
@@ -356,8 +358,10 @@ TEST(JsonTests, FullEdidGenerating) {
         ],
         "v_screen_size":0,
         "video_interface":"Undefined",
-        "week_of_manufacture":2,
-        "year_of_manufacture":2020
+        "manufacture_date_or_model_year": {
+          "week_of_manufacture":2,
+          "year_of_manufacture":2020
+        }
       },
       "extension_blocks":[
         {

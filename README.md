@@ -19,7 +19,6 @@ cmake --build build/
 
 ### Base EDID
 
-- Model Year is not supported (Year of Manufacture always used instead).
 - Setting Aspect Ratio instead of Screen Size is not supported.
 - Incorrect Video input parameters bitmap and Display type for analog input type. (TODO: std::variant to distinct)
 - Display Range Limits Display Descriptor doesn't describe Secondary GTF curve and CVT data.
