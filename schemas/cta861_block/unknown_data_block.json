@@ -4,7 +4,10 @@
   "title": "Unknown Data Block",
   "description": "Describes an unknown Data Block",
   "additionalProperties": false,
-  "minProperties": 2,
+  "required": [
+    "raw_data",
+    "tag"
+  ],
   "properties": {
     "raw_data": {
       "description": "Raw data, in bytes",
@@ -20,6 +23,10 @@
       "type": "integer",
       "minimum": 0,
       "maximum": 7
+    },
+    "extended_tag": {
+      "description": "Extended Data Block Tag",
+      "type": "integer"
     }
   }
 }

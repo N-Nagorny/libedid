@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "minProperties": 16,
   "properties": {
-    "pixel_clock": {
+    "pixel_clock_khz": {
       "description": "Pixel clock, in kHz",
       "type": "integer",
       "minimum": 10,

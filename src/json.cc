@@ -35,7 +35,7 @@ namespace Edid {
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor& dtd) {
     DetailedTimingDescriptor result;
 
-    result.pixel_clock_hz = j.at("pixel_clock").get<uint64_t>() * 10'000;
+    result.pixel_clock_hz = j.at("pixel_clock_khz").get<uint64_t>() * 1'000;
     result.h_res = j.at("h_res");
     result.v_res = j.at("v_res");
     result.h_blanking = j.at("h_blanking");
@@ -59,7 +59,7 @@ namespace Edid {
 
   void to_json(nlohmann::json& j, const DetailedTimingDescriptor& dtd) {
     nlohmann::json result;
-    result["pixel_clock"] = dtd.pixel_clock_hz / 10'000;
+    result["pixel_clock_khz"] = dtd.pixel_clock_hz / 1'000;
     result["h_res"] = dtd.h_res;
     result["v_res"] = dtd.v_res;
     result["h_blanking"] = dtd.h_blanking;
@@ -83,7 +83,7 @@ namespace Edid {
   }
 
   void from_json(const nlohmann::json& j, EighteenByteDescriptor& descriptor) {
-    if (j.contains("pixel_clock")) {
+    if (j.contains("pixel_clock_khz")) {
       DetailedTimingDescriptor subresult;
       from_json(j, subresult);
       descriptor = subresult;
