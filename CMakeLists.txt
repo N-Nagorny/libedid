@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
 set(BUILD_TESTS OFF CACHE BOOL "Enable test application")
 set(BUILD_EXAMPLES OFF CACHE BOOL "Enable example applications")
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Build using shared libraries")
 
 # JSON schemas library
 
@@ -77,6 +78,10 @@ target_include_directories(json_schemas PRIVATE
     include/
 )
 
+set_target_properties(json_schemas PROPERTIES
+    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
+)
+
 # libedid
 
 set(SOURCES
@@ -99,7 +104,7 @@ set(HEADERS
     include/
 )
 
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${HEADERS}
@@ -107,7 +112,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 if (ENABLE_JSON)
     target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_JSON)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
+    target_link_libraries(${PROJECT_NAME} PUBLIC
         json_schemas
         nlohmann_json_schema_validator
         nlohmann_json::nlohmann_json
