@@ -30,7 +30,7 @@ namespace Edid {
   }
 
   EdidData parse_edid_binary(const std::vector<uint8_t>& edid) {
-    if (edid.size() % EDID_BLOCK_SIZE != 0)
+    if (edid.size() == 0 || edid.size() % EDID_BLOCK_SIZE != 0)
       throw EdidException(__FUNCTION__, "EDID size " + std::to_string(edid.size()) +
         " is not a factor of " +
         std::to_string(EDID_BLOCK_SIZE)
