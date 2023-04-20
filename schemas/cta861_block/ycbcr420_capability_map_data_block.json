@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "YCbCr 4:2:0 Capability Map Data Block",
+  "description": "Describes a YCbCr 4:2:0 Capability Map Data Block",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "ycbcr420_capability_map": {
+      "description": "Numbers of VICs that support YCbCr 4:2:0",
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    }
+  }
+}
+

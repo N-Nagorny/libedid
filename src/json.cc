@@ -93,7 +93,7 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
-    else if (j.contains("serial_number")) {
+    else if (j.contains("display_serial_number")) {
       DisplaySerialNumber subresult;
       from_json(j, subresult);
       descriptor = subresult;

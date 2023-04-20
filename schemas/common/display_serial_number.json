@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "minProperties": 1,
   "properties": {
-    "serial_number": {
+    "display_serial_number": {
       "description": "Display Product Serial Number",
       "type": "string",
       "maxLength": 12

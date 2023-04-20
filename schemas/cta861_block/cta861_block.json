@@ -30,7 +30,8 @@
           {"$ref": "video_data_block.json"},
           {"$ref": "audio_data_block.json"},
           {"$ref": "speaker_allocation_data_block.json"},
-          {"$ref": "unknown_data_block.json"}
+          {"$ref": "unknown_data_block.json"},
+          {"$ref": "ycbcr420_capability_map_data_block.json"}
         ]
       }
     },
