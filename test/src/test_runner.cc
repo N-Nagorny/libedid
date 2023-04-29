@@ -273,17 +273,52 @@ TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
 
 TEST(ForEachModeTests, DeleteModesFromCta861) {
   Cta861Block cta861_before = make_cta861_ext();
+  auto iter = std::find_if(cta861_before.data_block_collection.begin(), cta861_before.data_block_collection.end(), [](const auto& data_block){
+    return std::visit(is_vdb_visitor, data_block);
+  });
+  auto& video_data_block_before = std::get<VideoDataBlock>(*iter);
+  video_data_block_before.vics[7] = 225;
+
   remove_mode_if(cta861_before, [](const VideoTimingMode& mode) {
     return mode.v_res == 600 || mode.v_res == 1080;
   });
+
   Cta861Block cta861_after = make_cta861_ext();
-  auto iter = std::find_if(cta861_after.data_block_collection.begin(), cta861_after.data_block_collection.end(), [](const auto& data_block){
+  iter = std::find_if(cta861_after.data_block_collection.begin(), cta861_after.data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
   });
   auto& video_data_block = std::get<VideoDataBlock>(*iter);
   video_data_block.vics[0] = std::nullopt;
   video_data_block.vics[2] = std::nullopt;
+  video_data_block.vics[7] = 225;
   cta861_after.detailed_timing_descriptors = {};
+
+  EXPECT_EQ(cta861_before, cta861_after);
+}
+
+
+TEST(ForEachModeTests, DeleteModesFromCta861IncludingUnknown) {
+  Cta861Block cta861_before = make_cta861_ext();
+  auto iter = std::find_if(cta861_before.data_block_collection.begin(), cta861_before.data_block_collection.end(), [](const auto& data_block){
+    return std::visit(is_vdb_visitor, data_block);
+  });
+  auto& video_data_block_before = std::get<VideoDataBlock>(*iter);
+  video_data_block_before.vics[7] = 225;
+
+  remove_mode_if(cta861_before, [](const VideoTimingMode& mode) {
+    return mode.v_res == 600 || mode.v_res == 1080;
+  }, true);
+
+  Cta861Block cta861_after = make_cta861_ext();
+  iter = std::find_if(cta861_after.data_block_collection.begin(), cta861_after.data_block_collection.end(), [](const auto& data_block){
+    return std::visit(is_vdb_visitor, data_block);
+  });
+  auto& video_data_block = std::get<VideoDataBlock>(*iter);
+  video_data_block.vics[0] = std::nullopt;
+  video_data_block.vics[2] = std::nullopt;
+  video_data_block.vics[7] = std::nullopt;
+  cta861_after.detailed_timing_descriptors = {};
+
   EXPECT_EQ(cta861_before, cta861_after);
 }
 

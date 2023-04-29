@@ -193,7 +193,7 @@ namespace Edid {
   #undef R
   #undef V
 
-  Cta861VideoTimingMode get_cta861_video_timing_mode(uint8_t vic) {
+  std::optional<Cta861VideoTimingMode> get_cta861_video_timing_mode(uint8_t vic) {
     if (vic >= 1 && vic <= 127) {
       return cta_modes_1.at(vic - 1);
     }
@@ -202,6 +202,9 @@ namespace Edid {
     }
     else if (vic >= 193 && vic <= 219) {
       return cta_modes_2.at(vic - 193);
+    }
+    else if (vic >= 220 && vic <= 255) {
+      return std::nullopt;
     }
     throw EdidException(std::to_string(vic) + " is not a valid VIC");
   }
