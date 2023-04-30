@@ -25,6 +25,7 @@ cmake --build build/
 - Chromaticity is not deserialized.
 - Gamma is printed in the floating-point format though BaseBlock stores it in the integer format.
 - YCbCr color encodings are named as YCrCb (in [the spec also][E-EDID], maybe due to the order mentioned in [BT.601][BT.601]).
+- ID Serial Number always exists even if it's all zero.
 
 ### CTA Extension
 

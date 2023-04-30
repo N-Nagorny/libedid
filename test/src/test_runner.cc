@@ -86,7 +86,7 @@ TEST(YCbCr420CapabilityMapDataBlockTests, CircularTest) {
 }
 
 TEST(CommonCircularTests, DisplaySerialNumber) {
-  auto name = DisplaySerialNumber{"R8J00779SL0"};
+  auto name = DisplaySerialNumber{"R8J00779SL012"};
   auto name_binary = name.generate_byte_block();
   auto name_parsed = DisplaySerialNumber::parse_byte_block(name_binary.begin());
   EXPECT_EQ(name, name_parsed);

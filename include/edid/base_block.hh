@@ -16,7 +16,7 @@
 #define BASE_18_BYTE_DESCRIPTORS_OFFSET 54
 
 #define BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE 5
-#define MAX_DISPLAY_NAME_CHARS 12
+#define MAX_DISPLAY_NAME_CHARS 13
 
 namespace Edid {
   static const std::array<uint8_t, 8> base_block_header = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
@@ -238,7 +238,7 @@ namespace Edid {
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
 
   struct DisplayName {
-    std::string display_product_name; // Maximum is 12 chars
+    std::string display_product_name; // The maximum is 13 chars
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplayName, display_product_name)
@@ -256,7 +256,7 @@ namespace Edid {
       DisplayName result;
       start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
 
-      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
+      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS; ++i) {
         if (*(start + i) != '\n')
           result.display_product_name.push_back(*(start + i));
         else
@@ -269,7 +269,7 @@ namespace Edid {
   bool operator==(const DisplayName& lhs, const DisplayName& rhs);
 
   struct DisplaySerialNumber {
-    std::string display_serial_number; // Maximum is 12 chars
+    std::string display_serial_number; // The maximum is 13 chars
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplaySerialNumber, display_serial_number)
@@ -287,9 +287,11 @@ namespace Edid {
       DisplaySerialNumber result;
       start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
 
-      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS + 1; ++i) {
-        if (*(start + i) != ' ' && *(start + i) != '\n')
+      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS; ++i) {
+        if (*(start + i) != '\n')
           result.display_serial_number.push_back(*(start + i));
+        else
+          break;
       }
       return result;
     };

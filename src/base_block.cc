@@ -183,9 +183,12 @@ namespace Edid {
 
     for (int i = 0; i < display_product_name.size(); ++i)
       result[pos++] = display_product_name[i];
-    result[pos++] = '\n';
-    for (int i = display_product_name.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
-      result[pos++] = ' ';
+    const int8_t padding = MAX_DISPLAY_NAME_CHARS - display_product_name.size() - 1; // exclude '\n' from the padding
+    if (padding >= 0) {
+      result[pos++] = '\n';
+      for (int i = 0; i < padding; ++i)
+        result[pos++] = ' ';
+    }
 
     return result;
   }
@@ -197,8 +200,6 @@ namespace Edid {
 
     if (display_serial_number.size() > MAX_DISPLAY_NAME_CHARS)
       throw EdidException("Display Serial Number is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
-    if (display_serial_number.find(' ') != std::string::npos)
-      throw EdidException("Display Serial Number contains spaces.");
 
     result[pos++] = 0x0;
     result[pos++] = 0x0;
@@ -208,9 +209,12 @@ namespace Edid {
 
     for (int i = 0; i < display_serial_number.size(); ++i)
       result[pos++] = display_serial_number[i];
-    result[pos++] = '\n';
-    for (int i = display_serial_number.size(); i < MAX_DISPLAY_NAME_CHARS; ++i)
-      result[pos++] = ' ';
+    const int8_t padding = MAX_DISPLAY_NAME_CHARS - display_serial_number.size() - 1; // exclude '\n' from the padding
+    if (padding >= 0) {
+      result[pos++] = '\n';
+      for (int i = 0; i < padding; ++i)
+        result[pos++] = ' ';
+    }
 
     return result;
   }
