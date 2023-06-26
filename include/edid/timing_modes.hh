@@ -45,7 +45,7 @@ namespace Edid {
     {ET_1280x1024_75, { 1280, 1024, {75, 1}, false }}
   };
 
-  const std::map<EstablishedTiming3, VideoTimingMode> established_timings_3 = {
+  const std::map<ManufacturersTiming, VideoTimingMode> manufacturers_timings = {
     {ET_1152x870_75,   { 1152, 870, {75, 1}, false }}
   };
 
@@ -61,8 +61,8 @@ namespace Edid {
     for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2)) {
       fn(established_timings_2.at(et));
     }
-    for (EstablishedTiming3 et : bitfield_to_enums<EstablishedTiming3>(base_block.established_timings_3)) {
-      fn(established_timings_3.at(et));
+    for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings)) {
+      fn(manufacturers_timings.at(et));
     }
 
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
@@ -88,9 +88,9 @@ namespace Edid {
         base_block.established_timings_2 &= ~et;
       }
     }
-    for (EstablishedTiming3 et : bitfield_to_enums<EstablishedTiming3>(base_block.established_timings_3)) {
-      if (fn(established_timings_3.at(et))) {
-        base_block.established_timings_3 &= ~et;
+    for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings)) {
+      if (fn(manufacturers_timings.at(et))) {
+        base_block.manufacturers_timings &= ~et;
       }
     }
 

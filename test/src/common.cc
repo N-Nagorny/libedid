@@ -14,7 +14,7 @@ BaseBlock make_edid_base() {
   edid_base.established_timings_1 |= EstablishedTiming1::ET_800x600_56;
   edid_base.established_timings_2 |= EstablishedTiming2::ET_1024x768_70;
   edid_base.established_timings_2 |= EstablishedTiming2::ET_1024x768i_87;
-  edid_base.established_timings_3 |= EstablishedTiming3::ET_1152x870_75;
+  edid_base.manufacturers_timings |= ManufacturersTiming::ET_1152x870_75;
   edid_base.standard_timings[0] = StandardTiming{1152, AspectRatio::AR_4_3, 75};
   edid_base.standard_timings[1] = StandardTiming{1280, AspectRatio::AR_5_4, 60};
   edid_base.standard_timings[2] = StandardTiming{1280, AspectRatio::AR_16_10, 60};

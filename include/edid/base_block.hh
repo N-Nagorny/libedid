@@ -119,11 +119,11 @@ namespace Edid {
     {ET_1280x1024_75, "1280x1024@75Hz"},
   })
 
-  enum EstablishedTiming3 {
+  enum ManufacturersTiming {
     ET_1152x870_75 = 1 << 7
   };
 
-  STRINGIFY_ENUM(EstablishedTiming3, {
+  STRINGIFY_ENUM(ManufacturersTiming, {
     {ET_1152x870_75, "1152x870@75Hz"},
   })
 
@@ -365,7 +365,7 @@ namespace Edid {
     // Established Timings
     EstablishedTimings established_timings_1 = 0x0;
     EstablishedTimings established_timings_2 = 0x0;
-    EstablishedTimings established_timings_3 = 0x0;
+    EstablishedTimings manufacturers_timings = 0x0;
 
     std::array<std::optional<StandardTiming>, 8> standard_timings;
     std::array<std::optional<EighteenByteDescriptor>, BASE_18_BYTE_DESCRIPTORS> eighteen_byte_descriptors;

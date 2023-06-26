@@ -93,7 +93,7 @@ namespace Edid {
       return false;
     if (lhs.established_timings_2 != rhs.established_timings_2)
       return false;
-    if (lhs.established_timings_3 != rhs.established_timings_3)
+    if (lhs.manufacturers_timings != rhs.manufacturers_timings)
       return false;
     if (lhs.standard_timings != rhs.standard_timings)
       return false;
@@ -309,7 +309,7 @@ namespace Edid {
     // Established Timings
     result[pos++] = base_block.established_timings_1;
     result[pos++] = base_block.established_timings_2;
-    result[pos++] = base_block.established_timings_3;
+    result[pos++] = base_block.manufacturers_timings;
 
     // Standard Timings
     for (const std::optional<StandardTiming>& std_timing : base_block.standard_timings) {
@@ -433,7 +433,7 @@ namespace Edid {
     // Established Timings
     result_struct.established_timings_1 = base_block[++pos];
     result_struct.established_timings_2 = base_block[++pos];
-    result_struct.established_timings_3 = base_block[++pos];
+    result_struct.manufacturers_timings = base_block[++pos];
 
     // Standard Timings
     int std_timing_i = 0;
@@ -577,12 +577,12 @@ namespace Edid {
       os << static_cast<int>(byte) << ' ';
     os << '\n';
 
-    os << "Established Timings I & II:\n";
+    os << "Established Timings I & II and Manufacturer's Timings:\n";
     for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1))
       os << '\t' << to_string(et) << '\n';
     for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2))
       os << '\t' << to_string(et) << '\n';
-    for (EstablishedTiming3 et : bitfield_to_enums<EstablishedTiming3>(base_block.established_timings_3))
+    for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings))
       os << '\t' << to_string(et) << '\n';
     os << '\n';
 

@@ -124,7 +124,7 @@ TEST(JsonTests, BaseBlockCircularTest) {
             "1024x768@70Hz",
             "1024x768i@87Hz"
         ],
-        "established_timings_3":[
+        "manufacturers_timings":[
             "1152x870@75Hz"
         ],
         "gamma":1,
@@ -319,7 +319,7 @@ TEST(JsonTests, FullEdidGenerating) {
           "1024x768@70Hz",
           "1024x768i@87Hz"
         ],
-        "established_timings_3":[
+        "manufacturers_timings":[
           "1152x870@75Hz"
         ],
         "gamma":1,

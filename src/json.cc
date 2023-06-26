@@ -251,9 +251,9 @@ namespace Edid {
     for (auto et : et_2) {
       result.established_timings_2 |= et;
     }
-    auto et_3 = j.at("established_timings_3").get<std::vector<EstablishedTiming3>>();
+    auto et_3 = j.at("manufacturers_timings").get<std::vector<ManufacturersTiming>>();
     for (auto et : et_3) {
-      result.established_timings_3 |= et;
+      result.manufacturers_timings |= et;
     }
     auto standard_timings = j.at("standard_timings").get<std::vector<StandardTiming>>();
     for (int i = 0; i < standard_timings.size(); ++i) {
@@ -301,13 +301,13 @@ namespace Edid {
     }
     result["established_timings_1"] = nlohmann::json::array();
     result["established_timings_2"] = nlohmann::json::array();
-    result["established_timings_3"] = nlohmann::json::array();
+    result["manufacturers_timings"] = nlohmann::json::array();
     for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1))
       result["established_timings_1"].push_back(to_string(et));
     for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2))
       result["established_timings_2"].push_back(to_string(et));
-    for (EstablishedTiming3 et : bitfield_to_enums<EstablishedTiming3>(base_block.established_timings_3))
-      result["established_timings_3"].push_back(to_string(et));
+    for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings))
+      result["manufacturers_timings"].push_back(to_string(et));
     result["standard_timings"] = nlohmann::json::array();
     for (const auto& timing : base_block.standard_timings) {
       if (timing.has_value()) {

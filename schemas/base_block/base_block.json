@@ -160,7 +160,7 @@
       }
     },
     "established_timings_1": {
-      "description": "Established Timings byte 1",
+      "description": "Established Timings I",
       "type": "array",
       "maxItems": 8,
       "uniqueItems": true,
@@ -179,7 +179,7 @@
       }
     },
     "established_timings_2": {
-      "description": "Established Timings byte 2",
+      "description": "Established Timings II",
       "type": "array",
       "maxItems": 8,
       "uniqueItems": true,
@@ -197,8 +197,8 @@
         ]
       }
     },
-    "established_timings_3": {
-      "description": "Established Timings byte 3",
+    "manufacturers_timings": {
+      "description": "Manufacturer's Timings",
       "type": "array",
       "maxItems": 1,
       "uniqueItems": true,
