@@ -7,7 +7,7 @@
 using namespace Edid;
 
 TEST(Bcp00501Tests, BasicTest) {
-  nlohmann::json j = R"(
+  nlohmann::json j_expected = R"(
     [
         {
             "urn:x-nmos:cap:format:frame_height":{
@@ -276,11 +276,112 @@ TEST(Bcp00501Tests, BasicTest) {
                     "progressive"
                 ]
             }
+        },
+        {
+            "urn:x-nmos:cap:format:frame_height":{
+                "enum":[
+                    900
+                ]
+            },
+            "urn:x-nmos:cap:format:frame_width":{
+                "enum":[
+                    1440
+                ]
+            },
+            "urn:x-nmos:cap:format:grain_rate":{
+                "enum":[
+                    {
+                        "numerator": 60
+                    }
+                ]
+            },
+            "urn:x-nmos:cap:format:interlace_mode":{
+                "enum":[
+                    "progressive"
+                ]
+            }
+        },
+        {
+            "urn:x-nmos:cap:format:frame_height":{
+                "enum":[
+                    900
+                ]
+            },
+            "urn:x-nmos:cap:format:frame_width":{
+                "enum":[
+                    1440
+                ]
+            },
+            "urn:x-nmos:cap:format:grain_rate":{
+                "enum":[
+                    {
+                        "numerator":75
+                    }
+                ]
+            },
+            "urn:x-nmos:cap:format:interlace_mode":{
+                "enum":[
+                    "progressive"
+                ]
+            }
+        },
+        {
+            "urn:x-nmos:cap:format:frame_height":{
+                "enum":[
+                    1200
+                ]
+            },
+            "urn:x-nmos:cap:format:frame_width":{
+                "enum":[
+                    1600
+                ]
+            },
+            "urn:x-nmos:cap:format:grain_rate":{
+                "enum":[
+                    {
+                        "numerator":60
+                    }
+                ]
+            },
+            "urn:x-nmos:cap:format:interlace_mode":{
+                "enum":[
+                    "progressive"
+                ]
+            }
+        },
+        {
+          "urn:x-nmos:cap:format:frame_height":{
+            "enum":[
+              600
+            ]
+          },
+          "urn:x-nmos:cap:format:frame_width":{
+            "enum":[
+              800
+            ]
+          },
+          "urn:x-nmos:cap:format:grain_rate":{
+            "enum":[
+              {
+                "numerator":85
+              }
+            ]
+          },
+          "urn:x-nmos:cap:format:interlace_mode":{
+            "enum":[
+              "progressive"
+            ]
+          }
         }
     ]
   )"_json;
 
   EdidData edid{make_edid_base(), std::vector<Cta861Block>{make_cta861_ext()}};
 
-  EXPECT_EQ(j, generate_constraint_sets(edid));
+  auto j_actual = generate_constraint_sets(edid);
+
+  std::sort(j_expected.begin(), j_expected.end());
+  std::sort(j_actual.begin(), j_actual.end());
+
+  EXPECT_EQ(j_expected, j_actual);
 }

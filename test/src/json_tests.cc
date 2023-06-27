@@ -115,6 +115,14 @@ TEST(JsonTests, BaseBlockCircularTest) {
             },
             {
                 "display_product_name":"Hello"
+            },
+            {
+                "established_timings_3": [
+                    "800x600@85Hz",
+                    "1440x900@75Hz",
+                    "1440x900@60Hz",
+                    "1600x1200@60Hz"
+                ]
             }
         ],
         "established_timings_1":[
@@ -310,6 +318,14 @@ TEST(JsonTests, FullEdidGenerating) {
           },
           {
             "display_product_name":"Hello"
+          },
+          {
+            "established_timings_3": [
+              "800x600@85Hz",
+              "1440x900@75Hz",
+              "1440x900@60Hz",
+              "1600x1200@60Hz"
+            ]
           }
         ],
         "established_timings_1":[

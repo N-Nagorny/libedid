@@ -39,6 +39,10 @@ namespace Edid {
     return true;
   }
 
+  bool operator==(const EstablishedTimings3& lhs, const EstablishedTimings3& rhs) {
+    return lhs.bytes_6_11 == rhs.bytes_6_11;
+  }
+
   bool operator==(const ManufactureDate& lhs, const ManufactureDate& rhs) {
     return lhs.week_of_manufacture == rhs.week_of_manufacture
       && lhs.year_of_manufacture == rhs.year_of_manufacture;
@@ -214,6 +218,26 @@ namespace Edid {
       result[pos++] = '\n';
       for (int i = 0; i < padding; ++i)
         result[pos++] = ' ';
+    }
+
+    return result;
+  }
+
+  std::array<uint8_t, EIGHTEEN_BYTES> EstablishedTimings3::generate_byte_block() const {
+    std::array<uint8_t, EIGHTEEN_BYTES> result;
+    result.fill(0x0);
+    int pos = 0;
+
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = 0x0;
+    result[pos++] = BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
+    result[pos++] = 0x0;
+
+    result[pos++] = 0x0A; // Revision number
+
+    for (int i = 0; i < bytes_6_11.size(); ++i) {
+      result[pos++] = bytes_6_11.at(i);
     }
 
     return result;
@@ -457,6 +481,8 @@ namespace Edid {
           descriptor = DisplayName::parse_byte_block(base_block.begin() + pos);
         } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE) {
           descriptor = DisplaySerialNumber::parse_byte_block(base_block.begin() + pos);
+        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE) {
+          descriptor = EstablishedTimings3::parse_byte_block(base_block.begin() + pos);
         } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
           descriptor = std::nullopt;
         } else {
@@ -523,6 +549,27 @@ namespace Edid {
       indent.push_back('\t');
 
     os << indent << "Dummy Descriptor\n";
+  }
+
+  void EstablishedTimings3::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent;
+    for (int i = 0; i < tabs; ++i)
+      indent.push_back('\t');
+
+    for (EstablishedTiming3Byte6 et : bitfield_to_enums<EstablishedTiming3Byte6>(bytes_6_11.at(0)))
+      os << indent << to_string(et) << '\n';
+    for (EstablishedTiming3Byte7 et : bitfield_to_enums<EstablishedTiming3Byte7>(bytes_6_11.at(1)))
+      os << indent << to_string(et) << '\n';
+    for (EstablishedTiming3Byte8 et : bitfield_to_enums<EstablishedTiming3Byte8>(bytes_6_11.at(2)))
+      os << indent << to_string(et) << '\n';
+    for (EstablishedTiming3Byte9 et : bitfield_to_enums<EstablishedTiming3Byte9>(bytes_6_11.at(3)))
+      os << indent << to_string(et) << '\n';
+    for (EstablishedTiming3Byte10 et : bitfield_to_enums<EstablishedTiming3Byte10>(bytes_6_11.at(4)))
+      os << indent << to_string(et) << '\n';
+    for (EstablishedTiming3Byte11 et : bitfield_to_enums<EstablishedTiming3Byte11>(bytes_6_11.at(5)))
+      os << indent << to_string(et) << '\n';
+
+    os << indent << '\n';
   }
 
   void print_base_block(std::ostream& os, const BaseBlock& base_block) {

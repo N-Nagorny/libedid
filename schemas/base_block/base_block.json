@@ -224,7 +224,8 @@
           { "$ref": "detailed_timing_descriptor.json" },
           { "$ref": "display_range_limits.json" },
           { "$ref": "display_name.json" },
-          { "$ref": "display_serial_number.json" }
+          { "$ref": "display_serial_number.json" },
+          { "$ref": "established_timings_3.json" }
         ]
       }
     }

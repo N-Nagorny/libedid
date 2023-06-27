@@ -26,6 +26,15 @@ BaseBlock make_edid_base() {
   };
   edid_base.eighteen_byte_descriptors[1] = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
   edid_base.eighteen_byte_descriptors[2] = DisplayName{"Hello"};
+
+  auto et_3 = EstablishedTimings3{};
+  et_3.bytes_6_11[0] |= EstablishedTiming3Byte6::ET_800x600_85;
+  et_3.bytes_6_11[2] |= EstablishedTiming3Byte8::ET_1440x900_60;
+  et_3.bytes_6_11[2] |= EstablishedTiming3Byte8::ET_1440x900_75;
+  et_3.bytes_6_11[3] |= EstablishedTiming3Byte9::ET_1600x1200_60;
+
+  edid_base.eighteen_byte_descriptors[3] = et_3;
+
   return edid_base;
 }
 

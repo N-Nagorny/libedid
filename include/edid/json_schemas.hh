@@ -22,6 +22,7 @@ namespace Edid {
       extern const char* display_name;
       extern const char* display_range_limits;
       extern const char* display_serial_number;
+      extern const char* established_timings_3;
     }
 
     namespace cta861_block {
@@ -42,6 +43,7 @@ namespace Edid {
       { json_uri{"display_name.json"}, json::parse(common::display_name) },
       { json_uri{"display_range_limits.json"}, json::parse(common::display_range_limits) },
       { json_uri{"display_serial_number.json"}, json::parse(common::display_serial_number) },
+      { json_uri{"established_timings_3.json"}, json::parse(common::established_timings_3) },
 
       { json_uri{"audio_data_block.json"}, json::parse(cta861_block::audio_data_block) },
       { json_uri{"cta861_block.json"}, json::parse(cta861_block::cta861_block) },

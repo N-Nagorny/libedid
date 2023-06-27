@@ -98,6 +98,11 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
+    else if (j.contains("established_timings_3")) {
+      EstablishedTimings3 subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
     else if (j.contains("min_v_rate_hz")) {
       DisplayRangeLimits subresult;
       from_json(j, subresult);
@@ -215,6 +220,66 @@ namespace Edid {
         j["sads"].push_back(sad.value());
       }
     }
+  }
+
+  void from_json(const nlohmann::json& j, EstablishedTimings3& established_timings_3_) {
+    EstablishedTimings3 result;
+
+    const auto& established_timings_3 = j.at("established_timings_3").get<std::vector<nlohmann::json>>();
+    for (const auto& established_timing : established_timings_3) {
+      EstablishedTiming3Byte6 byte_6 = established_timing;
+      EstablishedTiming3Byte7 byte_7 = established_timing;
+      EstablishedTiming3Byte8 byte_8 = established_timing;
+      EstablishedTiming3Byte9 byte_9 = established_timing;
+      EstablishedTiming3Byte10 byte_10 = established_timing;
+      EstablishedTiming3Byte11 byte_11 = established_timing;
+
+      if (byte_6 != ET_NOT_FOUND) {
+        result.bytes_6_11[0] |= byte_6;
+      }
+      else if (byte_7 != ET_NOT_FOUND) {
+        result.bytes_6_11[1] |= byte_7;
+      }
+      else if (byte_8 != ET_NOT_FOUND) {
+        result.bytes_6_11[2] |= byte_8;
+      }
+      else if (byte_9 != ET_NOT_FOUND) {
+        result.bytes_6_11[3] |= byte_9;
+      }
+      else if (byte_10 != ET_NOT_FOUND) {
+        result.bytes_6_11[4] |= byte_10;
+      }
+      else if (byte_11 != ET_NOT_FOUND) {
+        result.bytes_6_11[5] |= byte_11;
+      }
+    }
+
+    established_timings_3_ = std::move(result);
+  }
+
+  void to_json(nlohmann::json& j, const EstablishedTimings3& established_timings_3) {
+    nlohmann::json result;
+
+    const auto push_to_json_array = [&result] (const auto& et) {
+      if (et != ET_NOT_FOUND) {
+        result["established_timings_3"].push_back(et);
+      }
+    };
+
+    for (EstablishedTiming3Byte6 et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(0)))
+      push_to_json_array(et);
+    for (EstablishedTiming3Byte7 et : bitfield_to_enums<EstablishedTiming3Byte7>(established_timings_3.bytes_6_11.at(1)))
+      push_to_json_array(et);
+    for (EstablishedTiming3Byte8 et : bitfield_to_enums<EstablishedTiming3Byte8>(established_timings_3.bytes_6_11.at(2)))
+      push_to_json_array(et);
+    for (EstablishedTiming3Byte9 et : bitfield_to_enums<EstablishedTiming3Byte9>(established_timings_3.bytes_6_11.at(3)))
+      push_to_json_array(et);
+    for (EstablishedTiming3Byte10 et : bitfield_to_enums<EstablishedTiming3Byte10>(established_timings_3.bytes_6_11.at(4)))
+      push_to_json_array(et);
+    for (EstablishedTiming3Byte11 et : bitfield_to_enums<EstablishedTiming3Byte11>(established_timings_3.bytes_6_11.at(5)))
+      push_to_json_array(et);
+
+    j = std::move(result);
   }
 
   void from_json(const nlohmann::json& j, BaseBlock& base_block) {

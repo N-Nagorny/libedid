@@ -23,7 +23,7 @@ namespace Edid {
     std::variant<uint8_t, std::pair<uint8_t, uint8_t>, std::vector<uint8_t>> pixel_repetition_factor;
   };
 
-  const std::map<EstablishedTiming1, VideoTimingMode> established_timings_1 = {
+  const std::map<EstablishedTiming1, VideoTimingMode> et_1_to_video_mode = {
     {ET_720x400_70, { 720, 400, {70, 1}, false }},
     {ET_720x400_88, { 720, 400, {88, 1}, false }},
     {ET_640x480_60, { 640, 480, {60, 1}, false }},
@@ -34,7 +34,7 @@ namespace Edid {
     {ET_800x600_60, { 800, 600, {60, 1}, false }}
   };
 
-  const std::map<EstablishedTiming2, VideoTimingMode> established_timings_2 = {
+  const std::map<EstablishedTiming2, VideoTimingMode> et_2_to_video_mode = {
     {ET_800x600_72,   { 800, 600,   {72, 1}, false }},
     {ET_800x600_75,   { 800, 600,   {75, 1}, false }},
     {ET_832x624_75,   { 832, 624,   {75, 1}, false }},
@@ -45,8 +45,60 @@ namespace Edid {
     {ET_1280x1024_75, { 1280, 1024, {75, 1}, false }}
   };
 
-  const std::map<ManufacturersTiming, VideoTimingMode> manufacturers_timings = {
+  const std::map<ManufacturersTiming, VideoTimingMode> mt_to_video_mode = {
     {ET_1152x870_75,   { 1152, 870, {75, 1}, false }}
+  };
+
+  const std::map<std::pair<uint8_t, uint8_t>, VideoTimingMode> et_3_to_video_mode = {
+    {{0, ET_640x350_85},   { 640, 350,   {85, 1}, false }},
+    {{0, ET_640x400_85},   { 640, 400,   {85, 1}, false }},
+    {{0, ET_720x400_85},   { 720, 400,   {85, 1}, false }},
+    {{0, ET_640x480_85},   { 640, 480,   {85, 1}, false }},
+    {{0, ET_848x480_60},   { 848, 480,   {60, 1}, false }},
+    {{0, ET_800x600_85},   { 800, 600,   {85, 1}, false }},
+    {{0, ET_1024x768_85},  { 1024, 768,  {85, 1}, false }},
+    {{0, ET_1152x864_75},  { 1152, 864,  {75, 1}, false }},
+
+    {{1, ET_1280x768_60_RB},   { 1280, 768,   {60, 1}, false }},
+    {{1, ET_1280x768_60},      { 1280, 768,   {60, 1}, false }},
+    {{1, ET_1280x768_75},      { 1280, 768,   {75, 1}, false }},
+    {{1, ET_1280x768_85},      { 1280, 768,   {85, 1}, false }},
+    {{1, ET_1280x960_60},      { 1280, 960,   {60, 1}, false }},
+    {{1, ET_1280x960_85},      { 1280, 960,   {85, 1}, false }},
+    {{1, ET_1280x1024_60},     { 1280, 1024,  {60, 1}, false }},
+    {{1, ET_1280x1024_85},     { 1280, 1024,  {85, 1}, false }},
+
+    {{2, ET_1360x768_60},      { 1360, 768,   {60, 1}, false }},
+    {{2, ET_1440x900_60_RB},   { 1440, 900,   {60, 1}, false }},
+    {{2, ET_1440x900_60},      { 1440, 900,   {60, 1}, false }},
+    {{2, ET_1440x900_75},      { 1440, 900,   {75, 1}, false }},
+    {{2, ET_1440x900_85},      { 1440, 900,   {85, 1}, false }},
+    {{2, ET_1440x1050_60_RB},  { 1440, 1050,  {60, 1}, false }},
+    {{2, ET_1440x1050_60},     { 1440, 1050,  {60, 1}, false }},
+    {{2, ET_1440x1050_75},     { 1440, 1050,  {75, 1}, false }},
+
+    {{3, ET_1400x1050_85},     { 1440, 1050,  {85, 1}, false }},
+    {{3, ET_1680x1050_60_RB},  { 1680, 1050,  {60, 1}, false }},
+    {{3, ET_1680x1050_60},     { 1680, 1050,  {60, 1}, false }},
+    {{3, ET_1680x1050_75},     { 1680, 1050,  {75, 1}, false }},
+    {{3, ET_1680x1050_85},     { 1680, 1050,  {85, 1}, false }},
+    {{3, ET_1600x1200_60},     { 1600, 1200,  {60, 1}, false }},
+    {{3, ET_1600x1200_65},     { 1600, 1200,  {65, 1}, false }},
+    {{3, ET_1600x1200_70},     { 1600, 1200,  {70, 1}, false }},
+
+    {{4, ET_1600x1200_75},     { 1600, 1200,  {75, 1}, false }},
+    {{4, ET_1600x1200_85},     { 1600, 1200,  {85, 1}, false }},
+    {{4, ET_1792x1344_60},     { 1792, 1344,  {60, 1}, false }},
+    {{4, ET_1792x1344_75},     { 1792, 1344,  {75, 1}, false }},
+    {{4, ET_1856x1392_60},     { 1856, 1392,  {60, 1}, false }},
+    {{4, ET_1856x1392_75},     { 1856, 1392,  {75, 1}, false }},
+    {{4, ET_1920x1200_60_RB},  { 1920, 1200,  {60, 1}, false }},
+    {{4, ET_1920x1200_60},     { 1920, 1200,  {60, 1}, false }},
+
+    {{5, ET_1920x1200_75},     { 1920, 1200,  {75, 1}, false }},
+    {{5, ET_1920x1200_85},     { 1920, 1200,  {85, 1}, false }},
+    {{5, ET_1920x1440_60},     { 1920, 1440,  {60, 1}, false }},
+    {{5, ET_1920x1440_75},     { 1920, 1440,  {75, 1}, false }}
   };
 
   std::optional<Cta861VideoTimingMode> get_cta861_video_timing_mode(uint8_t vic);
@@ -56,19 +108,27 @@ namespace Edid {
   template <class Function>
   Function for_each_mode(const BaseBlock& base_block, Function fn) {
     for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1)) {
-      fn(established_timings_1.at(et));
+      fn(et_1_to_video_mode.at(et));
     }
     for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2)) {
-      fn(established_timings_2.at(et));
+      fn(et_2_to_video_mode.at(et));
     }
     for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings)) {
-      fn(manufacturers_timings.at(et));
+      fn(mt_to_video_mode.at(et));
     }
 
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
       if (descriptor.has_value()) {
         if (std::visit(is_dtd_visitor, descriptor.value())) {
           fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor.value())));
+        }
+        else if (std::visit(is_et3_visitor, descriptor.value())) {
+          const auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor.value());
+          for (int i = 0; i < 6; ++i) {
+            for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
+              fn(et_3_to_video_mode.at({i, et}));
+            }
+          }
         }
       }
     }
@@ -79,17 +139,17 @@ namespace Edid {
   template <class Function>
   void remove_mode_if(BaseBlock& base_block, Function fn) {
     for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1)) {
-      if (fn(established_timings_1.at(et))) {
+      if (fn(et_1_to_video_mode.at(et))) {
         base_block.established_timings_1 &= ~et;
       }
     }
     for (EstablishedTiming2 et : bitfield_to_enums<EstablishedTiming2>(base_block.established_timings_2)) {
-      if (fn(established_timings_2.at(et))) {
+      if (fn(et_2_to_video_mode.at(et))) {
         base_block.established_timings_2 &= ~et;
       }
     }
     for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings)) {
-      if (fn(manufacturers_timings.at(et))) {
+      if (fn(mt_to_video_mode.at(et))) {
         base_block.manufacturers_timings &= ~et;
       }
     }
@@ -99,6 +159,16 @@ namespace Edid {
         if (std::visit(is_dtd_visitor, descriptor.value())) {
           if (fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor.value())))) {
             descriptor = std::nullopt;
+          }
+        }
+        else if (std::visit(is_et3_visitor, descriptor.value())) {
+          auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor.value());
+          for (int i = 0; i < 6; ++i) {
+            for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
+              if (fn(et_3_to_video_mode.at({i, et}))) {
+                established_timings_3.bytes_6_11.at(i) &= ~et;
+              }
+            }
           }
         }
       }

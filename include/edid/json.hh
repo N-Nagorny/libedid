@@ -17,10 +17,12 @@ namespace Edid {
 
   void from_json(const nlohmann::json& j, BaseBlock&);
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor&);
+  void from_json(const nlohmann::json& j, EstablishedTimings3&);
   void from_json(const nlohmann::json& j, EdidData&);
 
   void to_json(nlohmann::json& j, const BaseBlock&);
   void to_json(nlohmann::json& j, const DetailedTimingDescriptor&);
+  void to_json(nlohmann::json& j, const EstablishedTimings3&);
   void to_json(nlohmann::json& j, const EdidData&);
 
   void from_json(const nlohmann::json& j, UnknownDataBlock&);

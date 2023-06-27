@@ -13,10 +13,11 @@
 #define BASE_START_MANUFACTURE_YEAR 1990
 
 #define BASE_18_BYTE_DESCRIPTORS 4
-#define BASE_18_BYTE_DESCRIPTORS_OFFSET 54
 
 #define BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE 5
 #define MAX_DISPLAY_NAME_CHARS 13
+
+#define ET_NOT_FOUND 0
 
 namespace Edid {
   static const std::array<uint8_t, 8> base_block_header = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
@@ -94,17 +95,17 @@ namespace Edid {
     {ET_640x480_72, "640x480@72Hz"},
     {ET_640x480_75, "640x480@75Hz"},
     {ET_800x600_56, "800x600@56Hz"},
-    {ET_800x600_60, "800x600@60Hz"},
+    {ET_800x600_60, "800x600@60Hz"}
   })
 
   enum EstablishedTiming2 {
-    ET_800x600_72 = 1 << 7,
-    ET_800x600_75 = 1 << 6,
-    ET_832x624_75 = 1 << 5,
+    ET_800x600_72   = 1 << 7,
+    ET_800x600_75   = 1 << 6,
+    ET_832x624_75   = 1 << 5,
     ET_1024x768i_87 = 1 << 4,
-    ET_1024x768_60 = 1 << 3,
-    ET_1024x768_70 = 1 << 2,
-    ET_1024x768_75 = 1 << 1,
+    ET_1024x768_60  = 1 << 3,
+    ET_1024x768_70  = 1 << 2,
+    ET_1024x768_75  = 1 << 1,
     ET_1280x1024_75 = 1 << 0
   };
 
@@ -116,7 +117,7 @@ namespace Edid {
     {ET_1024x768_60, "1024x768@60Hz"},
     {ET_1024x768_70, "1024x768@70Hz"},
     {ET_1024x768_75, "1024x768@75Hz"},
-    {ET_1280x1024_75, "1280x1024@75Hz"},
+    {ET_1280x1024_75, "1280x1024@75Hz"}
   })
 
   enum ManufacturersTiming {
@@ -124,7 +125,143 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(ManufacturersTiming, {
-    {ET_1152x870_75, "1152x870@75Hz"},
+    {ET_1152x870_75, "1152x870@75Hz"}
+  })
+
+  enum EstablishedTiming3Byte6 {
+    ET_3_6_NOT_FOUND = ET_NOT_FOUND,
+    ET_640x350_85    = 1 << 7,
+    ET_640x400_85    = 1 << 6,
+    ET_720x400_85    = 1 << 5,
+    ET_640x480_85    = 1 << 4,
+    ET_848x480_60    = 1 << 3,
+    ET_800x600_85    = 1 << 2,
+    ET_1024x768_85   = 1 << 1,
+    ET_1152x864_75   = 1 << 0
+  };
+
+  STRINGIFY_ENUM(EstablishedTiming3Byte6, {
+    {ET_3_6_NOT_FOUND,   ""},
+    {ET_640x350_85,  "640x350@85Hz"},
+    {ET_640x400_85,  "640x400@85Hz"},
+    {ET_720x400_85,  "720x400@85Hz"},
+    {ET_640x480_85,  "640x480@85Hz"},
+    {ET_848x480_60,  "848x480@60Hz"},
+    {ET_800x600_85,  "800x600@85Hz"},
+    {ET_1024x768_85, "1024x768@85Hz"},
+    {ET_1152x864_75, "1152x864@75Hz"}
+  })
+
+  enum EstablishedTiming3Byte7 {
+    ET_3_7_NOT_FOUND  = ET_NOT_FOUND,
+    ET_1280x768_60_RB = 1 << 7,
+    ET_1280x768_60    = 1 << 6,
+    ET_1280x768_75    = 1 << 5,
+    ET_1280x768_85    = 1 << 4,
+    ET_1280x960_60    = 1 << 3,
+    ET_1280x960_85    = 1 << 2,
+    ET_1280x1024_60   = 1 << 1,
+    ET_1280x1024_85   = 1 << 0
+  };
+
+  STRINGIFY_ENUM(EstablishedTiming3Byte7, {
+    {ET_3_7_NOT_FOUND,   ""},
+    {ET_1280x768_60_RB,  "1280x768@60Hz_RB"},
+    {ET_1280x768_60,     "1280x768@60Hz"},
+    {ET_1280x768_75,     "1280x768@75Hz"},
+    {ET_1280x768_85,     "1280x768@85Hz"},
+    {ET_1280x960_60,     "1280x960@60Hz"},
+    {ET_1280x960_85,     "1280x960@85Hz"},
+    {ET_1280x1024_60,    "1280x1024@60Hz"},
+    {ET_1280x1024_85,    "1280x1024@85Hz"}
+  })
+
+  enum EstablishedTiming3Byte8 {
+    ET_3_8_NOT_FOUND = ET_NOT_FOUND,
+    ET_1360x768_60 = 1 << 7,
+    ET_1440x900_60_RB = 1 << 6,
+    ET_1440x900_60 = 1 << 5,
+    ET_1440x900_75 = 1 << 4,
+    ET_1440x900_85 = 1 << 3,
+    ET_1440x1050_60_RB = 1 << 2,
+    ET_1440x1050_60 = 1 << 1,
+    ET_1440x1050_75 = 1 << 0
+  };
+
+  STRINGIFY_ENUM(EstablishedTiming3Byte8, {
+    {ET_3_8_NOT_FOUND,   ""},
+    {ET_1360x768_60,     "1360x768@60Hz"},
+    {ET_1440x900_60_RB,  "1440x900@60Hz_RB"},
+    {ET_1440x900_60,     "1440x900@60Hz"},
+    {ET_1440x900_75,     "1440x900@75Hz"},
+    {ET_1440x900_85,     "1440x900@85Hz"},
+    {ET_1440x1050_60_RB, "1440x1050@60Hz_RB"},
+    {ET_1440x1050_60,    "1440x1050@60Hz"},
+    {ET_1440x1050_75,    "1440x1050@75Hz"}
+  })
+
+  enum EstablishedTiming3Byte9 {
+    ET_3_9_NOT_FOUND = ET_NOT_FOUND,
+    ET_1400x1050_85 = 1 << 7,
+    ET_1680x1050_60_RB = 1 << 6,
+    ET_1680x1050_60 = 1 << 5,
+    ET_1680x1050_75 = 1 << 4,
+    ET_1680x1050_85 = 1 << 3,
+    ET_1600x1200_60 = 1 << 2,
+    ET_1600x1200_65 = 1 << 1,
+    ET_1600x1200_70 = 1 << 0
+  };
+
+  STRINGIFY_ENUM(EstablishedTiming3Byte9, {
+    {ET_3_9_NOT_FOUND,   ""},
+    {ET_1400x1050_85,     "1400x1050@85Hz"},
+    {ET_1680x1050_60_RB,  "1680x1050@60Hz_RB"},
+    {ET_1680x1050_60,     "1680x1050@60Hz"},
+    {ET_1680x1050_75,     "1680x1050@75Hz"},
+    {ET_1680x1050_85,     "1680x1050@85Hz"},
+    {ET_1600x1200_60,     "1600x1200@60Hz"},
+    {ET_1600x1200_65,     "1600x1200@65Hz"},
+    {ET_1600x1200_70,     "1600x1200@70Hz"}
+  })
+
+  enum EstablishedTiming3Byte10 {
+    ET_3_10_NOT_FOUND = ET_NOT_FOUND,
+    ET_1600x1200_75 = 1 << 7,
+    ET_1600x1200_85 = 1 << 6,
+    ET_1792x1344_60 = 1 << 5,
+    ET_1792x1344_75 = 1 << 4,
+    ET_1856x1392_60 = 1 << 3,
+    ET_1856x1392_75 = 1 << 2,
+    ET_1920x1200_60_RB = 1 << 1,
+    ET_1920x1200_60 = 1 << 0
+  };
+
+  STRINGIFY_ENUM(EstablishedTiming3Byte10, {
+    {ET_3_10_NOT_FOUND,   ""},
+    {ET_1600x1200_75,     "1600x1200@75Hz"},
+    {ET_1600x1200_85,     "1600x1200@85Hz"},
+    {ET_1792x1344_60,     "1792x1344@60Hz"},
+    {ET_1792x1344_75,     "1792x1344@75Hz"},
+    {ET_1856x1392_60,     "1856x1392@60Hz"},
+    {ET_1856x1392_75,     "1856x1392@75Hz"},
+    {ET_1920x1200_60_RB,  "1920x1200@60Hz_RB"},
+    {ET_1920x1200_60,     "1920x1200@60Hz"}
+  })
+
+  enum EstablishedTiming3Byte11 {
+    ET_3_11_NOT_FOUND = ET_NOT_FOUND,
+    ET_1920x1200_75 = 1 << 7,
+    ET_1920x1200_85 = 1 << 6,
+    ET_1920x1440_60 = 1 << 5,
+    ET_1920x1440_75 = 1 << 4
+  };
+
+  STRINGIFY_ENUM(EstablishedTiming3Byte11, {
+    {ET_3_11_NOT_FOUND,   ""},
+    {ET_1920x1200_75,     "1920x1200@75Hz"},
+    {ET_1920x1200_85,     "1920x1200@85Hz"},
+    {ET_1920x1440_60,     "1920x1440@60Hz"},
+    {ET_1920x1440_75,     "1920x1440@75Hz"}
   })
 
   using EstablishedTimings = uint8_t;
@@ -309,6 +446,31 @@ namespace Edid {
   };
 
   bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs);
+
+  struct EstablishedTimings3 {
+    std::array<EstablishedTimings, 6> bytes_6_11{};
+
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    uint8_t type() const {
+      return BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
+    }
+
+    template<typename Iterator>
+    static EstablishedTimings3 parse_byte_block(Iterator start) {
+      EstablishedTimings3 result;
+      start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
+      start++;
+
+      for (int i = 0; i < 6; ++i) {
+        result.bytes_6_11[i] = *(start + i);
+      }
+      return result;
+    };
+  };
+
+  bool operator==(const EstablishedTimings3& lhs, const EstablishedTimings3& rhs);
 
   struct ManufactureDate {
     uint8_t week_of_manufacture;

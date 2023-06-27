@@ -92,6 +92,18 @@ TEST(CommonCircularTests, DisplaySerialNumber) {
   EXPECT_EQ(name, name_parsed);
 }
 
+TEST(CommonCircularTests, EstablishedTimings3) {
+  auto et_3 = EstablishedTimings3{};
+  et_3.bytes_6_11[2] |= EstablishedTiming3Byte8::ET_1440x900_60;
+  et_3.bytes_6_11[2] |= EstablishedTiming3Byte8::ET_1440x900_75;
+  et_3.bytes_6_11[3] |= EstablishedTiming3Byte9::ET_1600x1200_60;
+
+  const auto et_3_binary = et_3.generate_byte_block();
+  const auto et_3_parsed = EstablishedTimings3::parse_byte_block(et_3_binary.begin());
+
+  EXPECT_EQ(et_3, et_3_parsed);
+}
+
 TEST(CommonCircularTests, DisplayName) {
   auto name = DisplayName{"TEST_NAME"};
   auto name_binary = name.generate_byte_block();
@@ -268,6 +280,7 @@ TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
   BaseBlock edid_base_after = make_edid_base();
   edid_base_after.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
   edid_base_after.eighteen_byte_descriptors[0] = std::nullopt;
+  std::get<EstablishedTimings3>(edid_base_after.eighteen_byte_descriptors[3].value()).bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
   EXPECT_EQ(edid_base_before, edid_base_after);
 }
 
@@ -333,6 +346,7 @@ TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
 
   edid_after.base_block.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
   edid_after.base_block.eighteen_byte_descriptors[0] = std::nullopt;
+  std::get<EstablishedTimings3>(edid_after.base_block.eighteen_byte_descriptors[3].value()).bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
 
   auto iter = std::find_if(edid_after.extension_blocks->at(0).data_block_collection.begin(), edid_after.extension_blocks->at(0).data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
