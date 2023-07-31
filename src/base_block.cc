@@ -380,7 +380,8 @@ namespace Edid {
   }
 
   std::pair<uint8_t, uint8_t> generate_standard_timing(const std::optional<StandardTiming>& std_timing) {
-    uint8_t byte_1, byte_2 = 0x01;
+    uint8_t byte_1 = 0x01;
+    uint8_t byte_2 = 0x01;
 
     if (std_timing.has_value()) {
       byte_1 = std_timing->x_resolution / 8 - 31;
