@@ -44,6 +44,9 @@ TEST(Bcp00501Tests, BasicTest) {
     VIDEO_MODE(1600, 1200, ARR(RATE(60)), ARR("progressive")),
     VIDEO_MODE(800, 600, ARR(RATE(85)), ARR("progressive")),
     VIDEO_MODE(720, 576, ARR(RATE(50)), ARR("progressive")),
+    VIDEO_MODE(1152, 864, ARR(RATE(75)), ARR("progressive")),
+    VIDEO_MODE(1280, 1024, ARR(RATE(60)), ARR("progressive")),
+    VIDEO_MODE(1280, 800, ARR(RATE(60)), ARR("progressive")),
   };
 
   EdidData edid{make_edid_base(), std::vector<Cta861Block>{make_cta861_ext()}};

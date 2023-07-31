@@ -101,6 +101,58 @@ namespace Edid {
     {{5, ET_1920x1440_75},     { 1920, 1440,  {75, 1}, false }}
   };
 
+  const std::map<std::pair<uint8_t, uint8_t>, VideoTimingMode> std_2_byte_code_to_video_mode = {
+    { {0x31, 0x19}, { 640, 400,   { 85, 1 }, false } },
+    { {0x31, 0x40}, { 640, 480,   { 60, 1 }, false } },
+    { {0x31, 0x4c}, { 640, 480,   { 72, 1 }, false } },
+    { {0x31, 0x4f}, { 640, 480,   { 75, 1 }, false } },
+    { {0x31, 0x59}, { 640, 480,   { 85, 1 }, false } },
+    { {0x45, 0x40}, { 800, 600,   { 60, 1 }, false } },
+    { {0x45, 0x4c}, { 800, 600,   { 72, 1 }, false } },
+    { {0x45, 0x4f}, { 800, 600,   { 75, 1 }, false } },
+    { {0x45, 0x59}, { 800, 600,   { 85, 1 }, false } },
+    { {0x61, 0x40}, { 1024, 768,  { 60, 1 }, false } },
+    { {0x61, 0x4c}, { 1024, 768,  { 70, 1 }, false } },
+    { {0x61, 0x4f}, { 1024, 768,  { 75, 1 }, false } },
+    { {0x61, 0x59}, { 1024, 768,  { 85, 1 }, false } },
+    { {0x71, 0x4f}, { 1152, 864,  { 75, 1 }, false } },
+    { {0x81, 0xc0}, { 1280, 720,  { 60, 1 }, false } },
+    { {0x81, 0x00}, { 1280, 800,  { 60, 1 }, false } },
+    { {0x81, 0x0f}, { 1280, 800,  { 75, 1 }, false } },
+    { {0x81, 0x19}, { 1280, 800,  { 85, 1 }, false } },
+    { {0x81, 0x40}, { 1280, 960,  { 60, 1 }, false } },
+    { {0x81, 0x59}, { 1280, 960,  { 85, 1 }, false } },
+    { {0x81, 0x80}, { 1280, 1024, { 60, 1 }, false } },
+    { {0x81, 0x8f}, { 1280, 1024, { 75, 1 }, false } },
+    { {0x81, 0x99}, { 1280, 1024, { 85, 1 }, false } },
+    { {0x90, 0x40}, { 1400, 1050, { 60, 1 }, false } },
+    { {0x90, 0x4f}, { 1400, 1050, { 75, 1 }, false } },
+    { {0x90, 0x59}, { 1400, 1050, { 85, 1 }, false } },
+    { {0x95, 0x00}, { 1440, 900,  { 60, 1 }, false } },
+    { {0x95, 0x0f}, { 1440, 900,  { 75, 1 }, false } },
+    { {0x95, 0x19}, { 1440, 900,  { 85, 1 }, false } },
+    { {0xa9, 0xc0}, { 1600, 900,  { 60, 1 }, false } },
+    { {0xa9, 0x40}, { 1600, 1200, { 60, 1 }, false } },
+    { {0xa9, 0x45}, { 1600, 1200, { 65, 1 }, false } },
+    { {0xa9, 0x4a}, { 1600, 1200, { 70, 1 }, false } },
+    { {0xa9, 0x4f}, { 1600, 1200, { 75, 1 }, false } },
+    { {0xa9, 0x59}, { 1600, 1200, { 85, 1 }, false } },
+    { {0xb3, 0x00}, { 1680, 1050, { 60, 1 }, false } },
+    { {0xb3, 0x0f}, { 1680, 1050, { 75, 1 }, false } },
+    { {0xb3, 0x19}, { 1680, 1050, { 85, 1 }, false } },
+    { {0xc1, 0x40}, { 1792, 1344, { 60, 1 }, false } },
+    { {0xc1, 0x4f}, { 1792, 1344, { 75, 1 }, false } },
+    { {0xc9, 0x40}, { 1856, 1392, { 60, 1 }, false } },
+    { {0xc9, 0x4f}, { 1856, 1392, { 75, 1 }, false } },
+    { {0xd1, 0xc0}, { 1920, 1080, { 60, 1 }, false } },
+    { {0xd1, 0x00}, { 1920, 1200, { 60, 1 }, false } },
+    { {0xd1, 0x0f}, { 1920, 1200, { 75, 1 }, false } },
+    { {0xd1, 0x19}, { 1920, 1200, { 85, 1 }, false } },
+    { {0xd1, 0x40}, { 1920, 1440, { 60, 1 }, false } },
+    { {0xd1, 0x4f}, { 1920, 1440, { 75, 1 }, false } },
+    { {0xe1, 0xc0}, { 2048, 1152, { 60, 1 }, false } }
+  };
+
   std::optional<Cta861VideoTimingMode> get_cta861_video_timing_mode(uint8_t vic);
 
   VideoTimingMode to_video_timing_mode(const DetailedTimingDescriptor& dtd, uint8_t pixel_repetition_factor = 1);
@@ -115,6 +167,15 @@ namespace Edid {
     }
     for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings)) {
       fn(mt_to_video_mode.at(et));
+    }
+
+    for (const auto& standard_timing : base_block.standard_timings) {
+      if (standard_timing.has_value()) {
+        const auto std_2_byte_code = generate_standard_timing(standard_timing);
+        if (std_2_byte_code_to_video_mode.count(std_2_byte_code) != 0) {
+          fn(std_2_byte_code_to_video_mode.at(std_2_byte_code));
+        }
+      }
     }
 
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
@@ -137,7 +198,7 @@ namespace Edid {
   }
 
   template <class Function>
-  void remove_mode_if(BaseBlock& base_block, Function fn) {
+  void remove_mode_if(BaseBlock& base_block, Function fn, bool remove_unknown = false) {
     for (EstablishedTiming1 et : bitfield_to_enums<EstablishedTiming1>(base_block.established_timings_1)) {
       if (fn(et_1_to_video_mode.at(et))) {
         base_block.established_timings_1 &= ~et;
@@ -151,6 +212,22 @@ namespace Edid {
     for (ManufacturersTiming et : bitfield_to_enums<ManufacturersTiming>(base_block.manufacturers_timings)) {
       if (fn(mt_to_video_mode.at(et))) {
         base_block.manufacturers_timings &= ~et;
+      }
+    }
+
+    for (auto& standard_timing : base_block.standard_timings) {
+      if (standard_timing.has_value()) {
+        const auto std_2_byte_code = generate_standard_timing(standard_timing);
+        if (std_2_byte_code_to_video_mode.count(std_2_byte_code) != 0) {
+          if (fn(std_2_byte_code_to_video_mode.at(std_2_byte_code))) {
+            standard_timing = std::nullopt;
+          }
+        }
+        else {
+          if (remove_unknown) {
+            standard_timing = std::nullopt;
+          }
+        }
       }
     }
 
@@ -267,7 +344,7 @@ namespace Edid {
 
   template <class Function>
   void remove_mode_if(EdidData& edid, Function fn, bool remove_unknown = false) {
-    remove_mode_if(edid.base_block, fn);
+    remove_mode_if(edid.base_block, fn, remove_unknown);
 
     if (edid.extension_blocks.has_value()) {
       for (auto& ext_block : edid.extension_blocks.value()) {

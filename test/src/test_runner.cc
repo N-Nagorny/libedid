@@ -281,6 +281,7 @@ TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
   edid_base_after.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
   edid_base_after.eighteen_byte_descriptors[0] = std::nullopt;
   std::get<EstablishedTimings3>(edid_base_after.eighteen_byte_descriptors[3].value()).bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
+  edid_base_after.standard_timings[4] = std::nullopt;
   EXPECT_EQ(edid_base_before, edid_base_after);
 }
 
@@ -347,6 +348,7 @@ TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
   edid_after.base_block.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
   edid_after.base_block.eighteen_byte_descriptors[0] = std::nullopt;
   std::get<EstablishedTimings3>(edid_after.base_block.eighteen_byte_descriptors[3].value()).bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
+  edid_after.base_block.standard_timings[4] = std::nullopt;
 
   auto iter = std::find_if(edid_after.extension_blocks->at(0).data_block_collection.begin(), edid_after.extension_blocks->at(0).data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
