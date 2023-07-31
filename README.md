@@ -17,6 +17,10 @@ cmake --build build/
 
 ## Known issues
 
+### Development-related
+
+- CMake doesn't regenerate C++ with JSON Schemas when they're changed.
+
 ### Base EDID
 
 - Setting Aspect Ratio instead of Screen Size is not supported.
