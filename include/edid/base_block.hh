@@ -547,6 +547,7 @@ namespace Edid {
   );
 
   std::optional<StandardTiming> parse_standard_timing(uint8_t byte_1, uint8_t byte_2);
+  std::pair<uint8_t, uint8_t> generate_standard_timing(const std::optional<StandardTiming>& std_timing);
 
   /** Parses EDID Base Block binary into Base Block structure and number of extension blocks in EDID binary */
   std::pair<BaseBlock, uint8_t> parse_base_block(

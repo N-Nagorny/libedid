@@ -337,14 +337,9 @@ namespace Edid {
 
     // Standard Timings
     for (const std::optional<StandardTiming>& std_timing : base_block.standard_timings) {
-      if (std_timing.has_value()) {
-        result[pos++] = std_timing->x_resolution / 8 - 31;
-        result[pos] = std_timing->aspect_ratio << 6;
-        result[pos++] |= (std_timing->v_frequency - 60) & BITMASK_TRUE(6);
-      } else {
-        result[pos++] = 0x01;
-        result[pos++] = 0x01;
-      }
+      const auto std_timing_bytes = generate_standard_timing(std_timing);
+      result[pos++] = std_timing_bytes.first;
+      result[pos++] = std_timing_bytes.second;
     }
 
     // 18 byte descriptors
@@ -382,6 +377,18 @@ namespace Edid {
       result = std_timing;
     }
     return result;
+  }
+
+  std::pair<uint8_t, uint8_t> generate_standard_timing(const std::optional<StandardTiming>& std_timing) {
+    uint8_t byte_1, byte_2 = 0x01;
+
+    if (std_timing.has_value()) {
+      byte_1 = std_timing->x_resolution / 8 - 31;
+      byte_2 = std_timing->aspect_ratio << 6;
+      byte_2 |= (std_timing->v_frequency - 60) & BITMASK_TRUE(6);
+    }
+
+    return std::make_pair(byte_1, byte_2);
   }
 
   std::pair<BaseBlock, uint8_t> parse_base_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block) {
