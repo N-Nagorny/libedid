@@ -27,12 +27,8 @@ namespace Edid {
     );
   }
 
-  bool operator==(const DisplayName& lhs, const DisplayName& rhs) {
-    return lhs.display_product_name == rhs.display_product_name;
-  }
-
-  bool operator==(const DisplaySerialNumber& lhs, const DisplaySerialNumber& rhs) {
-    return lhs.display_serial_number == rhs.display_serial_number;
+  bool operator==(const AsciiString& lhs, const AsciiString& rhs) {
+    return lhs.string == rhs.string;
   }
 
   bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs) {
@@ -171,49 +167,24 @@ namespace Edid {
     return result;
   }
 
-  std::array<uint8_t, EIGHTEEN_BYTES> DisplayName::generate_byte_block() const {
+  std::array<uint8_t, EIGHTEEN_BYTES> AsciiString::generate_byte_block() const {
     std::array<uint8_t, EIGHTEEN_BYTES> result;
     result.fill(0x0);
     int pos = 0;
 
-    if (display_product_name.size() > MAX_DISPLAY_NAME_CHARS)
-      throw EdidException("Display Name is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
+    if (string.size() > MAX_ASCII_STRING_LENGTH)
+      throw EdidException(to_string(descriptor_type) + " is longer than " +
+            std::to_string(MAX_ASCII_STRING_LENGTH) + " chars.");
 
     result[pos++] = 0x0;
     result[pos++] = 0x0;
     result[pos++] = 0x0;
-    result[pos++] = BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
+    result[pos++] = descriptor_type;
     result[pos++] = 0x0;
 
-    for (int i = 0; i < display_product_name.size(); ++i)
-      result[pos++] = display_product_name[i];
-    const int8_t padding = MAX_DISPLAY_NAME_CHARS - display_product_name.size() - 1; // exclude '\n' from the padding
-    if (padding >= 0) {
-      result[pos++] = '\n';
-      for (int i = 0; i < padding; ++i)
-        result[pos++] = ' ';
-    }
-
-    return result;
-  }
-
-  std::array<uint8_t, EIGHTEEN_BYTES> DisplaySerialNumber::generate_byte_block() const {
-    std::array<uint8_t, EIGHTEEN_BYTES> result;
-    result.fill(0x0);
-    int pos = 0;
-
-    if (display_serial_number.size() > MAX_DISPLAY_NAME_CHARS)
-      throw EdidException("Display Serial Number is more than " + std::to_string(MAX_DISPLAY_NAME_CHARS) + " chars.");
-
-    result[pos++] = 0x0;
-    result[pos++] = 0x0;
-    result[pos++] = 0x0;
-    result[pos++] = BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE;
-    result[pos++] = 0x0;
-
-    for (int i = 0; i < display_serial_number.size(); ++i)
-      result[pos++] = display_serial_number[i];
-    const int8_t padding = MAX_DISPLAY_NAME_CHARS - display_serial_number.size() - 1; // exclude '\n' from the padding
+    for (int i = 0; i < string.size(); ++i)
+      result[pos++] = string[i];
+    const int8_t padding = MAX_ASCII_STRING_LENGTH - string.size() - 1; // exclude '\n' from the padding
     if (padding >= 0) {
       result[pos++] = '\n';
       for (int i = 0; i < padding; ++i)
@@ -485,10 +456,8 @@ namespace Edid {
         uint8_t display_descriptor_type = base_block[pos + 3];
         if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
           descriptor = DisplayRangeLimits::parse_byte_block(base_block.begin() + pos);
-        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_NAME_TYPE) {
-          descriptor = DisplayName::parse_byte_block(base_block.begin() + pos);
-        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE) {
-          descriptor = DisplaySerialNumber::parse_byte_block(base_block.begin() + pos);
+        } else if (is_18_byte_descriptor_ascii_string(display_descriptor_type)) {
+          descriptor = AsciiString::parse_byte_block(base_block.begin() + pos);
         } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE) {
           descriptor = EstablishedTimings3::parse_byte_block(base_block.begin() + pos);
         } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
@@ -535,20 +504,12 @@ namespace Edid {
       << max_pixel_clock_rate_mhz << " MHz\n";
   }
 
-  void DisplayName::print(std::ostream& os, uint8_t tabs) const {
+  void AsciiString::print(std::ostream& os, uint8_t tabs) const {
     std::string indent;
     for (int i = 0; i < tabs; ++i)
       indent.push_back('\t');
 
-    os << indent << "Display Name: " << display_product_name << '\n';
-  }
-
-  void DisplaySerialNumber::print(std::ostream& os, uint8_t tabs) const {
-    std::string indent;
-    for (int i = 0; i < tabs; ++i)
-      indent.push_back('\t');
-
-    os << indent << "Display Serial Number: " << display_serial_number << '\n';
+    os << indent << to_string(descriptor_type) << ": " << string << '\n';
   }
 
   void DummyDescriptor::print(std::ostream& os, uint8_t tabs) const {

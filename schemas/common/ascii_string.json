@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Describes a Display Descriptor consisting of an ASCII string",
+  "additionalProperties": false,
+  "minProperties": 2,
+  "properties": {
+    "string": {
+      "type": "string",
+      "maxLength": 12
+    },
+    "descriptor_type": {
+        "type": "string",
+        "enum": [
+            "Unspecified Text",
+            "Display Name",
+            "Serial Number"
+        ]
+      }
+  }
+}

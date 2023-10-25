@@ -15,7 +15,7 @@
 #define BASE_18_BYTE_DESCRIPTORS 4
 
 #define BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE 5
-#define MAX_DISPLAY_NAME_CHARS 13
+#define MAX_ASCII_STRING_LENGTH 13
 
 #define ET_NOT_FOUND 0
 
@@ -374,28 +374,50 @@ namespace Edid {
 
   bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
 
-  struct DisplayName {
-    std::string display_product_name; // The maximum is 13 chars
+  enum AsciiStringType {
+    ASCII_DISPLAY_NAME = 0xFC,
+    ASCII_UNSPECIFIED_TEXT = 0xFE,
+    ASCII_SERIAL_NUMBER = 0xFF
+  };
+
+  STRINGIFY_ENUM(AsciiStringType, {
+    {ASCII_DISPLAY_NAME,      "Display Name"},
+    {ASCII_UNSPECIFIED_TEXT,  "Unspecified Text"},
+    {ASCII_SERIAL_NUMBER,     "Serial Number"}
+  })
+
+  inline bool is_18_byte_descriptor_ascii_string(uint8_t descriptor_type) {
+    for (uint8_t type : {ASCII_DISPLAY_NAME, ASCII_UNSPECIFIED_TEXT, ASCII_SERIAL_NUMBER}) {
+      if (descriptor_type == type) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  struct AsciiString {
+    std::string string; // The maximum is 13 chars
+    AsciiStringType descriptor_type;
 
 #ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplayName, display_product_name)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(AsciiString, string, descriptor_type)
 #endif
 
     uint8_t type() const {
-      return BASE_DISPLAY_DESCRIPTOR_NAME_TYPE;
+      return descriptor_type;
     }
 
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
     template<typename Iterator>
-    static DisplayName parse_byte_block(Iterator start) {
-      DisplayName result;
+    static AsciiString parse_byte_block(Iterator start) {
+      AsciiString result;
       start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
 
-      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS; ++i) {
+      for (int i = 0; i < MAX_ASCII_STRING_LENGTH; ++i) {
         if (*(start + i) != '\n')
-          result.display_product_name.push_back(*(start + i));
+          result.string.push_back(*(start + i));
         else
           break;
       }
@@ -403,38 +425,7 @@ namespace Edid {
     };
   };
 
-  bool operator==(const DisplayName& lhs, const DisplayName& rhs);
-
-  struct DisplaySerialNumber {
-    std::string display_serial_number; // The maximum is 13 chars
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplaySerialNumber, display_serial_number)
-#endif
-
-    uint8_t type() const {
-      return BASE_DISPLAY_DESCRIPTOR_SERIAL_NUMBER_TYPE;
-    }
-
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
-
-    template<typename Iterator>
-    static DisplaySerialNumber parse_byte_block(Iterator start) {
-      DisplaySerialNumber result;
-      start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
-
-      for (int i = 0; i < MAX_DISPLAY_NAME_CHARS; ++i) {
-        if (*(start + i) != '\n')
-          result.display_serial_number.push_back(*(start + i));
-        else
-          break;
-      }
-      return result;
-    };
-  };
-
-  bool operator==(const DisplaySerialNumber& lhs, const DisplaySerialNumber& rhs);
+  bool operator==(const AsciiString& lhs, const AsciiString& rhs);
 
   struct DummyDescriptor {
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;

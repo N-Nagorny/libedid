@@ -114,7 +114,8 @@ TEST(JsonTests, BaseBlockCircularTest) {
                 "video_timing_support":"Bare Limits"
             },
             {
-                "display_product_name":"Hello"
+                "string":"Hello",
+                "descriptor_type": "Unspecified Text"
             },
             {
                 "established_timings_3": [
@@ -317,7 +318,8 @@ TEST(JsonTests, FullEdidGenerating) {
             "video_timing_support":"Bare Limits"
           },
           {
-            "display_product_name":"Hello"
+            "string":"Hello",
+            "descriptor_type": "Unspecified Text"
           },
           {
             "established_timings_3": [

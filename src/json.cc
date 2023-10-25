@@ -88,13 +88,8 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
-    else if (j.contains("display_product_name")) {
-      DisplayName subresult;
-      from_json(j, subresult);
-      descriptor = subresult;
-    }
-    else if (j.contains("display_serial_number")) {
-      DisplaySerialNumber subresult;
+    else if (j.contains("descriptor_type")) {
+      AsciiString subresult;
       from_json(j, subresult);
       descriptor = subresult;
     }

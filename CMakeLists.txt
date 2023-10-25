@@ -22,10 +22,9 @@ set(JSON_SCHEMAS_CTA861_BLOCK_FOLDER cta861_block)
 set(JSON_SCHEMAS_COMMON_FOLDER common)
 
 set(JSON_SCHEMAS_FILES
+    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/ascii_string.json
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/detailed_timing_descriptor.json
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_name.json
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_range_limits.json
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_serial_number.json
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/established_timings_3.json
     schemas/${JSON_SCHEMAS_COMMON_FOLDER}/edid.json
 

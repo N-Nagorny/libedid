@@ -17,11 +17,10 @@ namespace Edid {
     }
 
     namespace common {
+      extern const char* ascii_string;
       extern const char* detailed_timing_descriptor;
       extern const char* edid;
-      extern const char* display_name;
       extern const char* display_range_limits;
-      extern const char* display_serial_number;
       extern const char* established_timings_3;
     }
 
@@ -38,11 +37,10 @@ namespace Edid {
       { json_uri{"base_block.json"}, json::parse(base_block::base_block) },
       { json_uri{"standard_timing.json"}, json::parse(base_block::standard_timing) },
 
+      { json_uri{"ascii_string.json"}, json::parse(common::ascii_string) },
       { json_uri{"detailed_timing_descriptor.json"}, json::parse(common::detailed_timing_descriptor) },
       { json_uri{"edid.json"}, json::parse(common::edid) },
-      { json_uri{"display_name.json"}, json::parse(common::display_name) },
       { json_uri{"display_range_limits.json"}, json::parse(common::display_range_limits) },
-      { json_uri{"display_serial_number.json"}, json::parse(common::display_serial_number) },
       { json_uri{"established_timings_3.json"}, json::parse(common::established_timings_3) },
 
       { json_uri{"audio_data_block.json"}, json::parse(cta861_block::audio_data_block) },

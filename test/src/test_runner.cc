@@ -86,9 +86,9 @@ TEST(YCbCr420CapabilityMapDataBlockTests, CircularTest) {
 }
 
 TEST(CommonCircularTests, DisplaySerialNumber) {
-  auto name = DisplaySerialNumber{"R8J00779SL012"};
+  auto name = AsciiString{"R8J00779SL012", ASCII_SERIAL_NUMBER};
   auto name_binary = name.generate_byte_block();
-  auto name_parsed = DisplaySerialNumber::parse_byte_block(name_binary.begin());
+  auto name_parsed = AsciiString::parse_byte_block(name_binary.begin());
   EXPECT_EQ(name, name_parsed);
 }
 
@@ -105,9 +105,9 @@ TEST(CommonCircularTests, EstablishedTimings3) {
 }
 
 TEST(CommonCircularTests, DisplayName) {
-  auto name = DisplayName{"TEST_NAME"};
+  auto name = AsciiString{"TEST_NAME", ASCII_DISPLAY_NAME};
   auto name_binary = name.generate_byte_block();
-  auto name_parsed = DisplayName::parse_byte_block(name_binary.begin());
+  auto name_parsed = AsciiString::parse_byte_block(name_binary.begin());
   EXPECT_EQ(name, name_parsed);
 }
 
@@ -422,7 +422,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 477, 268, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
   };
-  edid_base.eighteen_byte_descriptors[1] = DisplayName{"KALED24144F"};
+  edid_base.eighteen_byte_descriptors[1] = AsciiString{"KALED24144F", ASCII_DISPLAY_NAME};
   edid_base.eighteen_byte_descriptors[2] = DisplayRangeLimits{40, 144, 160, 160, 330, VideoTimingSupport::VTS_DEFAULT_GTF};
 
   Cta861Block cta861;
