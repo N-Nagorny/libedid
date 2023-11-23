@@ -397,7 +397,7 @@ namespace Edid {
 
   struct AsciiString {
     std::string string; // The maximum is 13 chars
-    AsciiStringType descriptor_type;
+    AsciiStringType descriptor_type = AsciiStringType::ASCII_UNSPECIFIED_TEXT;
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(AsciiString, string, descriptor_type)
@@ -413,7 +413,9 @@ namespace Edid {
     template<typename Iterator>
     static AsciiString parse_byte_block(Iterator start) {
       AsciiString result;
-      start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
+      start += 3;
+      result.descriptor_type = AsciiStringType(*start);
+      start += 2;
 
       for (int i = 0; i < MAX_ASCII_STRING_LENGTH; ++i) {
         if (*(start + i) != '\n')
