@@ -193,17 +193,16 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
     CTA861_VENDOR_DATA_BLOCK_TAG,
     std::nullopt
   };
-  UnknownDataBlock unknown_block_2{
-    std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00},
-    CTA861_VENDOR_DATA_BLOCK_TAG,
-    std::nullopt
+
+  HdmiVendorDataBlock hdmi_vsdb{
+    {2, 0, 0, 0}
   };
 
   DataBlockCollection data_block_collection{
     video_data_block,
     audio_data_block,
     unknown_block_1,
-    unknown_block_2
+    hdmi_vsdb
   };
 
   auto dbc_binary = generate_data_block_collection(data_block_collection);
@@ -235,20 +234,21 @@ TEST(DataBlockCollection, CircularTest) {
     std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00},
     CTA861_VENDOR_DATA_BLOCK_TAG
   };
-  UnknownDataBlock unknown_block_2{
-    std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00},
-    CTA861_VENDOR_DATA_BLOCK_TAG
+
+  HdmiVendorDataBlock hdmi_vsdb{
+    {2, 0, 0, 0}
   };
 
   DataBlockCollection data_block_collection{
     video_data_block,
     audio_data_block,
     unknown_block_1,
-    unknown_block_2
+    hdmi_vsdb
   };
 
   auto dbc_binary = generate_data_block_collection(data_block_collection);
   auto dbc_parsed = parse_data_block_collection(dbc_binary);
+
   EXPECT_EQ(data_block_collection, dbc_parsed);
 }
 
@@ -471,13 +471,13 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
     std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00},
     CTA861_VENDOR_DATA_BLOCK_TAG
   };
-  UnknownDataBlock unknown_block_2{
-    std::vector<uint8_t>{0x03, 0x0c, 0x00, 0x20, 0x00},
-    CTA861_VENDOR_DATA_BLOCK_TAG
+
+  HdmiVendorDataBlock hdmi_vsdb{
+    {2, 0, 0, 0}
   };
 
   cta861.data_block_collection.push_back(unknown_block_1);
-  cta861.data_block_collection.push_back(unknown_block_2);
+  cta861.data_block_collection.push_back(hdmi_vsdb);
 
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{
     326'660'000, 1920, 1080, 120, 32, 88, 44,
