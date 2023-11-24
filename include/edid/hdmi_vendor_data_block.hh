@@ -62,6 +62,7 @@ namespace Edid {
 
   // 3D_Structure_ALL_7...0 in HDMI 1.4b
   enum StereoVideoFormatByte2 {
+    SVF_2_NO_VALUE = ENUM_NULL,
     SVF_TOP_AND_BOTTOM = 1 << 6,
     SVF_L_DEPTH_GRAPHICS = 1 << 5,
     SVF_L_DEPTH = 1 << 4,
@@ -72,23 +73,26 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(StereoVideoFormatByte2, {
-    {SVF_TOP_AND_BOTTOM, "Top-and-Bottom"},
-    {SVF_L_DEPTH_GRAPHICS, "L + depth + graphics + graphics-depth"},
-    {SVF_L_DEPTH, "L + depth"},
+    {SVF_2_NO_VALUE,        "!!! NO VALUE !!!"},
+    {SVF_TOP_AND_BOTTOM,    "Top-and-Bottom"},
+    {SVF_L_DEPTH_GRAPHICS,  "L + depth + graphics + graphics-depth"},
+    {SVF_L_DEPTH,           "L + depth"},
     {SVF_SIDE_BY_SIDE_FULL, "Side-by-Side (Full)"},
-    {SVF_LINE_ALTERNATIVE, "Line alternative"},
+    {SVF_LINE_ALTERNATIVE,  "Line alternative"},
     {SVF_FIELD_ALTERNATIVE, "Field alternative"},
-    {SVF_FRAME_PACKING, "Frame packing"}
+    {SVF_FRAME_PACKING,     "Frame packing"},
   })
 
   // 3D_Structure_ALL_15...8 in HDMI 1.4b
   enum StereoVideoFormatByte1 {
+    SVF_1_NO_VALUE = ENUM_NULL,
     SVF_SIDE_BY_SIDE_QUINCUNX = 1 << 7,
     SVF_SIDE_BY_SIDE_HORIZONTAL = 1 << 0
   };
   STRINGIFY_ENUM(StereoVideoFormatByte1, {
-    {SVF_SIDE_BY_SIDE_QUINCUNX,"Horizontal"},
-    {SVF_SIDE_BY_SIDE_HORIZONTAL,"Four quincunx matrix"}
+    {SVF_1_NO_VALUE,   "!!! NO VALUE !!!"},
+    {SVF_SIDE_BY_SIDE_QUINCUNX,   "Horizontal"},
+    {SVF_SIDE_BY_SIDE_HORIZONTAL, "Four quincunx matrix"}
   })
 
 
@@ -154,6 +158,8 @@ namespace Edid {
 
   bool operator==(const Vic3dSupport& lhs, const Vic3dSupport& rhs);
 
+  // The block which presence is indicated by HDMI_Video_present bit
+  // (HDMI1.4b Section 8.3.2)
   struct HdmiVideoSubblock {
     ImageSizeMeaning image_size_meaning = ISM_NO_INFO;
     std::vector<uint8_t> hdmi_vics;

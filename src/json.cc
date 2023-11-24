@@ -495,16 +495,22 @@ namespace Edid {
 
   void from_json(const nlohmann::json& j, StereoVideoSupport& result) {
     if (j.contains("formats")) {
-      uint8_t byte_1, byte_2 = 0;
-      const auto stereo_formats_1 = j.at("formats").at(0).get<std::vector<StereoVideoFormatByte1>>();
-      for (auto format : stereo_formats_1) {
-        byte_1 |= format;
+      std::pair<uint8_t, uint8_t> fmts;
+
+      const auto& formats = j.at("formats").get<std::vector<nlohmann::json>>();
+      for (const auto& format : formats) {
+        StereoVideoFormatByte1 byte_1 = format;
+        StereoVideoFormatByte2 byte_2 = format;
+
+        if (byte_1 != ENUM_NULL) {
+          fmts.first |= byte_1;
+        }
+        else if (byte_2 != ENUM_NULL) {
+          fmts.second |= byte_2;
+        }
       }
-      const auto stereo_formats_2 = j.at("formats").at(1).get<std::vector<StereoVideoFormatByte2>>();
-      for (auto format : stereo_formats_2) {
-        byte_2 |= format;
-      }
-      result.formats = {byte_1, byte_2};
+
+      result.formats = std::move(fmts);
     }
     if (j.contains("vics")) {
       uint16_t vics = 0;
@@ -517,11 +523,20 @@ namespace Edid {
 
   void to_json(nlohmann::json& j, const StereoVideoSupport& block) {
     if (block.formats.has_value()) {
-      const auto formats = block.formats.value();
-      for (auto format : bitfield_to_enums<StereoVideoFormatByte1>(formats.first))
-        j["formats"][0].push_back(to_string(format));
-      for (auto format : bitfield_to_enums<StereoVideoFormatByte2>(formats.second))
-        j["formats"][1].push_back(to_string(format));
+      nlohmann::json result;
+
+      const auto push_to_json_array = [&result] (const auto& fmt) {
+        if (fmt != ENUM_NULL) {
+          result.push_back(fmt);
+        }
+      };
+
+      for (StereoVideoFormatByte1 et : bitfield_to_enums<StereoVideoFormatByte1>(block.formats->first))
+        push_to_json_array(et);
+      for (StereoVideoFormatByte2 et : bitfield_to_enums<StereoVideoFormatByte2>(block.formats->second))
+        push_to_json_array(et);
+
+      j["formats"] = std::move(result);
     }
     if (block.vics.has_value()) {
       const auto vics = block.vics.value();
@@ -541,7 +556,9 @@ namespace Edid {
     if (j.contains("stereo_video_support")) {
       result.stereo_video_support = j.at("stereo_video_support");
     }
-    result.vic_3d_support = j.at("vic_3d_support");
+    for (const auto& vic_3d_item : j.at("vic_3d_support").get<std::vector<Vic3dSupport>>()) {
+      result.vic_3d_support.push_back(vic_3d_item);
+    }
   }
 
   void to_json(nlohmann::json& j, const HdmiVideoSubblock& block) {
