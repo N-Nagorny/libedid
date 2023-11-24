@@ -415,6 +415,11 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
+    else if (j.contains("hdmi_vsdb")) {
+      HdmiVendorDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
     else if (j.contains("raw_data")) {
       UnknownDataBlock subresult;
       from_json(j, subresult);
@@ -470,5 +475,140 @@ namespace Edid {
     if (block.extension_blocks.has_value()) {
       j["extension_blocks"] = block.extension_blocks.value();
     }
+  }
+
+  void from_json(const nlohmann::json& j, Vic3dSupport& result) {
+    result.vic_index = j.at("vic_index");
+    result.format = j.at("format");
+    if (j.contains("subsampling_3d")) {
+      result.subsampling_3d = j.at("subsampling_3d").get<StereoVideoSubsampling>();
+    }
+  }
+
+  void to_json(nlohmann::json& j, const Vic3dSupport& block) {
+    j["vic_index"] = block.vic_index;
+    j["format"] = block.format;
+    if (block.subsampling_3d.has_value()) {
+      j["subsampling_3d"] = block.subsampling_3d.value();
+    }
+  }
+
+  void from_json(const nlohmann::json& j, StereoVideoSupport& result) {
+    if (j.contains("formats")) {
+      uint8_t byte_1, byte_2 = 0;
+      const auto stereo_formats_1 = j.at("formats").at(0).get<std::vector<StereoVideoFormatByte1>>();
+      for (auto format : stereo_formats_1) {
+        byte_1 |= format;
+      }
+      const auto stereo_formats_2 = j.at("formats").at(1).get<std::vector<StereoVideoFormatByte2>>();
+      for (auto format : stereo_formats_2) {
+        byte_2 |= format;
+      }
+      result.formats = {byte_1, byte_2};
+    }
+    if (j.contains("vics")) {
+      uint16_t vics = 0;
+      for (uint8_t vic : j.at("vics").get<std::vector<uint8_t>>()) {
+        vics |= 1 << (vic - 1);
+      }
+      result.vics = vics;
+    }
+  }
+
+  void to_json(nlohmann::json& j, const StereoVideoSupport& block) {
+    if (block.formats.has_value()) {
+      const auto formats = block.formats.value();
+      for (auto format : bitfield_to_enums<StereoVideoFormatByte1>(formats.first))
+        j["formats"][0].push_back(to_string(format));
+      for (auto format : bitfield_to_enums<StereoVideoFormatByte2>(formats.second))
+        j["formats"][1].push_back(to_string(format));
+    }
+    if (block.vics.has_value()) {
+      const auto vics = block.vics.value();
+      for (int i = 0; i < 16; ++i) {
+        if (vics >> i & BITMASK_TRUE(1)) {
+          j["vics"].push_back(i + 1);
+        }
+      }
+    }
+  }
+
+  void from_json(const nlohmann::json& j, HdmiVideoSubblock& result) {
+    result.image_size_meaning = j.at("image_size_meaning");
+    for (uint8_t vic : j.at("hdmi_vics").get<std::vector<uint8_t>>()) {
+      result.hdmi_vics.push_back(vic);
+    }
+    if (j.contains("stereo_video_support")) {
+      result.stereo_video_support = j.at("stereo_video_support");
+    }
+    result.vic_3d_support = j.at("vic_3d_support");
+  }
+
+  void to_json(nlohmann::json& j, const HdmiVideoSubblock& block) {
+    j["image_size_meaning"] = block.image_size_meaning;
+    j["hdmi_vics"] = block.hdmi_vics;
+    if (block.stereo_video_support.has_value()) {
+      j["stereo_video_support"] = block.stereo_video_support.value();
+    }
+    j["vic_3d_support"] = block.vic_3d_support;
+  }
+
+  void from_json(const nlohmann::json& j, HdmiVendorDataBlock& result) {
+    const auto source_phy_addr = j.at("source_phy_addr").get<std::vector<uint8_t>>();
+    for (int i = 0; i < 4; ++i) {
+      result.source_phy_addr[i] = source_phy_addr[i];
+    }
+    if (j.contains("capabilities")) {
+      const auto capabilities = j.at("capabilities").get<std::vector<HdmiVendorDataBlockCapabilities>>();
+      HdmiVendorDataBlockCapabilities caps = 0;
+      for (auto cap : capabilities) {
+        caps |= cap;
+      }
+      result.capabilities = caps;
+    }
+    if (j.contains("max_tmds_clock_mhz")) {
+      result.max_tmds_clock_mhz = j.at("max_tmds_clock_mhz");
+    }
+    const auto content_types = j.at("content_types").get<std::vector<ContentTypes>>();
+    for (auto type : content_types) {
+      result.content_types |= type;
+    }
+    if (j.contains("latency")) {
+      result.latency = { j.at("latency").at("video"), j.at("latency").at("audio") };
+    }
+    if (j.contains("interlaced_latency")) {
+      result.latency = { j.at("interlaced_latency").at("video"), j.at("interlaced_latency").at("audio") };
+    }
+    if (j.contains("hdmi_video")) {
+      result.hdmi_video = j.at("hdmi_video");
+    }
+  }
+
+  void to_json(nlohmann::json& j_, const HdmiVendorDataBlock& block) {
+    nlohmann::json j;
+
+    j["source_phy_addr"] = block.source_phy_addr;
+    if (block.capabilities.has_value()) {
+      for (HdmiVendorDataBlockByte6Flags cap : bitfield_to_enums<HdmiVendorDataBlockByte6Flags>(block.capabilities.value()))
+        j["capabilities"].push_back(to_string(cap));
+    }
+    if (block.max_tmds_clock_mhz.has_value()) {
+      j["max_tmds_clock_mhz"] = block.max_tmds_clock_mhz.value();
+    }
+    for (ContentType type : bitfield_to_enums<ContentType>(block.content_types))
+      j["content_types"].push_back(to_string(type));
+    if (block.latency.has_value()) {
+      j["latency"]["video"] = block.latency.value().first;
+      j["latency"]["audio"] = block.latency.value().second;
+    }
+    if (block.interlaced_latency.has_value()) {
+      j["interlaced_latency"]["video"] = block.interlaced_latency.value().first;
+      j["interlaced_latency"]["audio"] = block.interlaced_latency.value().second;
+    }
+    if (block.hdmi_video.has_value()) {
+      j["hdmi_video"] = block.hdmi_video.value();
+    }
+
+    j_["hdmi_vsdb"] = j;
   }
 }

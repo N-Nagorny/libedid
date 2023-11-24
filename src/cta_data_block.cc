@@ -73,6 +73,10 @@ namespace Edid {
     return result;
   }
 
+  bool operator==(const CtaDataBlockType& lhs, const CtaDataBlockType& rhs) {
+    return std::tie(lhs.data_block_type, lhs.extended_tag, lhs.oui) ==
+      std::tie(rhs.data_block_type, rhs.extended_tag, rhs.oui);
+  }
   void AudioDataBlock::print(std::ostream& os, uint8_t tabs) const {
     os << "Audio Data Block:\n";
     for (const std::optional<ShortAudioDescriptor>& sad : sads) {

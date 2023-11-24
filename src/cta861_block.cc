@@ -7,17 +7,10 @@
 #include "edid/cta861_block.hh"
 
 namespace Edid {
-
   bool operator==(const Cta861Block& lhs, const Cta861Block& rhs) {
     return std::tie(lhs.underscan, lhs.basic_audio, lhs.ycbcr_444, lhs.ycbcr_422, lhs.data_block_collection, lhs.detailed_timing_descriptors) ==
       std::tie(rhs.underscan, rhs.basic_audio, rhs.ycbcr_444, rhs.ycbcr_422, rhs.data_block_collection, rhs.detailed_timing_descriptors);
   }
-
-
-
-
-
-
 
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection) {
     size_t collection_size = std::accumulate(collection.begin(), collection.end(), 0, [](size_t size, const CtaDataBlock& data_block) {
@@ -93,16 +86,6 @@ namespace Edid {
     return result;
   }
 
-
-
-
-
-
-
-
-
-
-
   template<typename Iterator>
   std::unique_ptr<CtaDataBlock> parse_extended_tag_data_block(Iterator iter_read) {
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
@@ -114,6 +97,20 @@ namespace Edid {
         break;
       default:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));
+    }
+    return data_block_ptr;
+  }
+
+  template<typename Iterator>
+  std::unique_ptr<CtaDataBlock> parse_vendor_specific_data_block(Iterator iter_read) {
+    std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
+
+    const std::array<uint8_t, 3> oui = {*(iter_read + 1), *(iter_read + 2), *(iter_read + 3)};
+    if (oui == hdmi_oui_little_endian) {
+      data_block_ptr = std::make_unique<CtaDataBlock>(std::move(HdmiVendorDataBlock::parse_byte_block(iter_read)));
+    }
+    else {
+      data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));
     }
     return data_block_ptr;
   }
@@ -137,6 +134,9 @@ namespace Edid {
           break;
         case CTA861_EXTENDED_TAG:
           data_block_ptr = parse_extended_tag_data_block(iter_read);
+          break;
+        case CTA861_VENDOR_DATA_BLOCK_TAG:
+          data_block_ptr = parse_vendor_specific_data_block(iter_read);
           break;
         default:
           data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));

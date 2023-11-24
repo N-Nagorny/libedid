@@ -7,6 +7,8 @@
 #include "edid.hh"
 
 namespace Edid {
+  static const std::vector<uint8_t> hdmi_vic_to_vic_map = { 95, 94, 93, 98 };
+
   using Ratio = std::pair<uint64_t, uint64_t>;
 
   struct VideoTimingMode {
@@ -277,6 +279,29 @@ namespace Edid {
           }
         }
       }
+      else if (std::visit(is_hdmi_vsdb_visitor, data_block)) {
+        const auto& hdmi_vsdb = std::get<HdmiVendorDataBlock>(data_block);
+        if (hdmi_vsdb.hdmi_video.has_value()) {
+          for (uint8_t hdmi_vic: hdmi_vsdb.hdmi_video->hdmi_vics) {
+            uint8_t vic = hdmi_vic_to_vic_map.at(hdmi_vic - 1);
+            auto mode = get_cta861_video_timing_mode(vic);
+            if (mode.has_value()) {
+              uint8_t pixel_repetition_factor = 1;
+              if (std::holds_alternative<uint8_t>(mode->pixel_repetition_factor)) {
+                pixel_repetition_factor = std::get<uint8_t>(mode->pixel_repetition_factor);
+              }
+              else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor)) {
+                pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor).first;
+              }
+              else if (std::holds_alternative<std::vector<uint8_t>>(mode->pixel_repetition_factor)) {
+                pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode->pixel_repetition_factor).at(0);
+              }
+
+              fn(to_video_timing_mode(mode->dtd, pixel_repetition_factor));
+            }
+          }
+        }
+      }
     }
 
     for (const auto& mode : cta861_block.detailed_timing_descriptors) {
@@ -314,6 +339,39 @@ namespace Edid {
               vic = std::nullopt;
             }
           }
+        }
+      }
+      else if (std::visit(is_hdmi_vsdb_visitor, data_block)) {
+        auto& hdmi_vsdb = std::get<HdmiVendorDataBlock>(data_block);
+        std::vector<uint8_t> vics_to_remove;
+        if (hdmi_vsdb.hdmi_video.has_value()) {
+          hdmi_vsdb.hdmi_video->hdmi_vics.erase(std::remove_if(
+            hdmi_vsdb.hdmi_video->hdmi_vics.begin(),
+            hdmi_vsdb.hdmi_video->hdmi_vics.end(),
+            [remove_unknown, &fn](uint8_t vic) {
+              auto mode = get_cta861_video_timing_mode(vic);
+              if (mode.has_value()) {
+                uint8_t pixel_repetition_factor = 1;
+                if (std::holds_alternative<uint8_t>(mode->pixel_repetition_factor)) {
+                  pixel_repetition_factor = std::get<uint8_t>(mode->pixel_repetition_factor);
+                }
+                else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor)) {
+                  pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor).first;
+                }
+                else if (std::holds_alternative<std::vector<uint8_t>>(mode->pixel_repetition_factor)) {
+                  pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode->pixel_repetition_factor).at(0);
+                }
+
+                if (fn(to_video_timing_mode(mode->dtd, pixel_repetition_factor))) {
+                  return true;
+                }
+              }
+              else if (remove_unknown) {
+                return true;
+              }
+              return false;
+            }), hdmi_vsdb.hdmi_video->hdmi_vics.end()
+          );
         }
       }
     }

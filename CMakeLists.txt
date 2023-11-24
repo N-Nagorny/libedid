@@ -93,6 +93,7 @@ set(SOURCES
     src/cta_data_block.cc
     src/cta861_block.cc
     src/edid.cc
+    src/hdmi_vendor_data_block.cc
     src/timing_modes.cc
 )
 
@@ -143,6 +144,7 @@ if (BUILD_TESTS)
 
     set(TEST_SOURCES
         test/src/common.cc
+        test/src/hdmi_vendor_data_block.cc
         test/src/test_runner.cc
     )
 

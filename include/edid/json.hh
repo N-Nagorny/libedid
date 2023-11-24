@@ -40,4 +40,14 @@ namespace Edid {
   void to_json(nlohmann::json& j, const SpeakerAllocationDataBlock&);
   void to_json(nlohmann::json& j, const YCbCr420CapabilityMapDataBlock&);
   void to_json(nlohmann::json& j, const Cta861Block&);
+
+  void from_json(const nlohmann::json& j, Vic3dSupport&);
+  void from_json(const nlohmann::json& j, StereoVideoSupport&);
+  void from_json(const nlohmann::json& j, HdmiVideoSubblock&);
+  void from_json(const nlohmann::json& j, HdmiVendorDataBlock& result);
+
+  void to_json(nlohmann::json& j, const Vic3dSupport&);
+  void to_json(nlohmann::json& j, const StereoVideoSupport&);
+  void to_json(nlohmann::json& j, const HdmiVideoSubblock&);
+  void to_json(nlohmann::json& j, const HdmiVendorDataBlock& block);
 }

@@ -23,14 +23,41 @@
 #define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
 
 namespace Edid {
-  using CtaDataBlockType = std::pair<uint8_t, std::optional<uint8_t>>;
+  static const std::array<uint8_t, 3> hdmi_oui_little_endian = {0x03, 0x0C, 0x00};
+
+  struct CtaDataBlockType {
+    uint8_t data_block_type;
+    std::optional<uint8_t> extended_tag;
+    std::optional<std::array<uint8_t, 3>> oui;
+
+    explicit CtaDataBlockType(uint8_t data_block_type) {
+      this->data_block_type = data_block_type;
+    }
+
+    explicit CtaDataBlockType(uint8_t data_block_type, uint8_t extended_tag) {
+      this->data_block_type = data_block_type;
+      this->extended_tag = extended_tag;
+    }
+
+    explicit CtaDataBlockType(uint8_t data_block_type, std::array<uint8_t, 3> oui) {
+      this->data_block_type = data_block_type;
+      this->oui = oui;
+    }
+  };
 
   static auto get_cta_data_block_size = [](const auto& cta_data_block) -> size_t {
     return cta_data_block.size();
   };
 
   static auto is_vdb_visitor = [](const auto& descriptor) -> bool {
-    return descriptor.type() == CtaDataBlockType{CTA861_VIDEO_DATA_BLOCK_TAG, std::nullopt};
+    return descriptor.type() == CtaDataBlockType(CTA861_VIDEO_DATA_BLOCK_TAG);
+  };
+
+  static auto is_hdmi_vsdb_visitor = [](const auto& descriptor) -> bool {
+    return descriptor.type() == CtaDataBlockType(
+      CTA861_VENDOR_DATA_BLOCK_TAG,
+      hdmi_oui_little_endian
+    );
   };
 
 
@@ -40,7 +67,10 @@ namespace Edid {
     std::optional<uint8_t> extended_tag;
 
     CtaDataBlockType type() const {
-      return {data_block_tag, extended_tag};
+      if (extended_tag.has_value()) {
+        return CtaDataBlockType(data_block_tag, extended_tag.value());
+      }
+      return CtaDataBlockType(data_block_tag);
     }
 
     size_t size() const {
@@ -86,7 +116,7 @@ namespace Edid {
     }
 
     CtaDataBlockType type() const {
-      return {CTA861_VIDEO_DATA_BLOCK_TAG, std::nullopt};
+      return CtaDataBlockType(CTA861_VIDEO_DATA_BLOCK_TAG);
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -246,7 +276,7 @@ namespace Edid {
     }
 
     CtaDataBlockType type() const {
-      return {CTA861_AUDIO_DATA_BLOCK_TAG, std::nullopt};
+      return CtaDataBlockType(CTA861_AUDIO_DATA_BLOCK_TAG);
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -318,7 +348,7 @@ namespace Edid {
     }
 
     CtaDataBlockType type() const {
-      return {CTA861_SPEAKERS_DATA_BLOCK_TAG, std::nullopt};
+      return CtaDataBlockType(CTA861_SPEAKERS_DATA_BLOCK_TAG);
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -356,11 +386,11 @@ namespace Edid {
         return CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
       auto last_element = svd_indices.rbegin();
       const size_t bytes = *last_element / 8 + (*last_element % 8 == 0 ? 0 : 1);
-      return bytes * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+      return bytes + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
     }
 
     CtaDataBlockType type() const {
-      return {CTA861_EXTENDED_TAG, CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG};
+      return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG);
     }
 
     std::vector<uint8_t> generate_byte_block() const;
@@ -401,9 +431,6 @@ namespace Edid {
 
   bool operator==(const YCbCr420CapabilityMapDataBlock& lhs, const YCbCr420CapabilityMapDataBlock& rhs);
 
-  using CtaDataBlock = std::variant<
-    UnknownDataBlock, VideoDataBlock,
-    AudioDataBlock, SpeakerAllocationDataBlock,
-    YCbCr420CapabilityMapDataBlock
-  >;
+  bool operator==(const CtaDataBlockType& lhs, const CtaDataBlockType& rhs);
+
 }

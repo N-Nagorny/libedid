@@ -17,9 +17,13 @@ cmake --build build/
 
 ## Known issues
 
-### Development-related
+### Development-related (TODO)
 
 - CMake doesn't regenerate C++ with JSON Schemas when they're changed.
+- `std::variant` is used for writing generalized functions working with any CTA data blocks, mostly because of `parse_byte_block` template functions. Need to consider using inheritance instead.
+- Comparison operator overloadings could be replaced with a macro.
+- No pre-commit hooks and/or CI procedures that run `cpplint`, `cppcheck`, `test-runner` and `edid-workshop`.
+- No `.editorconfig`.
 
 ### Base EDID
 
