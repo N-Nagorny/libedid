@@ -5,6 +5,7 @@
 
 #include "edid/edid.hh"
 #include "edid/json.hh"
+#include "edid/bcp00501.hh"
 
 #include <clipp.h>
 #include <nlohmann/json.hpp>
@@ -88,7 +89,8 @@ int main(int argc, char* argv[]) {
     decode,
     help,
     to_json,
-    from_json
+    from_json,
+    bcp00501
   };
   mode selected = mode::decode;
   vector<string> input;
@@ -114,11 +116,17 @@ int main(int argc, char* argv[]) {
     value("edid_binary", input)
   );
 
+  auto bcp00501Mode = (
+    command("bcp_005_01").set(selected, mode::bcp00501),
+    value("edid_binary", input)
+  );
+
   auto cli = (
     ( decodeMode
     | testRunMode
     | toJsonMode
     | fromJsonMode
+    | bcp00501Mode
     | command("help").set(selected, mode::help)
     )
   );
@@ -138,6 +146,11 @@ int main(int argc, char* argv[]) {
         case mode::from_json:
           generate_from_json(input.at(0), input.at(1));
           break;
+        case mode::bcp00501: {
+          nlohmann::json j = generate_constraint_sets(read_edid_file(input.at(0)));
+          cout << j.dump(2) << endl;
+          break;
+        }
         default:
           cout << make_man_page(cli, "edid-workshop");
           break;

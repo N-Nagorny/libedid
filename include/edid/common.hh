@@ -17,6 +17,7 @@
 
 #define STRINGIFY_ENUM(ENUM_TYPE, ...)                                             \
   NLOHMANN_JSON_SERIALIZE_ENUM(ENUM_TYPE, __VA_ARGS__)                             \
+                                                                                   \
   inline std::string to_string(const ENUM_TYPE& e)                                 \
   {                                                                                \
     static_assert(std::is_enum<ENUM_TYPE>::value, #ENUM_TYPE " must be an enum!"); \
@@ -34,6 +35,8 @@
 #define NTSC_FACTOR_DENOMINATOR 1001
 
 namespace Edid {
+  // See Overload Pattern on
+  // https://www.modernescpp.com/index.php/visiting-a-std-variant-with-the-overload-pattern/
   template<typename ... Ts>
   struct Overload : Ts ... {
       using Ts::operator() ...;
