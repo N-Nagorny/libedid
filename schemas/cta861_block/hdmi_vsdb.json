@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "HDMI Vendor-Specific Data Block",
+  "description": "Describes a Vendor-Specific Data Block for HDMI 1.4b",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "hdmi_vsdb": {
+      "type": "object",
+      "required": [
+        "source_phy_addr"
+      ],
+      "properties": {
+        "source_phy_addr": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "HVDBB6F_SUPPORTS_AI",
+              "HVDBB6F_DC_48BIT",
+              "HVDBB6F_DC_36BIT",
+              "HVDBB6F_DC_30BIT",
+              "HVDBB6F_DC_Y444",
+              "HVDBB6F_RESERVED_0",
+              "HVDBB6F_RESERVED_1",
+              "HVDBB6F_DVI_DUAL"
+            ]
+          }
+        },
+        "max_tmds_clock_mhz": {
+          "type": "integer"
+        },
+        "content_types": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "CT_GAME",
+              "CT_CINEMA",
+              "CT_PHOTO",
+              "CT_GRAPHICS"
+            ]
+          }
+        },
+        "latency": {
+          "type": "object",
+          "required": [
+            "video",
+            "audio"
+          ],
+          "properties": {
+            "video": {
+              "type": "integer"
+            },
+            "audio": {
+              "type": "integer"
+            }
+          }
+        },
+        "interlaced_latency": {
+          "type": "object",
+          "required": [
+            "video",
+            "audio"
+          ],
+          "properties": {
+            "video": {
+              "type": "integer"
+            },
+            "audio": {
+              "type": "integer"
+            }
+          }
+        },
+        "hdmi_video": {
+          "required": [
+            "image_size_meaning",
+            "hdmi_vics",
+            "vic_3d_support"
+          ],
+          "type": "object",
+          "properties": {
+            "image_size_meaning": {
+              "type": "string",
+              "enum": [
+                "ISM_NO_INFO",
+                "ISM_ASPECT_RATIO",
+                "ISM_SIZES_ROUNDED_TO_CM",
+                "ISM_SIZES_DIVIDED_BY_5"
+              ]
+            },
+            "hdmi_vics": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "stereo_video_support": {
+              "description": "The presence of this property means 3D video support",
+              "type": "object",
+              "required": [],
+              "properties": {
+                "formats": {
+                  "type": "array",
+                  "maxItems": 10,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "Top-and-Bottom",
+                      "L + depth + graphics + graphics-depth",
+                      "L + depth",
+                      "Side-by-Side (Full)",
+                      "Line alternative",
+                      "Field alternative",
+                      "Frame packing",
+                      "Horizontal",
+                      "Four quincunx matrix"
+                    ]
+                  }
+                },
+                "vics": {
+                  "type": "integer"
+                }
+              }
+            },
+            "vic_3d_support": {
+              "required": [
+                "vic_index",
+                "format",
+                "subsampling_3d"
+              ],
+              "type": "object",
+              "properties": {
+                "vic_index": {
+                  "type": "integer"
+                },
+                "format": {
+                  "type": "string",
+                  "enum": [
+                    "Frame packing",
+                    "Field alternative",
+                    "Line alternative",
+                    "Side-by-Side (Full)",
+                    "L + depth",
+                    "L + depth + graphics + graphics-depth",
+                    "Top-and-Bottom",
+                    "Side-by-Side (Half)"
+                  ]
+                },
+                "subsampling_3d": {
+                  "type":"string",
+                  "enum": [
+                    "Horizontal and four quincunx matrix",
+                    "Horizontal",
+                    "Four quincunx matrix",
+                    "Odd/Left, Odd/Right",
+                    "Odd/Left, Even/Right",
+                    "Even/Left, Odd/Right",
+                    "Even/Left, Even/Right"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

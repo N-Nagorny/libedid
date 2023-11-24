@@ -30,6 +30,7 @@ set(JSON_SCHEMAS_FILES
 
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/audio_data_block.json
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/cta861_block.json
+    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/hdmi_vsdb.json
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/speaker_allocation_data_block.json
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/unknown_data_block.json
     schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/video_data_block.json

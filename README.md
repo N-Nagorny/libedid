@@ -24,6 +24,7 @@ cmake --build build/
 - Comparison operator overloadings could be replaced with a macro.
 - No pre-commit hooks and/or CI procedures that run `cpplint`, `cppcheck`, `test-runner` and `edid-workshop`.
 - No `.editorconfig`.
+- `src/json.cc` has too much boilerplate code.
 
 ### Base EDID
 
