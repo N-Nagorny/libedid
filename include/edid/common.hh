@@ -34,6 +34,8 @@
 #define NTSC_FACTOR_NUMERATOR 1000
 #define NTSC_FACTOR_DENOMINATOR 1001
 
+#define ENUM_NULL 0
+
 namespace Edid {
   // See Overload Pattern on
   // https://www.modernescpp.com/index.php/visiting-a-std-variant-with-the-overload-pattern/

@@ -17,8 +17,6 @@
 #define BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE 5
 #define MAX_ASCII_STRING_LENGTH 13
 
-#define ET_NOT_FOUND 0
-
 namespace Edid {
   static const std::array<uint8_t, 8> base_block_header = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
 
@@ -129,7 +127,7 @@ namespace Edid {
   })
 
   enum EstablishedTiming3Byte6 {
-    ET_3_6_NOT_FOUND = ET_NOT_FOUND,
+    ET_3_6_NOT_FOUND = ENUM_NULL,
     ET_640x350_85    = 1 << 7,
     ET_640x400_85    = 1 << 6,
     ET_720x400_85    = 1 << 5,
@@ -141,7 +139,7 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(EstablishedTiming3Byte6, {
-    {ET_3_6_NOT_FOUND,   ""},
+    {ET_3_6_NOT_FOUND,   "!!! NO VALUE !!!"},
     {ET_640x350_85,  "640x350@85Hz"},
     {ET_640x400_85,  "640x400@85Hz"},
     {ET_720x400_85,  "720x400@85Hz"},
@@ -153,7 +151,7 @@ namespace Edid {
   })
 
   enum EstablishedTiming3Byte7 {
-    ET_3_7_NOT_FOUND  = ET_NOT_FOUND,
+    ET_3_7_NOT_FOUND  = ENUM_NULL,
     ET_1280x768_60_RB = 1 << 7,
     ET_1280x768_60    = 1 << 6,
     ET_1280x768_75    = 1 << 5,
@@ -165,7 +163,7 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(EstablishedTiming3Byte7, {
-    {ET_3_7_NOT_FOUND,   ""},
+    {ET_3_7_NOT_FOUND,   "!!! NO VALUE !!!"},
     {ET_1280x768_60_RB,  "1280x768@60Hz_RB"},
     {ET_1280x768_60,     "1280x768@60Hz"},
     {ET_1280x768_75,     "1280x768@75Hz"},
@@ -177,7 +175,7 @@ namespace Edid {
   })
 
   enum EstablishedTiming3Byte8 {
-    ET_3_8_NOT_FOUND = ET_NOT_FOUND,
+    ET_3_8_NOT_FOUND = ENUM_NULL,
     ET_1360x768_60 = 1 << 7,
     ET_1440x900_60_RB = 1 << 6,
     ET_1440x900_60 = 1 << 5,
@@ -189,7 +187,7 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(EstablishedTiming3Byte8, {
-    {ET_3_8_NOT_FOUND,   ""},
+    {ET_3_8_NOT_FOUND,   "!!! NO VALUE !!!"},
     {ET_1360x768_60,     "1360x768@60Hz"},
     {ET_1440x900_60_RB,  "1440x900@60Hz_RB"},
     {ET_1440x900_60,     "1440x900@60Hz"},
@@ -201,7 +199,7 @@ namespace Edid {
   })
 
   enum EstablishedTiming3Byte9 {
-    ET_3_9_NOT_FOUND = ET_NOT_FOUND,
+    ET_3_9_NOT_FOUND = ENUM_NULL,
     ET_1400x1050_85 = 1 << 7,
     ET_1680x1050_60_RB = 1 << 6,
     ET_1680x1050_60 = 1 << 5,
@@ -213,7 +211,7 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(EstablishedTiming3Byte9, {
-    {ET_3_9_NOT_FOUND,   ""},
+    {ET_3_9_NOT_FOUND,   "!!! NO VALUE !!!"},
     {ET_1400x1050_85,     "1400x1050@85Hz"},
     {ET_1680x1050_60_RB,  "1680x1050@60Hz_RB"},
     {ET_1680x1050_60,     "1680x1050@60Hz"},
@@ -225,7 +223,7 @@ namespace Edid {
   })
 
   enum EstablishedTiming3Byte10 {
-    ET_3_10_NOT_FOUND = ET_NOT_FOUND,
+    ET_3_10_NOT_FOUND = ENUM_NULL,
     ET_1600x1200_75 = 1 << 7,
     ET_1600x1200_85 = 1 << 6,
     ET_1792x1344_60 = 1 << 5,
@@ -237,7 +235,7 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(EstablishedTiming3Byte10, {
-    {ET_3_10_NOT_FOUND,   ""},
+    {ET_3_10_NOT_FOUND,   "!!! NO VALUE !!!"},
     {ET_1600x1200_75,     "1600x1200@75Hz"},
     {ET_1600x1200_85,     "1600x1200@85Hz"},
     {ET_1792x1344_60,     "1792x1344@60Hz"},
@@ -249,7 +247,7 @@ namespace Edid {
   })
 
   enum EstablishedTiming3Byte11 {
-    ET_3_11_NOT_FOUND = ET_NOT_FOUND,
+    ET_3_11_NOT_FOUND = ENUM_NULL,
     ET_1920x1200_75 = 1 << 7,
     ET_1920x1200_85 = 1 << 6,
     ET_1920x1440_60 = 1 << 5,
@@ -257,7 +255,7 @@ namespace Edid {
   };
 
   STRINGIFY_ENUM(EstablishedTiming3Byte11, {
-    {ET_3_11_NOT_FOUND,   ""},
+    {ET_3_11_NOT_FOUND,   "!!! NO VALUE !!!"},
     {ET_1920x1200_75,     "1920x1200@75Hz"},
     {ET_1920x1200_85,     "1920x1200@85Hz"},
     {ET_1920x1440_60,     "1920x1440@60Hz"},

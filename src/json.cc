@@ -229,22 +229,22 @@ namespace Edid {
       EstablishedTiming3Byte10 byte_10 = established_timing;
       EstablishedTiming3Byte11 byte_11 = established_timing;
 
-      if (byte_6 != ET_NOT_FOUND) {
+      if (byte_6 != ENUM_NULL) {
         result.bytes_6_11[0] |= byte_6;
       }
-      else if (byte_7 != ET_NOT_FOUND) {
+      else if (byte_7 != ENUM_NULL) {
         result.bytes_6_11[1] |= byte_7;
       }
-      else if (byte_8 != ET_NOT_FOUND) {
+      else if (byte_8 != ENUM_NULL) {
         result.bytes_6_11[2] |= byte_8;
       }
-      else if (byte_9 != ET_NOT_FOUND) {
+      else if (byte_9 != ENUM_NULL) {
         result.bytes_6_11[3] |= byte_9;
       }
-      else if (byte_10 != ET_NOT_FOUND) {
+      else if (byte_10 != ENUM_NULL) {
         result.bytes_6_11[4] |= byte_10;
       }
-      else if (byte_11 != ET_NOT_FOUND) {
+      else if (byte_11 != ENUM_NULL) {
         result.bytes_6_11[5] |= byte_11;
       }
     }
@@ -256,7 +256,7 @@ namespace Edid {
     nlohmann::json result;
 
     const auto push_to_json_array = [&result] (const auto& et) {
-      if (et != ET_NOT_FOUND) {
+      if (et != ENUM_NULL) {
         result["established_timings_3"].push_back(et);
       }
     };
