@@ -168,6 +168,8 @@ if (BUILD_TESTS)
         ${PROJECT_NAME}
         gtest
     )
+
+    install(TARGETS test-runner DESTINATION bin)
 endif()
 
 # Example applications
@@ -182,4 +184,6 @@ if (BUILD_EXAMPLES)
     target_link_libraries(edid-workshop PRIVATE
         ${PROJECT_NAME}
     )
+
+    install(TARGETS edid-workshop DESTINATION bin)
 endif()
