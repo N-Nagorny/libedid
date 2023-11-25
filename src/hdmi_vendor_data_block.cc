@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include "edid/hdmi_vendor_data_block.hh"
 
 namespace Edid {
@@ -156,7 +157,7 @@ namespace Edid {
     );
   }
 
-  // TODO
+  // TODO(N-Nagorny)
   void HdmiVendorDataBlock::print(std::ostream& os, uint8_t tabs) const {
     os << "Vendor-Specific Data Block (HDMI), OUI 00-0C-03: " << '\n';
     os << '\t' << "Source physical address: "
@@ -166,4 +167,4 @@ namespace Edid {
       << static_cast<int>(source_phy_addr[3]) << "." << '\n';
     os << '\n';
   }
-}
+}  // namespace Edid

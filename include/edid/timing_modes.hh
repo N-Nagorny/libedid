@@ -1,6 +1,9 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <map>
+#include <utility>
+#include <vector>
 
 #include "base_block.hh"
 #include "cta861_block.hh"
@@ -282,7 +285,7 @@ namespace Edid {
       else if (std::visit(is_hdmi_vsdb_visitor, data_block)) {
         const auto& hdmi_vsdb = std::get<HdmiVendorDataBlock>(data_block);
         if (hdmi_vsdb.hdmi_video.has_value()) {
-          for (uint8_t hdmi_vic: hdmi_vsdb.hdmi_video->hdmi_vics) {
+          for (uint8_t hdmi_vic : hdmi_vsdb.hdmi_video->hdmi_vics) {
             uint8_t vic = hdmi_vic_to_vic_map.at(hdmi_vic - 1);
             auto mode = get_cta861_video_timing_mode(vic);
             if (mode.has_value()) {
@@ -410,4 +413,4 @@ namespace Edid {
       }
     }
   }
-}
+}  // namespace Edid

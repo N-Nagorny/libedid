@@ -1,6 +1,8 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <map>
+#include <string>
 
 #include <nlohmann/json.hpp>
 #include <nlohmann/json-schema.hpp>
@@ -64,5 +66,5 @@ namespace Edid {
     };
 
     bool is_json_satisfies_schema(const std::string& uri, const json& j);
-  }
-}
+  }  // namespace json_schemas
+}  // namespace Edid

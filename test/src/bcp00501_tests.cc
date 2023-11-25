@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <gtest/gtest.h>
 
 #include "edid/bcp00501.hh"
@@ -31,7 +32,7 @@ TEST(Bcp00501Tests, BasicTest) {
   nlohmann::json j_expected = {
     VIDEO_MODE(1920, 1080, ARR(RATE(50)), ARR("progressive")),
     VIDEO_MODE(720, 480, ARR(RATE59_94), ARR("progressive")),
-    VIDEO_MODE(640, 480, ARR({{ "denominator", 420000}, {"numerator",25175000} }), ARR("progressive")),
+    VIDEO_MODE(640, 480, ARR({{ "denominator", 420000}, {"numerator", 25175000} }), ARR("progressive")),
     VIDEO_MODE(1280, 720, ARR(RATE(50)), ARR("progressive")),
     VIDEO_MODE(1920, 1080, ARR(RATE(60)), ARR("progressive")),
     VIDEO_MODE(1152, 870, ARR(RATE(75)), ARR("progressive")),

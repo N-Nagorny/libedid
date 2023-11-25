@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include "edid/json_schemas.hh"
 
 namespace Edid {
@@ -14,5 +15,5 @@ namespace Edid {
       }
       return true;
     }
-  }
-}
+  }  // namespace json_schemas
+}  // namespace Edid

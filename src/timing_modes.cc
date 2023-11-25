@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include "edid/exceptions.hh"
 #include "edid/timing_modes.hh"
 
@@ -7,8 +8,11 @@ namespace Edid {
       std::tie(rhs.h_res, rhs.v_res, rhs.v_rate_hz, rhs.interlaced);
   }
 
+  // Number
   #define N(x) uint8_t(x)
+  // Range
   #define R(x, y) std::make_pair<uint8_t, uint8_t>(x, y)
+  // Vector
   #define V(...) std::vector<uint8_t>{__VA_ARGS__}
 
   static const std::vector<Cta861VideoTimingMode> cta_modes_1 = {
@@ -217,4 +221,4 @@ namespace Edid {
       dtd.features_bitmap.interlaced
     };
   }
-}
+}  // namespace Edid

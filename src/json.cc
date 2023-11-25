@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include "edid/json.hh"
 
 namespace Edid {
@@ -628,4 +629,4 @@ namespace Edid {
 
     j_["hdmi_vsdb"] = j;
   }
-}
+}  // namespace Edid

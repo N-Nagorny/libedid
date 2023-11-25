@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <iostream>
 
 #include "edid/base_block.hh"
@@ -184,7 +185,7 @@ namespace Edid {
 
     for (int i = 0; i < string.size(); ++i)
       result[pos++] = string[i];
-    const int8_t padding = MAX_ASCII_STRING_LENGTH - string.size() - 1; // exclude '\n' from the padding
+    const int8_t padding = MAX_ASCII_STRING_LENGTH - string.size() - 1;  // exclude '\n' from the padding
     if (padding >= 0) {
       result[pos++] = '\n';
       for (int i = 0; i < padding; ++i)
@@ -205,7 +206,7 @@ namespace Edid {
     result[pos++] = BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
     result[pos++] = 0x0;
 
-    result[pos++] = 0x0A; // Revision number
+    result[pos++] = 0x0A;  // Revision number
 
     for (int i = 0; i < bytes_6_11.size(); ++i) {
       result[pos++] = bytes_6_11.at(i);
@@ -223,7 +224,6 @@ namespace Edid {
     result[pos++] = 0x0;
     result[pos++] = 0x0;
     result[pos++] = BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE;
-    pos += EIGHTEEN_BYTES - 4;
 
     return result;
   }
@@ -280,7 +280,7 @@ namespace Edid {
     result[pos++] = base_block.edid_minor_version;
 
     // Basic display parameters
-    result[pos] = 1 << 7; // Digital input
+    result[pos] = 1 << 7;  // Digital input
     result[pos] |= (base_block.bits_per_color << 4);
     result[pos++] |= base_block.video_interface;
 
@@ -622,4 +622,4 @@ namespace Edid {
       }
     }
   }
-}
+}  // namespace Edid

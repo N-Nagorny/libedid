@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include "edid/cta_data_block.hh"
 
 namespace Edid {
@@ -155,4 +156,4 @@ namespace Edid {
       os << (int)svd_index << " ";
     os << '\n';
   }
-}
+}  // namespace Edid

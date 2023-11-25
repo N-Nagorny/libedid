@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <array>
 #include <cstdint>
 
@@ -226,4 +227,4 @@ namespace Edid {
       sum += block.at(i);
     return 256 - sum % 256;
   }
-}
+}  // namespace Edid

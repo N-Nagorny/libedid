@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include "common.hh"
 
 using namespace Edid;

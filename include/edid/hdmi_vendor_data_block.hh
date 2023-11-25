@@ -1,6 +1,8 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "common.hh"
@@ -100,8 +102,8 @@ namespace Edid {
   using ContentTypes = uint8_t;
 
   struct StereoVideoSupport {
-    std::optional<std::pair<uint8_t, uint8_t>> formats; // 3D_Structure_ALL_15...0
-    std::optional<uint16_t> vics; // 3D_MASK_ALL_15..0
+    std::optional<std::pair<uint8_t, uint8_t>> formats;  // 3D_Structure_ALL_15...0
+    std::optional<uint16_t> vics;  // 3D_MASK_ALL_15..0
   };
 
   bool operator==(const StereoVideoSupport& lhs, const StereoVideoSupport& rhs);
@@ -151,7 +153,7 @@ namespace Edid {
   })
 
   struct Vic3dSupport {
-    uint8_t vic_index; // 0..15
+    uint8_t vic_index;  // 0..15
     StereoVideoTransmissionFormat format;
     std::optional<StereoVideoSubsampling> subsampling_3d;
   };
@@ -172,7 +174,7 @@ namespace Edid {
   struct HdmiVendorDataBlock {
     std::array<uint8_t, 4> source_phy_addr;
     std::optional<HdmiVendorDataBlockCapabilities> capabilities;
-    std::optional<uint16_t> max_tmds_clock_mhz; // Max is 1280 MHz
+    std::optional<uint16_t> max_tmds_clock_mhz;  // Max is 1280 MHz
     ContentTypes content_types = 0;
     std::optional<std::pair<uint8_t, uint8_t>> latency;
     std::optional<std::pair<uint8_t, uint8_t>> interlaced_latency;
@@ -234,7 +236,7 @@ namespace Edid {
     }
 
     uint8_t payload_size() const {
-      uint8_t result = 2; // Source Physical Address
+      uint8_t result = 2;  // Source Physical Address
 
       if (bytes_6_8_exist()) {
         result += 3;
@@ -399,7 +401,6 @@ namespace Edid {
           }
           vic_3d_support.push_back(vic_3d_item);
           hdmi_3d_len--;
-
         }
         if (!vic_3d_support.empty()) {
           subblock.vic_3d_support = std::move(vic_3d_support);
@@ -413,4 +414,4 @@ namespace Edid {
   };
 
   bool operator==(const HdmiVendorDataBlock& lhs, const HdmiVendorDataBlock& rhs);
-}
+}  // namespace Edid

@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <nlohmann/json.hpp>
@@ -50,4 +51,4 @@ namespace Edid {
   void to_json(nlohmann::json& j, const StereoVideoSupport&);
   void to_json(nlohmann::json& j, const HdmiVideoSubblock&);
   void to_json(nlohmann::json& j, const HdmiVendorDataBlock& block);
-}
+}  // namespace Edid

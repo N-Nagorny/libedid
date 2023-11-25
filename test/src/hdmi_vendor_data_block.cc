@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <gtest/gtest.h>
 
 #include "edid/hdmi_vendor_data_block.hh"

@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <algorithm>
@@ -5,7 +6,10 @@
 #include <cmath>
 #include <cstdint>
 #include <ostream>
+#include <string>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -105,7 +109,7 @@ namespace Edid {
   bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
 
   struct DetailedTimingDescriptor {
-    uint64_t pixel_clock_hz; // This value becomes uint16_t in EDID by dividing by 10'000
+    uint64_t pixel_clock_hz;  // This value becomes uint16_t in EDID by dividing by 10'000
     uint16_t h_res;
     uint16_t v_res;
     uint16_t h_blanking;
@@ -142,4 +146,4 @@ namespace Edid {
     return result;
   }
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block);
-}
+}  // namespace Edid

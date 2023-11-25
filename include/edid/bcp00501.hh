@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include "edid.hh"

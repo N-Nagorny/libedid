@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <array>
@@ -39,4 +40,4 @@ namespace Edid {
   Cta861Block parse_cta861_block(const std::array<uint8_t, EDID_BLOCK_SIZE>& cta861);
 
   void print_cta861_block(std::ostream& os, const Cta861Block& cta861_block);
-}
+}  // namespace Edid

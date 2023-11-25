@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -56,4 +57,4 @@ namespace Edid {
 
     return result;
   }
-}
+}  // namespace Edid

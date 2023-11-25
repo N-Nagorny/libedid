@@ -41,6 +41,16 @@ cmake --build build/
 - Indicating DTDs and VICs as native is not supported.
 - Format-specific parameters of Short Audio Descriptors are incorrect for any audio formats except of Linear PCM.
 
+## Code quality
+```
+cpplint \
+  --root=$(pwd) \
+  --exclude=build/* \
+  --exclude=result/* \
+  --filter=-whitespace/line_length,-build/namespaces,-build/include_order,-whitespace/parens,-whitespace/newline,-readability/braces,-build/explicit_make_pair,-runtime/references,-readability/casting,-runtime/indentation_namespace \
+  $(find . -name \*.hh -o -name \*.cc | xargs echo)
+```
+
 [E-EDID]: https://vesa.org/vesa-standards/
 [CTA-861-G]: https://shop.cta.tech/products/a-dtv-profile-for-uncompressed-high-speed-digital-interfaces-cta-861-g
 [BT.601]: https://www.itu.int/rec/R-REC-BT.601/

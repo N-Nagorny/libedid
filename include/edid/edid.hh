@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <optional>
@@ -16,4 +17,4 @@ namespace Edid {
 
   std::vector<uint8_t> generate_edid_binary(const EdidData& edid);
   EdidData parse_edid_binary(const std::vector<uint8_t>& edid);
-}
+}  // namespace Edid

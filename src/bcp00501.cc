@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <unordered_set>
 
 #include "edid/bcp00501.hh"
@@ -74,4 +75,4 @@ namespace Edid {
     }
     return json(constraint_sets);
   }
-}
+}  // namespace Edid

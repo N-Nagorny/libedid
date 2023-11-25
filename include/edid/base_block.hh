@@ -1,8 +1,10 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
 #include <array>
 #include <optional>
 #include <string>
+#include <utility>
 
 #ifdef ENABLE_JSON
 #include <nlohmann/json.hpp>
@@ -279,7 +281,7 @@ namespace Edid {
   })
 
   struct StandardTiming {
-    uint16_t x_resolution; // This value becomes uint8_t in EDID by dividing by 8 and subtracting 31 from it
+    uint16_t x_resolution;  // This value becomes uint8_t in EDID by dividing by 8 and subtracting 31 from it
     AspectRatio aspect_ratio;
     uint8_t v_frequency;
 
@@ -305,11 +307,11 @@ namespace Edid {
   })
 
   struct DisplayRangeLimits {
-    uint16_t min_v_rate_hz = 1; // Range is 1..510 Hz with step of 1 Hz
-    uint16_t max_v_rate_hz = 1; // Range is 1..510 Hz with step of 1 Hz
-    uint16_t min_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
-    uint16_t max_h_rate_khz = 1; // Range is 1..510 kHz with step of 1 kHz
-    uint16_t max_pixel_clock_rate_mhz = 10; // Range is 10..2550 MHz with step of 10 MHz
+    uint16_t min_v_rate_hz = 1;  // Range is 1..510 Hz with step of 1 Hz
+    uint16_t max_v_rate_hz = 1;  // Range is 1..510 Hz with step of 1 Hz
+    uint16_t min_h_rate_khz = 1;  // Range is 1..510 kHz with step of 1 kHz
+    uint16_t max_h_rate_khz = 1;  // Range is 1..510 kHz with step of 1 kHz
+    uint16_t max_pixel_clock_rate_mhz = 10;  // Range is 10..2550 MHz with step of 10 MHz
     VideoTimingSupport video_timing_support;
 
 #ifdef ENABLE_JSON
@@ -339,7 +341,7 @@ namespace Edid {
       bool add_255_to_h_min = false;
       bool add_255_to_v_max = false;
       bool add_255_to_v_min = false;
-      pos += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE - 1; // Only for Display Range Limits Descriptor
+      pos += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE - 1;  // Only for Display Range Limits Descriptor
       if (*(start + pos) >> 2 & BITMASK_TRUE(2) == 0b10) {
         add_255_to_h_max = true;
       } else if (*(start + pos) >> 2 & BITMASK_TRUE(2) == 0b11) {
@@ -394,7 +396,7 @@ namespace Edid {
   }
 
   struct AsciiString {
-    std::string string; // The maximum is 13 chars
+    std::string string;  // The maximum is 13 chars
     AsciiStringType descriptor_type = AsciiStringType::ASCII_UNSPECIFIED_TEXT;
 
 #ifdef ENABLE_JSON
@@ -533,8 +535,8 @@ namespace Edid {
 
   /** Generates EDID Base Block binary */
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_base_block(
-    const BaseBlock& base_block, /**< Base Block structure */
-    uint8_t ext_blocks /**< Number of extension blocks following the Base Block in effective EDID binary */
+    const BaseBlock& base_block,  /**< Base Block structure */
+    uint8_t ext_blocks  /**< Number of extension blocks following the Base Block in effective EDID binary */
   );
 
   std::optional<StandardTiming> parse_standard_timing(uint8_t byte_1, uint8_t byte_2);
@@ -542,17 +544,17 @@ namespace Edid {
 
   /** Parses EDID Base Block binary into Base Block structure and number of extension blocks in EDID binary */
   std::pair<BaseBlock, uint8_t> parse_base_block(
-    const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block /**< EDID Base Block binary */
+    const std::array<uint8_t, EDID_BLOCK_SIZE>& base_block  /**< EDID Base Block binary */
   );
 
   void print_standard_timing(
-    std::ostream& os, /**< Output stream */
-    const StandardTiming& std_timing /**< Standard Timing structure */
+    std::ostream& os,  /**< Output stream */
+    const StandardTiming& std_timing  /**< Standard Timing structure */
   );
 
   /** Prints Base Block structure into stream */
   void print_base_block(
-    std::ostream& os, /**< Output stream */
-    const BaseBlock& base_block /**< Base Block structure */
+    std::ostream& os,  /**< Output stream */
+    const BaseBlock& base_block  /**< Base Block structure */
   );
-}
+}  // namespace Edid

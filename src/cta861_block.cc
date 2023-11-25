@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <array>
 #include <cstdint>
 #include <iostream>
@@ -221,4 +222,4 @@ namespace Edid {
       detailed_timing_descriptor.print(os);
     }
   }
-}
+}  // namespace Edid

@@ -1,5 +1,7 @@
+// Copyright 2023 N-Nagorny
 #pragma once
 
+#include <algorithm>
 #include <optional>
 #include <set>
 #include <variant>
@@ -433,4 +435,4 @@ namespace Edid {
 
   bool operator==(const CtaDataBlockType& lhs, const CtaDataBlockType& rhs);
 
-}
+}  // namespace Edid

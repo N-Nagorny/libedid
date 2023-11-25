@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -12,8 +13,7 @@
 
 using namespace std;
 
-vector<uint8_t> read_file(const string& file_path)
-{
+vector<uint8_t> read_file(const string& file_path) {
   if (!filesystem::is_regular_file(file_path))
     throw runtime_error(file_path + " is not a regular file");
 
@@ -55,13 +55,14 @@ void print_decoded_edid(const string& path) {
   }
 }
 
-void circular_test(const string& path) {
+bool circular_test(const string& path) {
   auto edid_binary = read_file(path);
   auto edid = Edid::parse_edid_binary(edid_binary);
   auto generated_edid_binary = Edid::generate_edid_binary(edid);
   bool success = edid_binary == generated_edid_binary;
   cout << path << " was" << (success ? "" : " NOT") <<
     " successfully parsed and generated back" << endl;
+  return !success;
 }
 
 void print_json(const string& path_to_edid) {
@@ -71,9 +72,9 @@ void print_json(const string& path_to_edid) {
 }
 
 void generate_from_json(const string& path_to_json, const string& path_to_edid) {
-  // TODO: add validation against JSON Schema
+  // TODO(N-Nagorny): add validation against JSON Schema
   auto json = read_file(path_to_json);
-  // TODO: replace it with something non-deprecated
+  // TODO(N-Nagorny): replace it with something non-deprecated
   istrstream stream(reinterpret_cast<const char*>(json.data()), json.size());
   Edid::EdidData edid_data = nlohmann::json::parse(stream);
   vector<uint8_t> generated_edid = Edid::generate_edid_binary(edid_data);
@@ -135,8 +136,7 @@ int main(int argc, char* argv[]) {
     try {
       switch(selected) {
         case mode::test_run:
-          circular_test(input.at(0));
-          break;
+          return circular_test(input.at(0));
         case mode::decode:
           print_decoded_edid(input.at(0));
           break;

@@ -1,3 +1,4 @@
+// Copyright 2023 N-Nagorny
 #include <fstream>
 #include <iostream>
 #include <optional>
