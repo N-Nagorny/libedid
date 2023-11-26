@@ -40,6 +40,18 @@ namespace Edid {
     const int data_block_collection_size = std::accumulate(cta861.data_block_collection.begin(), cta861.data_block_collection.end(), 0, [](size_t size, const CtaDataBlock& data_block) {
       return size + std::visit(get_cta_data_block_size, data_block);
     });
+    const int native_video_modes = std::accumulate(cta861.data_block_collection.begin(), cta861.data_block_collection.end(), 0, [](size_t size, const CtaDataBlock& data_block) {
+      if (std::visit(is_vdb_visitor, data_block)) {
+        const VideoDataBlock vdb = std::visit(
+            [](auto const & val)
+            { if constexpr ( std::is_convertible_v<decltype(val), VideoDataBlock> )
+                 return VideoDataBlock(val);
+               else
+                { throw std::bad_variant_access{}; return VideoDataBlock{}; } }, data_block);
+        return size + vdb.native_vics();
+      }
+      return size;
+    });
 
     if (header_size + data_block_collection_size + dtd_block_size + checksum_size > EDID_BLOCK_SIZE)
       throw EdidException(__FUNCTION__,
@@ -67,7 +79,8 @@ namespace Edid {
     result[pos] = cta861.underscan << 7;
     result[pos] |= cta861.basic_audio << 6;
     result[pos] |= cta861.ycbcr_444 << 5;
-    result[pos++] |= cta861.ycbcr_422 << 4;
+    result[pos] |= cta861.ycbcr_422 << 4;
+    result[pos++] |= native_video_modes & BITMASK_TRUE(4);
 
     std::vector<uint8_t> data_block_collection = generate_data_block_collection(cta861.data_block_collection);
     std::move(data_block_collection.begin(), data_block_collection.end(), result.begin() + pos);

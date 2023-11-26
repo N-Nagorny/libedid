@@ -121,6 +121,15 @@ namespace Edid {
       return CtaDataBlockType(CTA861_VIDEO_DATA_BLOCK_TAG);
     }
 
+    uint8_t native_vics() const {
+      uint8_t result = 0;
+      for (const auto& vic : vics)
+        if (vic.has_value())
+          if (vic.value() >= 129 && vic.value() <= 192)
+            ++result;
+      return result;
+    }
+
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
@@ -138,11 +147,7 @@ namespace Edid {
       int vics = *start & BITMASK_TRUE(5);
 
       for (int i = 0; i < vics; ++i) {
-        uint8_t byte = *(start + ++pos);
-        // Exclude Native Timing indicator bit from VIC
-        if (byte >= 128 && byte <= 192)
-          byte -= 128;
-          result.vics[i] = byte;
+        result.vics[i] = *(start + ++pos);
       }
 
       return result;

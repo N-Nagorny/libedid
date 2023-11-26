@@ -38,7 +38,6 @@ cmake --build build/
 
 ### CTA Extension
 
-- Indicating DTDs and VICs as native is not supported.
 - Format-specific parameters of Short Audio Descriptors are incorrect for any audio formats except of Linear PCM.
 
 ## Code quality

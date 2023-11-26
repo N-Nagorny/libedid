@@ -435,7 +435,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   cta861.ycbcr_422 = true;
 
   VideoDataBlock video_data_block;
-  video_data_block.vics[0] = 16;
+  video_data_block.vics[0] = 144;
   video_data_block.vics[1] = 5;
   video_data_block.vics[2] = 4;
   video_data_block.vics[3] = 3;

@@ -38,7 +38,7 @@ namespace Edid {
 
     for (const std::optional<uint8_t>& vic : vics)
       if (vic.has_value())
-      result[pos++] = vic.value();
+        result[pos++] = vic.value();
 
     return result;
   }
