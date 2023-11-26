@@ -75,7 +75,6 @@ namespace Edid {
 
     result[pos++] = dtd_start_pos;
 
-    // No Native DTDs
     result[pos] = cta861.underscan << 7;
     result[pos] |= cta861.basic_audio << 6;
     result[pos] |= cta861.ycbcr_444 << 5;

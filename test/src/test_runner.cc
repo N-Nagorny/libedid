@@ -420,6 +420,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   edid_base.standard_timings[4] = StandardTiming{1152, AspectRatio::AR_4_3, 75};
   edid_base.standard_timings[5] = StandardTiming{1600, AspectRatio::AR_16_9, 60};
   edid_base.standard_timings[6] = StandardTiming{1360, AspectRatio::AR_16_9, 60};
+  edid_base.standard_timings[7] = StandardTiming{256, AspectRatio::AR_16_10, 60};
 
   edid_base.eighteen_byte_descriptors[0] = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,

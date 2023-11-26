@@ -26,13 +26,13 @@ namespace Edid {
       ? capabilities.value()
       : 0;
     uint16_t max_tmds_clock_mhz_ = max_tmds_clock_mhz.has_value()
-      ? max_tmds_clock_mhz.value()
+      ? max_tmds_clock_mhz.value() / 5
       : 0;
 
     if (bytes_6_8_exist()) {
       result[pos++] = caps;
 
-      result[pos++] = (max_tmds_clock_mhz_ / 5) & BITMASK_TRUE(8);
+      result[pos++] = max_tmds_clock_mhz_ & BITMASK_TRUE(8);
 
       result[pos] = (latency.has_value() ? 1 : 0) << 7;
       result[pos] |= (interlaced_latency.has_value() ? 1 : 0) << 6;
@@ -92,7 +92,7 @@ namespace Edid {
     else if (max_tmds_clock_mhz.has_value()) {
       result[pos++] = caps;
 
-      result[pos++] = max_tmds_clock_mhz.value();
+      result[pos++] = max_tmds_clock_mhz_ & BITMASK_TRUE(8);
     }
     else if (capabilities.has_value()) {
       result[pos++] = caps;

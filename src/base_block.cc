@@ -339,15 +339,15 @@ namespace Edid {
   }
 
   std::optional<StandardTiming> parse_standard_timing(uint8_t byte_1, uint8_t byte_2) {
-    std::optional<StandardTiming> result;
-    if (byte_1 != 0x01 && byte_2 != 0x01) {
-      StandardTiming std_timing;
-      std_timing.x_resolution = (byte_1 + 31) * 8;
-      std_timing.aspect_ratio = AspectRatio(byte_2 >> 6 & BITMASK_TRUE(2));
-      std_timing.v_frequency = (byte_2 & BITMASK_TRUE(6)) + 60;
-      result = std_timing;
+    if (byte_1 == 0x01 && byte_2 == 0x01) {
+      return std::nullopt;
     }
-    return result;
+
+    StandardTiming std_timing;
+    std_timing.x_resolution = (byte_1 + 31) * 8;
+    std_timing.aspect_ratio = AspectRatio(byte_2 >> 6 & BITMASK_TRUE(2));
+    std_timing.v_frequency = (byte_2 & BITMASK_TRUE(6)) + 60;
+    return std_timing;
   }
 
   std::pair<uint8_t, uint8_t> generate_standard_timing(const std::optional<StandardTiming>& std_timing) {
