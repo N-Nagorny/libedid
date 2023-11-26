@@ -29,8 +29,7 @@ TEST(HdmiVdb, Generating) {
   EXPECT_EQ(hdmi_vdb.generate_byte_block(), hdmi_vdb_binary);
 }
 
-
-TEST(HdmiVdb, CircularTest) {
+TEST(HdmiVdb, Roundtrip) {
   HdmiVendorDataBlock hdmi_vdb;
   hdmi_vdb.source_phy_addr = {1, 0, 0, 0};
   hdmi_vdb.capabilities = HVDBB6F_SUPPORTS_AI

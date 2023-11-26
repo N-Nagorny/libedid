@@ -146,4 +146,5 @@ namespace Edid {
     return result;
   }
   uint8_t calculate_block_checksum(const std::array<uint8_t, EDID_BLOCK_SIZE>& block);
+  std::vector<uint8_t> read_file(const std::string& file_path);
 }  // namespace Edid

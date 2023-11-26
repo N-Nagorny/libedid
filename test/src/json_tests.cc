@@ -11,7 +11,7 @@
 using namespace Edid;
 using Edid::json_schemas::is_json_satisfies_schema;
 
-TEST(JsonTests, DtdCircularTest) {
+TEST(JsonTests, DtdRoundtrip) {
   nlohmann::json j = R"(
     {
       "h_blanking":280,
@@ -44,7 +44,7 @@ TEST(JsonTests, DtdCircularTest) {
   );
 }
 
-TEST(JsonTests, StandardTimingCircularTest) {
+TEST(JsonTests, StandardTimingRoundtrip) {
   nlohmann::json j = R"(
     {
       "aspect_ratio":"4:3",
@@ -61,7 +61,7 @@ TEST(JsonTests, StandardTimingCircularTest) {
   );
 }
 
-TEST(JsonTests, BaseBlockCircularTest) {
+TEST(JsonTests, BaseBlockRoundtrip) {
   nlohmann::json j = R"(
     {
         "bit_depth":"8",
@@ -190,7 +190,7 @@ TEST(JsonTests, BaseBlockCircularTest) {
   );
 }
 
-TEST(ShortAudioDescriptorTests, JsonCircularTest) {
+TEST(ShortAudioDescriptorTests, JsonRoundtrip) {
   nlohmann::json j = R"(
     {
       "audio_format":"L-PCM",
@@ -478,7 +478,7 @@ TEST(JsonTest, FullEdidParsing) {
   );
 }
 
-TEST(JsonTests, Cta861CircularTest) {
+TEST(JsonTests, Cta861Roundtrip) {
   nlohmann::json j = R"(
     {
       "basic_audio":true,

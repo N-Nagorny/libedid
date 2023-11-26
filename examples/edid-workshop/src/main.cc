@@ -1,5 +1,4 @@
 // Copyright 2023 N-Nagorny
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <strstream>
@@ -13,36 +12,8 @@
 
 using namespace std;
 
-vector<uint8_t> read_file(const string& file_path) {
-  if (!filesystem::is_regular_file(file_path))
-    throw runtime_error(file_path + " is not a regular file");
-
-  ifstream file(file_path,
-    ios_base::in | ios_base::binary
-  );
-  file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
-
-  // Stop eating new lines in binary mode!!!
-  file.unsetf(ios::skipws);
-
-  // get its size
-  streampos file_size;
-
-  file.seekg(0, ios::end);
-  file_size = file.tellg();
-  file.seekg(0, ios::beg);
-
-  // reserve capacity
-  vector<uint8_t> vec(file_size);
-
-  // read the data
-  file.read(reinterpret_cast<char*>(vec.data()), file_size);
-
-  return vec;
-}
-
 Edid::EdidData read_edid_file(const string& path) {
-  auto edid_binary = read_file(path);
+  auto edid_binary = Edid::read_file(path);
   return Edid::parse_edid_binary(edid_binary);
 }
 
@@ -55,25 +26,15 @@ void print_decoded_edid(const string& path) {
   }
 }
 
-bool circular_test(const string& path) {
-  auto edid_binary = read_file(path);
-  auto edid = Edid::parse_edid_binary(edid_binary);
-  auto generated_edid_binary = Edid::generate_edid_binary(edid);
-  bool success = edid_binary == generated_edid_binary;
-  cout << path << " was" << (success ? "" : " NOT") <<
-    " successfully parsed and generated back" << endl;
-  return !success;
-}
-
 void print_json(const string& path_to_edid) {
-  auto edid_binary = read_file(path_to_edid);
+  auto edid_binary = Edid::read_file(path_to_edid);
   nlohmann::json j = Edid::parse_edid_binary(edid_binary);
   cout << j.dump(2) << endl;
 }
 
 void generate_from_json(const string& path_to_json, const string& path_to_edid) {
   // TODO(N-Nagorny): add validation against JSON Schema
-  auto json = read_file(path_to_json);
+  auto json = Edid::read_file(path_to_json);
   // TODO(N-Nagorny): replace it with something non-deprecated
   istrstream stream(reinterpret_cast<const char*>(json.data()), json.size());
   Edid::EdidData edid_data = nlohmann::json::parse(stream);
@@ -86,7 +47,6 @@ int main(int argc, char* argv[]) {
   using namespace clipp;
 
   enum class mode {
-    test_run,
     decode,
     help,
     to_json,
@@ -95,11 +55,6 @@ int main(int argc, char* argv[]) {
   };
   mode selected = mode::decode;
   vector<string> input;
-
-  auto testRunMode = (
-    command("test_run").set(selected, mode::test_run),
-    value("edid_binary", input)
-  );
 
   auto decodeMode = (
     command("decode").set(selected, mode::decode),
@@ -124,7 +79,6 @@ int main(int argc, char* argv[]) {
 
   auto cli = (
     ( decodeMode
-    | testRunMode
     | toJsonMode
     | fromJsonMode
     | bcp00501Mode
@@ -135,8 +89,6 @@ int main(int argc, char* argv[]) {
   if (parse(argc, argv, cli)) {
     try {
       switch(selected) {
-        case mode::test_run:
-          return circular_test(input.at(0));
         case mode::decode:
           print_decoded_edid(input.at(0));
           break;

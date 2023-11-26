@@ -14,6 +14,8 @@
 
 using namespace Edid;
 
+static std::vector<std::string> edid_files = {};
+
 TEST(EqualityOperatorTests, DetailedTimingDescriptorIsEqualToItself) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
@@ -56,7 +58,7 @@ TEST(DisplayRangeLimits, Parsing) {
   EXPECT_EQ(DisplayRangeLimits::parse_byte_block(drl_binary.begin()), limits);
 }
 
-TEST(DisplayRangeLimits, CircularTest) {
+TEST(DisplayRangeLimits, Roundtrip) {
   DisplayRangeLimits limits = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
   auto limits_binary = limits.generate_byte_block();
   auto limits_parsed = DisplayRangeLimits::parse_byte_block(limits_binary.begin());
@@ -78,7 +80,7 @@ TEST(YCbCr420CapabilityMapDataBlockTests, Parsing) {
   EXPECT_EQ(YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block.begin()), block);
 }
 
-TEST(YCbCr420CapabilityMapDataBlockTests, CircularTest) {
+TEST(YCbCr420CapabilityMapDataBlockTests, Roundtrip) {
   YCbCr420CapabilityMapDataBlock capability_map_block;
   capability_map_block.svd_indices = {1, 2};
   auto capability_map_block_binary = capability_map_block.generate_byte_block();
@@ -86,14 +88,14 @@ TEST(YCbCr420CapabilityMapDataBlockTests, CircularTest) {
   EXPECT_EQ(capability_map_block, capability_map_block_parsed);
 }
 
-TEST(CommonCircularTests, DisplaySerialNumber) {
+TEST(CommonRoundtrips, DisplaySerialNumber) {
   auto name = AsciiString{"R8J00779SL012", ASCII_SERIAL_NUMBER};
   auto name_binary = name.generate_byte_block();
   auto name_parsed = AsciiString::parse_byte_block(name_binary.begin());
   EXPECT_EQ(name, name_parsed);
 }
 
-TEST(CommonCircularTests, EstablishedTimings3) {
+TEST(CommonRoundtrips, EstablishedTimings3) {
   auto et_3 = EstablishedTimings3{};
   et_3.bytes_6_11[2] |= EstablishedTiming3Byte8::ET_1440x900_60;
   et_3.bytes_6_11[2] |= EstablishedTiming3Byte8::ET_1440x900_75;
@@ -105,14 +107,14 @@ TEST(CommonCircularTests, EstablishedTimings3) {
   EXPECT_EQ(et_3, et_3_parsed);
 }
 
-TEST(CommonCircularTests, DisplayName) {
+TEST(CommonRoundtrips, DisplayName) {
   auto name = AsciiString{"TEST_NAME", ASCII_DISPLAY_NAME};
   auto name_binary = name.generate_byte_block();
   auto name_parsed = AsciiString::parse_byte_block(name_binary.begin());
   EXPECT_EQ(name, name_parsed);
 }
 
-TEST(CommonCircularTests, BaseEdid) {
+TEST(CommonRoundtrips, BaseEdid) {
   EdidData edid;
   edid.base_block = make_edid_base();
   auto edid_binary = generate_edid_binary(edid);
@@ -121,7 +123,7 @@ TEST(CommonCircularTests, BaseEdid) {
   EXPECT_EQ(parse_base_block(base_edid_binary).first, make_edid_base());
 }
 
-TEST(CommonCircularTests, DetailedTimingDescriptor) {
+TEST(CommonRoundtrips, DetailedTimingDescriptor) {
   DetailedTimingDescriptor dtd = DetailedTimingDescriptor{
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
@@ -130,7 +132,7 @@ TEST(CommonCircularTests, DetailedTimingDescriptor) {
   EXPECT_EQ(dtd, DetailedTimingDescriptor::parse_byte_block(binary));
 }
 
-TEST(CommonCircularTests, VideoDataBlock) {
+TEST(CommonRoundtrips, VideoDataBlock) {
   VideoDataBlock video_data_block;
   video_data_block.vics[0] = 16;
   video_data_block.vics[1] = 4;
@@ -143,7 +145,7 @@ TEST(CommonCircularTests, VideoDataBlock) {
   EXPECT_EQ(video_data_block, VideoDataBlock::parse_byte_block(vdb_binary.begin()));
 }
 
-TEST(CommonCircularTests, AudioDataBlock) {
+TEST(CommonRoundtrips, AudioDataBlock) {
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
   sad.channels = AudioChannels::AC_2;
@@ -157,7 +159,7 @@ TEST(CommonCircularTests, AudioDataBlock) {
   EXPECT_EQ(audio_data_block, AudioDataBlock::parse_byte_block(adb_binary.begin()));
 }
 
-TEST(CommonCircularTests, FullEdid) {
+TEST(CommonRoundtrips, FullEdid) {
   EdidData edid{make_edid_base(), std::vector{make_cta861_ext()}};
   auto edid_binary = generate_edid_binary(edid);
   EXPECT_EQ(edid, parse_edid_binary(edid_binary));
@@ -210,7 +212,7 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
   EXPECT_EQ(dbc, dbc_binary);
 }
 
-TEST(DataBlockCollection, CircularTest) {
+TEST(DataBlockCollection, Roundtrip) {
   VideoDataBlock video_data_block;
   video_data_block.vics[0] = 16;
   video_data_block.vics[1] = 4;
@@ -254,7 +256,7 @@ TEST(DataBlockCollection, CircularTest) {
 }
 
 
-TEST(Cta861Block, CircularTest) {
+TEST(Cta861Block, Roundtrip) {
   std::array<uint8_t, EDID_BLOCK_SIZE> cta861_binary = generate_cta861_block(make_cta861_ext());
   EXPECT_EQ(make_cta861_ext(), parse_cta861_block(cta861_binary));
 }
@@ -502,7 +504,49 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   EXPECT_EQ(edid_data, parse_edid_binary(edid));
 }
 
-int main(int argc, char **argv) {
+class EdidRoundtripTest : public testing::TestWithParam<std::string> {};
+
+TEST_P(EdidRoundtripTest, EdidRoundtrip) {
+  const auto edid_binary = read_file(GetParam());
+
+  const EdidData edid = Edid::parse_edid_binary(edid_binary);
+  auto generated_edid_binary = Edid::generate_edid_binary(edid);
+  EXPECT_EQ(edid_binary, generated_edid_binary);
+}
+
+INSTANTIATE_TEST_CASE_P(
+  PlaceholderName,
+  EdidRoundtripTest,
+  testing::ValuesIn(edid_files));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EdidRoundtripTest);
+
+
+
+void save_non_gtest_argv(int argc, char* argv[]) {
+  const char* gtest_prefixes[] = {
+    "--" GTEST_FLAG_PREFIX_,
+    "--" GTEST_FLAG_PREFIX_DASH_,
+    "--" GTEST_FLAG_PREFIX_UPPER_
+  };
+
+  for (int i = 1; i < argc; ++i) {
+    bool save_arg = true;
+    for (const char* prefix : gtest_prefixes) {
+      if (strncmp(argv[i], prefix, strlen(prefix)) == 0) {
+        save_arg = false;
+        break;
+      };
+    }
+    if (save_arg) {
+      edid_files.push_back(argv[i]);
+    }
+  }
+}
+
+int main(int argc, char* argv[]) {
+  save_non_gtest_argv(argc, argv);
+
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
