@@ -1,11 +1,11 @@
 // Copyright 2023 N-Nagorny
 #include <array>
 #include <cstdint>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 
 #include "edid/common.hh"
+#include "edid/filesystem.hh"
 
 namespace Edid {
   bool operator==(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs) {
