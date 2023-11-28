@@ -351,7 +351,8 @@ namespace Edid {
           hdmi_vsdb.hdmi_video->hdmi_vics.erase(std::remove_if(
             hdmi_vsdb.hdmi_video->hdmi_vics.begin(),
             hdmi_vsdb.hdmi_video->hdmi_vics.end(),
-            [remove_unknown, &fn](uint8_t vic) {
+            [remove_unknown, &fn](uint8_t hdmi_vic) {
+              uint8_t vic = hdmi_vic_to_vic_map.at(hdmi_vic - 1);
               auto mode = get_cta861_video_timing_mode(vic);
               if (mode.has_value()) {
                 uint8_t pixel_repetition_factor = 1;

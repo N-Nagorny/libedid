@@ -313,6 +313,27 @@ TEST(ForEachModeTests, DeleteModesFromCta861) {
   EXPECT_EQ(cta861_before, cta861_after);
 }
 
+TEST(ForEachModeTests, DeleteModesFromHdmiVsdb) {
+  Cta861Block cta861_before = make_cta861_ext();
+  HdmiVendorDataBlock block_before{1, 0, 0, 0};
+  block_before.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, {1, 2, 3, 4}};
+  cta861_before.data_block_collection.push_back(block_before);
+
+  remove_mode_if(cta861_before, [](const VideoTimingMode& mode) {
+    return mode.h_res == 3840;
+  });
+
+  Cta861Block cta861_after = make_cta861_ext();
+  HdmiVendorDataBlock block_after{1, 0, 0, 0};
+  block_after.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, { 4}};
+  cta861_after.data_block_collection.push_back(block_after);
+
+  std::cout << static_cast<nlohmann::json>(cta861_before) << std::endl;
+  std::cout << static_cast<nlohmann::json>(cta861_after) << std::endl;
+
+  EXPECT_EQ(cta861_before, cta861_after);
+}
+
 
 TEST(ForEachModeTests, DeleteModesFromCta861IncludingUnknown) {
   Cta861Block cta861_before = make_cta861_ext();
