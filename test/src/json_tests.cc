@@ -546,3 +546,76 @@ TEST(JsonTests, Cta861Roundtrip) {
     is_json_satisfies_schema("cta861_block.json", json)
   );
 }
+
+TEST(JsonTests, ColorimetryDataBlockGenerating) {
+  const nlohmann::json expected = R"(
+    {
+      "colorimetry_standards": [
+        "opRGB",
+        "BT2020RGB",
+        "defaultRGB",
+        "ICtCp"
+      ],
+      "gamut_metadata_profiles": ["MD0"]
+    }
+  )"_json;
+
+  ColorimetryDataBlock block{
+    ENUM_NULL
+    | CS_OP_RGB
+    | CS_BT2020_RGB
+    | CS_ICTCP
+    | CS_DEFAULT_RGB,
+
+    GMP_0
+  };
+
+  const nlohmann::json actual = block;
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(JsonTests, ColorimetryDataBlockParsing) {
+  const nlohmann::json json = R"(
+    {
+      "colorimetry_standards": [
+        "opRGB",
+        "BT2020YCC",
+        "xvYCC601",
+        "defaultRGB",
+        "ST2113RGB"
+      ],
+      "gamut_metadata_profiles": [ ]
+    }
+  )"_json;
+
+  ColorimetryDataBlock expected{
+    ENUM_NULL
+    | CS_OP_RGB
+    | CS_BT2020_YCC
+    | CS_XV_YCC601
+    | CS_DEFAULT_RGB
+    | CS_ST2113_RGB,
+
+    ENUM_NULL
+  };
+
+  ColorimetryDataBlock actual = json;
+
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(JsonTests, ColorimetryDataBlockRoundtrip) {
+  ColorimetryDataBlock initial{
+    ENUM_NULL
+    | CS_OP_RGB
+    | CS_BT2020_RGB
+    | CS_ICTCP
+    | CS_DEFAULT_RGB,
+
+    GMP_0
+  };
+
+  const nlohmann::json json = initial;
+  const ColorimetryDataBlock parsed = json;
+  EXPECT_EQ(initial, parsed);
+}

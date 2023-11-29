@@ -143,6 +143,32 @@ namespace Edid {
       j["ycbcr420_capability_map"].push_back(svd_index);
   }
 
+  void from_json(const nlohmann::json& j, ColorimetryDataBlock& result) {
+    const auto standards = j.at("colorimetry_standards").get<std::vector<ColorimetryStandard>>();
+    const auto profiles = j.at("gamut_metadata_profiles").get<std::vector<GamutMetadataProfile>>();
+
+    for (const auto& standard : standards) {
+      result.colorimetry_standards |= standard;
+    }
+    for (const auto& profile : profiles) {
+      result.gamut_metadata_profiles |= profile;
+    }
+  }
+
+  void to_json(nlohmann::json& j, const ColorimetryDataBlock& block) {
+    j = {
+      {"colorimetry_standards",   nlohmann::json::array()},
+      {"gamut_metadata_profiles", nlohmann::json::array()}
+    };
+
+    for (ColorimetryStandard standard : bitfield_to_enums<ColorimetryStandard>(block.colorimetry_standards)) {
+      j["colorimetry_standards"].push_back(to_string(standard));
+    }
+    for (GamutMetadataProfile profile : bitfield_to_enums<GamutMetadataProfile>(block.gamut_metadata_profiles)) {
+      j["gamut_metadata_profiles"].push_back(to_string(profile));
+    }
+  }
+
   void from_json(const nlohmann::json& j, UnknownDataBlock& result) {
     result.raw_data = j.at("raw_data").get<std::vector<uint8_t>>();
     result.data_block_tag = j.at("tag");
@@ -413,6 +439,11 @@ namespace Edid {
     }
     else if (j.contains("ycbcr420_capability_map")) {
       YCbCr420CapabilityMapDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("colorimetry_standards")) {
+      ColorimetryDataBlock subresult;
       from_json(j, subresult);
       descriptor = subresult;
     }

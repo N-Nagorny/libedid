@@ -88,6 +88,56 @@ TEST(YCbCr420CapabilityMapDataBlockTests, Roundtrip) {
   EXPECT_EQ(capability_map_block, capability_map_block_parsed);
 }
 
+TEST(ColorimetryDataBlockTests, Generating) {
+  std::vector<uint8_t> expected = {0xe3, 0x05, 0x90, 0x51};
+
+  ColorimetryDataBlock block{
+    ENUM_NULL
+    | CS_OP_RGB
+    | CS_BT2020_RGB
+    | CS_ICTCP
+    | CS_DEFAULT_RGB,
+
+    GMP_0
+  };
+
+  const auto actual = block.generate_byte_block();
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(ColorimetryDataBlockTests, Parsing) {
+  std::vector<uint8_t> binary = {0xe3, 0x05, 0x51, 0x90};
+
+  ColorimetryDataBlock expected{
+    ENUM_NULL
+    | CS_OP_RGB
+    | CS_BT2020_YCC
+    | CS_XV_YCC601
+    | CS_DEFAULT_RGB
+    | CS_ST2113_RGB,
+
+    ENUM_NULL
+  };
+
+  EXPECT_EQ(ColorimetryDataBlock::parse_byte_block(binary.begin()), expected);
+}
+
+TEST(ColorimetryDataBlockTests, Roundtrip) {
+  ColorimetryDataBlock initial{
+    ENUM_NULL
+    | CS_OP_RGB
+    | CS_BT2020_RGB
+    | CS_ICTCP
+    | CS_DEFAULT_RGB,
+
+    GMP_0
+  };
+
+  const auto binary = initial.generate_byte_block();
+  const auto parsed = ColorimetryDataBlock::parse_byte_block(binary.begin());
+  EXPECT_EQ(initial, parsed);
+}
+
 TEST(CommonRoundtrips, DisplaySerialNumber) {
   auto name = AsciiString{"R8J00779SL012", ASCII_SERIAL_NUMBER};
   auto name_binary = name.generate_byte_block();

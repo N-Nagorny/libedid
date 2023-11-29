@@ -20,7 +20,8 @@
 #define CTA861_VESA_DISPLAY_TRANSFER_DATA_BLOCK_TAG 0b101
 #define CTA861_EXTENDED_TAG 0b111
 
-#define CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG 15
+#define CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG                   0x05
+#define CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG  0x0F
 
 #define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
 
@@ -437,6 +438,94 @@ namespace Edid {
   };
 
   bool operator==(const YCbCr420CapabilityMapDataBlock& lhs, const YCbCr420CapabilityMapDataBlock& rhs);
+
+  enum ColorimetryStandard {
+    CS_XV_YCC601   = 1 << 0,
+    CS_XV_YCC709   = 1 << 1,
+    CS_S_YCC601    = 1 << 2,
+    CS_OP_YCC601   = 1 << 3,
+    CS_OP_RGB      = 1 << 4,
+    CS_BT2020_CYCC = 1 << 5,
+    CS_BT2020_YCC  = 1 << 6,
+    CS_BT2020_RGB  = 1 << 7,
+
+    CS_DEFAULT_RGB  = 1 << 12,
+    CS_S_RGB        = 1 << 13,
+    CS_ICTCP        = 1 << 14,
+    CS_ST2113_RGB   = 1 << 15
+  };
+
+  STRINGIFY_ENUM(ColorimetryStandard, {
+    {CS_XV_YCC601,    "xvYCC601"},
+    {CS_XV_YCC709,    "xvYCC709"},
+    {CS_S_YCC601,     "sYCC601"},
+    {CS_OP_YCC601,    "opYCC601"},
+    {CS_OP_RGB,       "opRGB"},
+    {CS_BT2020_CYCC,  "BT2020cYCC"},
+    {CS_BT2020_YCC,   "BT2020YCC"},
+    {CS_BT2020_RGB,   "BT2020RGB"},
+    {CS_DEFAULT_RGB,  "defaultRGB"},
+    {CS_S_RGB,        "sRGB"},
+    {CS_ICTCP,        "ICtCp"},
+    {CS_ST2113_RGB,   "ST2113RGB"},
+  })
+
+  enum GamutMetadataProfile {
+    GMP_0 = 1 << 0,
+    GMP_1 = 1 << 1,
+    GMP_2 = 1 << 2,
+    GMP_3 = 1 << 3
+  };
+
+  STRINGIFY_ENUM(GamutMetadataProfile, {
+    {GMP_0, "MD0"},
+    {GMP_1, "MD1"},
+    {GMP_2, "MD2"},
+    {GMP_3, "MD3"},
+  })
+
+  // CTA-861-I Section 7.5.5
+  struct ColorimetryDataBlock {
+    uint16_t colorimetry_standards = 0;
+    uint8_t gamut_metadata_profiles = 0;
+
+    size_t size() const {
+      const size_t payload_size = 2;
+      return payload_size + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+    }
+
+    CtaDataBlockType type() const {
+      return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG);
+    }
+
+    std::vector<uint8_t> generate_byte_block() const;
+    void print(std::ostream& os, uint8_t tabs = 1) const;
+
+    template<typename Iterator>
+    static ColorimetryDataBlock parse_byte_block(Iterator iter) {
+      ColorimetryDataBlock result;
+
+      const uint8_t data_block_tag = *iter++ >> 5 & BITMASK_TRUE(3);
+      if (data_block_tag != CTA861_EXTENDED_TAG)
+        throw EdidException(__FUNCTION__, "Extended Tag Data Block has incorrect Data Block Tag: " +
+          std::to_string(data_block_tag)
+        );
+
+      int extended_tag = *iter++;
+      if (extended_tag != CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG)
+        throw EdidException(__FUNCTION__, "Colorimetry Data Block has incorrect Extended Data Block Tag: " +
+          std::to_string(extended_tag)
+        );
+
+      result.colorimetry_standards = *iter++;
+      result.colorimetry_standards |= (*iter >> 4 & BITMASK_TRUE(4)) << 12;
+      result.gamut_metadata_profiles = *iter & BITMASK_TRUE(4);
+
+      return result;
+    }
+  };
+
+  bool operator==(const ColorimetryDataBlock& lhs, const ColorimetryDataBlock& rhs);
 
   bool operator==(const CtaDataBlockType& lhs, const CtaDataBlockType& rhs);
 

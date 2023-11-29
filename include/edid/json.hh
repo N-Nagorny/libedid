@@ -31,6 +31,7 @@ namespace Edid {
   void from_json(const nlohmann::json& j, AudioDataBlock&);
   void from_json(const nlohmann::json& j, SpeakerAllocationDataBlock&);
   void from_json(const nlohmann::json& j, YCbCr420CapabilityMapDataBlock&);
+  void from_json(const nlohmann::json& j, ColorimetryDataBlock&);
   void from_json(const nlohmann::json& j, Cta861Block&);
   void from_json(const nlohmann::json& j, ShortAudioDescriptor& result);
 
@@ -40,6 +41,7 @@ namespace Edid {
   void to_json(nlohmann::json& j, const AudioDataBlock&);
   void to_json(nlohmann::json& j, const SpeakerAllocationDataBlock&);
   void to_json(nlohmann::json& j, const YCbCr420CapabilityMapDataBlock&);
+  void to_json(nlohmann::json& j, const ColorimetryDataBlock&);
   void to_json(nlohmann::json& j, const Cta861Block&);
 
   void from_json(const nlohmann::json& j, Vic3dSupport&);

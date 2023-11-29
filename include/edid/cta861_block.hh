@@ -17,7 +17,8 @@ namespace Edid {
   using CtaDataBlock = std::variant<
     UnknownDataBlock, VideoDataBlock,
     AudioDataBlock, SpeakerAllocationDataBlock,
-    YCbCr420CapabilityMapDataBlock, HdmiVendorDataBlock
+    YCbCr420CapabilityMapDataBlock, HdmiVendorDataBlock,
+    ColorimetryDataBlock
   >;
   using DataBlockCollection = std::vector<CtaDataBlock>;
 

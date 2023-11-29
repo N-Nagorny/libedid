@@ -108,6 +108,9 @@ namespace Edid {
       case CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(YCbCr420CapabilityMapDataBlock::parse_byte_block(iter_read)));
         break;
+      case CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG:
+        data_block_ptr = std::make_unique<CtaDataBlock>(std::move(ColorimetryDataBlock::parse_byte_block(iter_read)));
+        break;
       default:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));
     }

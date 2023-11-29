@@ -157,4 +157,39 @@ namespace Edid {
       os << (int)svd_index << " ";
     os << '\n';
   }
+
+  bool operator==(const ColorimetryDataBlock& lhs, const ColorimetryDataBlock& rhs) {
+    return lhs.colorimetry_standards == rhs.colorimetry_standards &&
+      lhs.gamut_metadata_profiles == rhs.gamut_metadata_profiles;
+  }
+
+  std::vector<uint8_t> ColorimetryDataBlock::generate_byte_block() const {
+    std::vector<uint8_t> result(size(), 0x00);
+    int pos = 0;
+
+    result[pos] = CTA861_EXTENDED_TAG << 5;
+    result[pos++] |= (size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
+    result[pos++] = CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG;
+
+    result[pos++] = colorimetry_standards & BITMASK_TRUE(8);
+    result[pos] = (colorimetry_standards >> 12 & BITMASK_TRUE(4)) << 4;
+    result[pos] |= gamut_metadata_profiles & BITMASK_TRUE(4);
+
+    return result;
+  }
+
+  void ColorimetryDataBlock::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent(tabs, '\t');
+    // const auto color_standards = split_colorimetry_standards();
+
+    os << indent << "Colorimetry Data Block: \n";
+    indent += '\t';
+
+    for (const auto& standard : bitfield_to_enums<ColorimetryStandard>(colorimetry_standards)) {
+      os << indent << to_string(standard) << '\n';
+    }
+    for (const auto& profile : bitfield_to_enums<GamutMetadataProfile>(gamut_metadata_profiles)) {
+      os << indent << to_string(profile) << '\n';
+    }
+  }
 }  // namespace Edid

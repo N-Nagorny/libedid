@@ -28,6 +28,7 @@ namespace Edid {
 
     namespace cta861_block {
       extern const char* audio_data_block;
+      extern const char* colorimetry_data_block;
       extern const char* cta861_block;
       extern const char* hdmi_vsdb;
       extern const char* speaker_allocation_data_block;
@@ -47,6 +48,7 @@ namespace Edid {
       { json_uri{"established_timings_3.json"}, json::parse(common::established_timings_3) },
 
       { json_uri{"audio_data_block.json"}, json::parse(cta861_block::audio_data_block) },
+      { json_uri{"colorimetry_data_block.json"}, json::parse(cta861_block::colorimetry_data_block) },
       { json_uri{"cta861_block.json"}, json::parse(cta861_block::cta861_block) },
       { json_uri{"hdmi_vsdb.json"}, json::parse(cta861_block::hdmi_vsdb) },
       { json_uri{"speaker_allocation_data_block.json"}, json::parse(cta861_block::speaker_allocation_data_block) },
