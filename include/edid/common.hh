@@ -135,12 +135,14 @@ namespace Edid {
 
   bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs);
 
-  template<typename E>
-  std::vector<E> bitfield_to_enums(uint8_t bitfield) {
+  template<typename E, typename T>
+  std::vector<E> bitfield_to_enums(T bitfield) {
     static_assert(std::is_enum<E>::value,
       "bitfield_to_enums: template parameter must be an enum!");
+    static_assert(std::is_arithmetic<T>::value,
+      "bitfield_to_enums: Not an arithmetic type!");
     std::vector<E> result;
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 8 * sizeof(T); ++i)
       if (bitfield & (1 << i))
         result.push_back(static_cast<E>(1 << i));
     return result;
