@@ -18,7 +18,8 @@ namespace Edid {
   }
 
   void UnknownDataBlock::print(std::ostream& os, uint8_t tabs) const {
-    os << "Unrecognized Data Block with tag " <<
+    std::string indent(tabs, '\t');
+    os << indent << "Unrecognized Data Block with tag " <<
       std::hex << unsigned(data_block_tag) <<
       (extended_tag.has_value() ? std::to_string(extended_tag.value()) : std::string{}) <<
       std::dec << '\n';

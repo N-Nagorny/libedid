@@ -346,7 +346,7 @@ namespace Edid {
       }
       else if (std::visit(is_hdmi_vsdb_visitor, data_block)) {
         auto& hdmi_vsdb = std::get<HdmiVendorDataBlock>(data_block);
-        std::vector<uint8_t> vics_to_remove;
+
         if (hdmi_vsdb.hdmi_video.has_value()) {
           hdmi_vsdb.hdmi_video->hdmi_vics.erase(std::remove_if(
             hdmi_vsdb.hdmi_video->hdmi_vics.begin(),

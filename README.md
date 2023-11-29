@@ -15,6 +15,12 @@ cmake -B build/ .
 cmake --build build/
 ```
 
+Or just invoke
+```
+nix-build
+```
+and build output will appear in `result/`.
+
 ## Known issues
 
 ### Development-related (TODO)

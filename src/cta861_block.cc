@@ -212,6 +212,7 @@ namespace Edid {
   }
 
   void print_data_block_collection(std::ostream& os, const DataBlockCollection& collection) {
+    os << "Data Block Collection:\n";
     for (const auto& data_block : collection) {
       std::visit([&os](const auto& d) {
         d.print(os);
