@@ -11,7 +11,7 @@ namespace Edid {
   // Number
   #define N(x) uint8_t(x)
   // Range
-  #define R(x, y) std::make_pair<uint8_t, uint8_t>(x, y)
+  #define R(x, y) std::make_pair(x, y)
   // Vector
   #define V(...) std::vector<uint8_t>{__VA_ARGS__}
 
