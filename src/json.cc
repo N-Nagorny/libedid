@@ -545,11 +545,10 @@ namespace Edid {
       result.formats = std::move(fmts);
     }
     if (j.contains("vics")) {
-      uint16_t vics = 0;
-      for (uint8_t vic : j.at("vics").get<std::vector<uint8_t>>()) {
-        vics |= 1 << (vic - 1);
-      }
-      result.vics = vics;
+      const auto& vics = j.at("vics").get<std::vector<uint8_t>>();
+      result.vics = std::accumulate(vics.begin(), vics.end(), 0, [](uint16_t result, uint8_t vic) {
+        return result |= 1 << (vic - 1);
+      });
     }
   }
 
@@ -608,12 +607,10 @@ namespace Edid {
       result.source_phy_addr[i] = source_phy_addr[i];
     }
     if (j.contains("capabilities")) {
-      const auto capabilities = j.at("capabilities").get<std::vector<HdmiVendorDataBlockCapabilities>>();
-      HdmiVendorDataBlockCapabilities caps = 0;
-      for (auto cap : capabilities) {
-        caps |= cap;
-      }
-      result.capabilities = caps;
+      const auto caps = j.at("capabilities").get<std::vector<HdmiVendorDataBlockCapabilities>>();
+      result.capabilities = std::accumulate(caps.begin(), caps.end(), ENUM_NULL, [](HdmiVendorDataBlockCapabilities result, HdmiVendorDataBlockCapabilities cap) {
+        return result |= cap;
+      });
     }
     if (j.contains("max_tmds_clock_mhz")) {
       result.max_tmds_clock_mhz = j.at("max_tmds_clock_mhz");

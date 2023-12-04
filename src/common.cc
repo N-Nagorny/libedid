@@ -97,7 +97,7 @@ namespace Edid {
     stereo_mode |= features_bitmap & BITMASK_TRUE(1);
     result.stereo_mode = StereoMode(stereo_mode);
 
-    if ((features_bitmap >> 4) & BITMASK_TRUE(1) == 0) {
+    if (((features_bitmap >> 4) & BITMASK_TRUE(1)) == 0) {
       AnalogCompositeSync sync;
       sync.bipolar = (features_bitmap >> 3) & BITMASK_TRUE(1);
       sync.serrations = (features_bitmap >> 2) & BITMASK_TRUE(1);
@@ -105,14 +105,14 @@ namespace Edid {
 
       result.sync = sync;
     }
-    else if ((features_bitmap >> 3) & BITMASK_TRUE(2) == 0b10) {
+    else if (((features_bitmap >> 3) & BITMASK_TRUE(2)) == 0b10) {
       DigitalCompositeSync sync;
       sync.serrations = (features_bitmap >> 2) & BITMASK_TRUE(1);
       sync.h_sync_polarity = (features_bitmap >> 1) & BITMASK_TRUE(1);
 
       result.sync = sync;
     }
-    else if ((features_bitmap >> 3) & BITMASK_TRUE(2) == 0b11) {
+    else if (((features_bitmap >> 3) & BITMASK_TRUE(2)) == 0b11) {
       DigitalSeparateSync sync;
       sync.v_sync_polarity = (features_bitmap >> 2) & BITMASK_TRUE(1);
       sync.h_sync_polarity = (features_bitmap >> 1) & BITMASK_TRUE(1);

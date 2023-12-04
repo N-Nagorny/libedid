@@ -369,9 +369,10 @@ namespace Edid {
     int pos = 0;
 
     // EDID header
-    for (uint8_t byte : base_block_header)
-      if (base_block[pos++] != byte)
-        throw EdidException(__FUNCTION__, "EDID base block header is invalid.");
+    if (!std::equal(base_block_header.data(), base_block_header.data() + base_block_header.size(), base_block.data())) {
+      throw EdidException(__FUNCTION__, "EDID base block header is invalid.");
+    }
+    pos += base_block_header.size();
 
     // Checksum
     if (base_block[EDID_BLOCK_SIZE - 1] != calculate_block_checksum(base_block))
@@ -430,8 +431,11 @@ namespace Edid {
     result_struct.continuous_timings = base_block[pos] & 1;
 
     // Chromaticity coordinates
-    for (uint8_t& byte : result_struct.chromaticity)
-      byte = base_block[++pos];
+    {
+      const auto& start = base_block.data() + pos + 1;
+      std::copy(start, start + result_struct.chromaticity.size(), result_struct.chromaticity.data());
+      pos += result_struct.chromaticity.size();
+    }
 
     // Established Timings
     result_struct.established_timings_1 = base_block[++pos];
