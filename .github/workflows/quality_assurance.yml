@@ -14,17 +14,18 @@ jobs:
     - uses: actions/upload-artifact@master
       with:
         name: libedid
-        path: result/
+        path: ./result/
     - run: nix-build
     - run: nix-shell --run "./scripts/static_analysis.sh"
   linuxhw_edid_coverage:
+    needs: build_and_static_checks
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@master
       with:
         name: libedid
-        path: result/
+        path: ./result/
 
     - name: Cache EDID DB
       id: cache-edid-db
