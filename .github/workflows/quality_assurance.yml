@@ -26,6 +26,7 @@ jobs:
       with:
         name: libedid
         path: ./result/
+    - run: chmod +x ./result/bin/test-runner
 
     - name: Cache EDID DB
       id: cache-edid-db
