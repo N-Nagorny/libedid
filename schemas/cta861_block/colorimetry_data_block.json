@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Colorimetry Data Block (CTA-861-I Section 7.5.5)",
+  "description": "Indicates support of specific extended colorimetry standards and gamut-related metadata",
+  "additionalProperties": false,
+  "minProperties": 2,
+  "required": [
+    "colorimetry_standards",
+    "gamut_metadata_profiles"
+  ],
+  "properties": {
+    "colorimetry_standards": {
+      "type": "array",
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "xvYCC601",
+          "xvYCC709",
+          "sYCC601",
+          "opYCC601",
+          "opRGB",
+          "BT2020cYCC",
+          "BT2020YCC",
+          "BT2020RGB",
+          "defaultRGB",
+          "sRGB",
+          "ICtCp",
+          "ST2113RGB"
+        ]
+      }
+    },
+    "gamut_metadata_profiles": {
+      "description": "These profiles are not defined in CTA-861 but may be defined in interface standard (e.g. HDMI 1.4b)",
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "MD0",
+          "MD1",
+          "MD2",
+          "MD3"
+        ]
+      }
+    }
+  }
+}
+
