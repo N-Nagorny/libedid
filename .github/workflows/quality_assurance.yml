@@ -27,6 +27,7 @@ jobs:
         name: libedid
         path: ./result/
     - run: chmod +x ./result/bin/test-runner
+    - run: ls -lah ./result
 
     - name: Cache EDID DB
       id: cache-edid-db
@@ -39,5 +40,6 @@ jobs:
       if: steps.cache-edid-db.outputs.cache-hit != 'true'
       run: ./scripts/linuxhw_download.sh
 
+    - run: ls -lah ./result/bin
     - name: Estimate EDID DB coverage
       run: ./scripts/linuxhw_coverage.sh

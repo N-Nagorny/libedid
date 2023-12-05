@@ -15,6 +15,8 @@ function test_run {
 
   rm -rf results/
 
+  ls -lah ${ROOT}/result/bin/
+
   set +x
 
   ${ROOT}/result/bin/test-runner \
