@@ -15,11 +15,14 @@ function test_run {
 
   rm -rf results/
 
+  set +x
+
   ${ROOT}/result/bin/test-runner \
     --gtest_output=json:${RESULTS_PATH}/test_${BIN_INDEX_PATH}.json \
     --gtest_filter=PlaceholderName/EdidRoundtripTest.EdidRoundtrip/* \
+    --gtest_brief=1 \
     "${FILES[@]}" \
-    > /dev/null 2>&1
+    # > /dev/null 2>&1
 }
 
 process_test_results() {
@@ -51,10 +54,9 @@ mkdir "${OUTPUT_PATH}"
 
 cd ${LINUXHW_EDID_PATH}
 
-set +x
 
 for file in index_binary_*; do
-  test_run "${file}" ${OUTPUT_PATH} &
+  test_run "${file}" ${OUTPUT_PATH} || true #&
 done
 
 set -x
