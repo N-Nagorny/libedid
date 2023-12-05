@@ -378,9 +378,6 @@ TEST(ForEachModeTests, DeleteModesFromHdmiVsdb) {
   block_after.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, { 4}};
   cta861_after.data_block_collection.push_back(block_after);
 
-  std::cout << static_cast<nlohmann::json>(cta861_before) << std::endl;
-  std::cout << static_cast<nlohmann::json>(cta861_after) << std::endl;
-
   EXPECT_EQ(cta861_before, cta861_after);
 }
 
@@ -583,6 +580,7 @@ TEST_P(EdidRoundtripTest, EdidRoundtrip) {
 
   const EdidData edid = Edid::parse_edid_binary(edid_binary);
   auto generated_edid_binary = Edid::generate_edid_binary(edid);
+
   EXPECT_EQ(edid_binary, generated_edid_binary);
 }
 
