@@ -96,19 +96,24 @@ if [[ ! -d "linuxhw_edid" ]]; then
   split -l 15000 "index_decoded.txt" "index_decoded_"
 
   set +x
+
   for file in index_decoded_*; do
     decoded_to_binary "${file}" &
   done
 
+  set -x
+
   time wait
+
+  set +x
 
   for file in index_binary_*; do
     test_run "${file}" &
   done
 
-  time wait
-
   set -x
+
+  time wait
 
   process_test_results
 fi

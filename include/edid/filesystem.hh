@@ -39,7 +39,7 @@
 #           endif
 
 // Not on Visual Studio. Let's use the normal version
-#       else // #ifdef _MSC_VER
+#       else  // #ifdef _MSC_VER
 #           define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 0
 #       endif
 
