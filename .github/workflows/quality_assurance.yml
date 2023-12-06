@@ -3,30 +3,31 @@ on:
   pull_request:
   push:
 jobs:
-  build_and_static_checks:
+  build_and_static_analysis:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - run: find /nix/ -name ld-linux-x86-64.so.2
     - uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-    - uses: DeterminateSystems/magic-nix-cache-action@v2
+    - run: find /nix/ -name ld-linux-x86-64.so.2
     - run: nix-build
     - uses: actions/upload-artifact@master
       with:
         name: libedid
         path: ./result/
+    - run: find /nix/ -name ld-linux-x86-64.so.2
     - run: nix-shell --run "./scripts/static_analysis.sh"
     - run: find /nix/ -name ld-linux-x86-64.so.2
   linuxhw_edid_coverage:
-    needs: build_and_static_checks
+    needs: build_and_static_analysis
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-    - uses: DeterminateSystems/magic-nix-cache-action@v2
     - run: find /nix/ -name ld-linux-x86-64.so.2
     - uses: actions/download-artifact@master
       with:
