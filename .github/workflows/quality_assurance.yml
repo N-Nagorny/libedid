@@ -10,18 +10,22 @@ jobs:
     - uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-23.05
-    - run: find /nix/ -name ld-linux-x86-64.so.2
-    - run: nix-build
-    - run: cp -r ./result/ ./result_cp/
-    - run: chmod -R +w ./result_cp/
-    - run: cp $(ldd ./result/bin/test-runner | grep gtest | cut -d ' ' -f3) ./result_cp/lib
+
+    - name: Build libedid and examples
+      run: nix-build
+
+    - name: Make a distribution
+      run: |
+        cp -r ./result/ ./result_cp/ \
+        && chmod -R +w ./result_cp/ \
+        && cp $(ldd ./result/bin/test-runner | grep gtest | cut -d ' ' -f3) ./result_cp/lib
+
     - uses: actions/upload-artifact@master
       with:
         name: libedid
         path: ./result_cp/
-    - run: find /nix/ -name ld-linux-x86-64.so.2
+
     - run: nix-shell --run "./scripts/static_analysis.sh"
-    - run: find /nix/ -name ld-linux-x86-64.so.2
   tests_and_linuxhw_edid_coverage:
     needs: build_and_static_analysis
     runs-on: ubuntu-latest
@@ -30,13 +34,15 @@ jobs:
     - uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-23.05
-    # - run: nix-env -iA nixpkgs.gtest
+
     - uses: actions/download-artifact@master
       with:
         name: libedid
         path: ./result/
     - run: chmod +x ./result/bin/test-runner
-    - run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
+
+    - name: Run tests
+      run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
 
     - id: cache-edid-db
       uses: actions/cache/restore@v3

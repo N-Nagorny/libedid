@@ -24,7 +24,7 @@ function test_run {
     --gtest_filter=PlaceholderName/EdidRoundtripTest.EdidRoundtrip/* \
     --gtest_brief=1 \
     "${FILES[@]}" \
-    # > /dev/null 2>&1
+    > /dev/null 2>&1
 }
 
 process_test_results() {
@@ -58,7 +58,7 @@ cd ${LINUXHW_EDID_PATH}
 
 
 for file in index_binary_*; do
-  test_run "${file}" ${OUTPUT_PATH} || true #&
+  test_run "${file}" ${OUTPUT_PATH} &
 done
 
 set -x
