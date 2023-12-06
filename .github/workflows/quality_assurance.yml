@@ -12,11 +12,12 @@ jobs:
         nix_path: nixpkgs=channel:nixos-23.05
     - run: find /nix/ -name ld-linux-x86-64.so.2
     - run: nix-build
-    - run: cp $(ldd ./result/bin/test-runner | grep gtest | cut -d ' ' -f3) ./result/lib
+    - run: cp -r ./result/ ./result_cp/
+    - run: cp $(ldd ./result/bin/test-runner | grep gtest | cut -d ' ' -f3) ./result_cp/lib
     - uses: actions/upload-artifact@master
       with:
         name: libedid
-        path: ./result/
+        path: ./result_cp/
     - run: find /nix/ -name ld-linux-x86-64.so.2
     - run: nix-shell --run "./scripts/static_analysis.sh"
     - run: find /nix/ -name ld-linux-x86-64.so.2
