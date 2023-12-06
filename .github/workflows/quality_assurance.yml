@@ -7,7 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: find /nix/ -name ld-linux-x86-64.so.2
     - uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-unstable
@@ -28,13 +27,13 @@ jobs:
     - uses: cachix/install-nix-action@v20
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-    - run: find /nix/ -name ld-linux-x86-64.so.2
+    - run: nix-env -iA nixpkgs.gtest
     - uses: actions/download-artifact@master
       with:
         name: libedid
         path: ./result/
     - run: chmod +x ./result/bin/test-runner
-    - run: ./result/bin/test-runner
+    - run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
     - name: Cache EDID DB
       id: cache-edid-db
       uses: actions/cache@v3
