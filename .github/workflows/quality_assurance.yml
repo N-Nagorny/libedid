@@ -48,6 +48,5 @@ jobs:
       if: steps.cache-edid-db.outputs.cache-hit != 'true'
       run: ./scripts/linuxhw_download.sh
 
-    - run: ls -lah ./result/bin
     - name: Estimate EDID DB coverage
-      run: ./scripts/linuxhw_coverage.sh
+      run: LD_LIBRARY_PATH=./result/lib ./scripts/linuxhw_coverage.sh
