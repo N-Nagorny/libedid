@@ -13,11 +13,7 @@ function test_run {
 
   readarray -t FILES < "${BIN_INDEX_PATH}"
 
-  rm -rf results/
-
-  ls -lah ${ROOT}/result/bin/
-
-  set +x
+  rm -rf ${RESULTS_PATH}
 
   ${ROOT}/result/bin/test-runner \
     --gtest_output=json:${RESULTS_PATH}/test_${BIN_INDEX_PATH}.json \
@@ -31,6 +27,7 @@ process_test_results() {
   local RESULTS_PATH=${1}
   local TESTS=0
   local FAILURES=0
+  local EXPECTED_SUCCESS=40697
 
   for file in ${RESULTS_PATH}/test_*.json; do
     TESTS=$(expr $TESTS + $(sed "2q;d" "$file" | grep -o '[0-9]\+'))
@@ -41,6 +38,10 @@ process_test_results() {
   local SUCCESS=$(expr ${TESTS} - ${FAILURES})
   echo "${SUCCESS}/${TESTS}"
   echo "$(( ${SUCCESS} * 100 / ${TESTS} )) %"
+
+  if [[ ${SUCCESS} -lt ${EXPECTED_SUCCESS} ]]; then
+    exit 1
+  fi
 }
 
 # -------------------
@@ -56,6 +57,7 @@ mkdir "${OUTPUT_PATH}"
 
 cd ${LINUXHW_EDID_PATH}
 
+set +x
 
 for file in index_binary_*; do
   test_run "${file}" ${OUTPUT_PATH} &
