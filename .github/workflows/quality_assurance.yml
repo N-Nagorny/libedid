@@ -1,0 +1,64 @@
+name: "Quality Assurance"
+on:
+  pull_request:
+  push:
+jobs:
+  build_and_static_analysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v20
+      with:
+        nix_path: nixpkgs=channel:nixos-23.05
+
+    - name: Build libedid and examples
+      run: nix-build
+
+    - name: Make a distribution
+      run: |
+        cp -r ./result/ ./result_cp/ \
+        && chmod -R +w ./result_cp/ \
+        && cp $(ldd ./result/bin/test-runner | grep gtest | cut -d ' ' -f3) ./result_cp/lib
+
+    - uses: actions/upload-artifact@master
+      with:
+        name: libedid
+        path: ./result_cp/
+
+    - run: nix-shell --run "./scripts/static_analysis.sh"
+  tests_and_linuxhw_edid_coverage:
+    needs: build_and_static_analysis
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v20
+      with:
+        nix_path: nixpkgs=channel:nixos-23.05
+
+    - uses: actions/download-artifact@master
+      with:
+        name: libedid
+        path: ./result/
+    - run: chmod +x ./result/bin/test-runner
+
+    - name: Run tests
+      run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
+
+    - id: cache-edid-db
+      uses: actions/cache/restore@v3
+      with:
+        path: linuxhw_edid
+        key: ${{ hashFiles('./scripts/linuxhw_download.sh') }}
+
+    - name: Download EDID DB
+      if: steps.cache-edid-db.outputs.cache-hit != 'true'
+      run: ./scripts/linuxhw_download.sh
+
+    - uses: actions/cache/save@v3
+      id: cache
+      with:
+        path: linuxhw_edid
+        key: ${{ hashFiles('./scripts/linuxhw_download.sh') }}
+
+    - name: Estimate EDID DB coverage
+      run: LD_LIBRARY_PATH=$(pwd)/result/lib ./scripts/linuxhw_coverage.sh

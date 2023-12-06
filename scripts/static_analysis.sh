@@ -54,7 +54,7 @@ run_cpplint() {
 # -------------------
 
 FILES_CC="$(find . -name \*.cc | xargs echo)"
-FILES_HH="$(find . -name \*.hh | xargs echo)"
+FILES_CC_HH="$(find . -name \*.hh -o -name \*.cc | xargs echo)"
 
-run_cpplint "${FILES_CC}" "${FILES_HH}"
+run_cpplint "${FILES_CC_HH}" "${ROOT}"
 run_cppcheck "${FILES_CC}"

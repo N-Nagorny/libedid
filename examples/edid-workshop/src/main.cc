@@ -40,7 +40,7 @@ void generate_from_json(const string& path_to_json, const string& path_to_edid) 
   Edid::EdidData edid_data = nlohmann::json::parse(stream);
   vector<uint8_t> generated_edid = Edid::generate_edid_binary(edid_data);
   ofstream generated(path_to_edid, ios::out | ios::binary);
-  generated.write((char *)&generated_edid[0], generated_edid.size());
+  generated.write(reinterpret_cast<char*>(generated_edid.data()), generated_edid.size());
 }
 
 int main(int argc, char* argv[]) {
