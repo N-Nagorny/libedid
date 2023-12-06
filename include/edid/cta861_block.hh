@@ -32,7 +32,10 @@ namespace Edid {
     std::vector<DetailedTimingDescriptor> detailed_timing_descriptors;
   };
 
-  bool operator==(const Cta861Block& lhs, const Cta861Block& rhs);
+#define FIELDS(X) X.underscan, X.basic_audio, X.ycbcr_444, X.ycbcr_422, \
+                  X.data_block_collection, X.detailed_timing_descriptors
+  TIED_COMPARISONS(Cta861Block, FIELDS)
+#undef FIELDS
 
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection);
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_cta861_block(const Cta861Block& cta861_block);

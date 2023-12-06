@@ -27,9 +27,8 @@ and build output will appear in `result/`.
 
 - CMake doesn't regenerate C++ with JSON Schemas when they're changed.
 - `std::variant` is used for writing generalized functions working with any CTA data blocks, mostly because of `parse_byte_block` template functions. Need to consider using inheritance instead.
-- Comparison operator overloadings could be replaced with a macro.
-- No pre-commit hooks and/or CI procedures that run `cpplint`, `cppcheck`, `test-runner` and `edid-workshop`.
-- No `.editorconfig`.
+- GitHub Actions workflows could be cleaned up.
+- Some cpplint checks are skipped (see TODOs in `scripts/static_analysis.sh`).
 - `src/json.cc` has too much boilerplate code.
 - `linuxhw/EDID` coverage could be indicated via GitHub Badges.
 
@@ -46,16 +45,6 @@ and build output will appear in `result/`.
 ### CTA Extension
 
 - Format-specific parameters of Short Audio Descriptors are incorrect for any audio formats except of Linear PCM.
-
-## Code quality
-```
-cpplint \
-  --root=$(pwd) \
-  --exclude=build/* \
-  --exclude=result/* \
-  --filter=-whitespace/line_length,-build/namespaces,-build/include_order,-whitespace/parens,-whitespace/newline,-readability/braces,-build/explicit_make_pair,-runtime/references,-readability/casting,-runtime/indentation_namespace \
-  $(find . -name \*.hh -o -name \*.cc | xargs echo)
-```
 
 [E-EDID]: https://vesa.org/vesa-standards/
 [CTA-861-G]: https://shop.cta.tech/products/a-dtv-profile-for-uncompressed-high-speed-digital-interfaces-cta-861-g

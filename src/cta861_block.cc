@@ -8,11 +8,6 @@
 #include "edid/cta861_block.hh"
 
 namespace Edid {
-  bool operator==(const Cta861Block& lhs, const Cta861Block& rhs) {
-    return std::tie(lhs.underscan, lhs.basic_audio, lhs.ycbcr_444, lhs.ycbcr_422, lhs.data_block_collection, lhs.detailed_timing_descriptors) ==
-      std::tie(rhs.underscan, rhs.basic_audio, rhs.ycbcr_444, rhs.ycbcr_422, rhs.data_block_collection, rhs.detailed_timing_descriptors);
-  }
-
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection) {
     size_t collection_size = std::accumulate(collection.begin(), collection.end(), 0, [](size_t size, const CtaDataBlock& data_block) {
       return size + std::visit(get_cta_data_block_size, data_block);

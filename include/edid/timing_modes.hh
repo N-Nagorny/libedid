@@ -21,7 +21,9 @@ namespace Edid {
     bool interlaced;
   };
 
-  bool operator==(const VideoTimingMode& lhs, const VideoTimingMode& rhs);
+#define FIELDS(X) X.h_res, X.v_res, X.v_rate_hz, X.interlaced
+  TIED_COMPARISONS(VideoTimingMode, FIELDS)
+#undef FIELDS
 
   struct Cta861VideoTimingMode {
     DetailedTimingDescriptor dtd;

@@ -8,58 +8,6 @@
 #include "edid/filesystem.hh"
 
 namespace Edid {
-  bool operator==(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs) {
-    return std::tie(lhs.bipolar, lhs.serrations, lhs.sync_on_rgb_signals)
-      == std::tie(rhs.bipolar, rhs.serrations, rhs.sync_on_rgb_signals);
-  }
-
-  bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs) {
-    return std::tie(lhs.serrations, lhs.h_sync_polarity) == std::tie(rhs.serrations, rhs.h_sync_polarity);
-  }
-
-  bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs) {
-    return std::tie(lhs.v_sync_polarity, lhs.h_sync_polarity) == std::tie(rhs.v_sync_polarity, rhs.h_sync_polarity);
-  }
-
-  bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs) {
-    return std::tie(lhs.interlaced, lhs.stereo_mode, lhs.sync)
-      == std::tie(rhs.interlaced, rhs.stereo_mode, rhs.sync);
-  }
-
-  bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs) {
-    return std::tie(
-      lhs.pixel_clock_hz,
-      lhs.h_res,
-      lhs.v_res,
-      lhs.h_blanking,
-      lhs.v_blanking,
-      lhs.h_front_porch,
-      lhs.v_front_porch,
-      lhs.h_sync_width,
-      lhs.v_sync_width,
-      lhs.h_image_size,
-      lhs.v_image_size,
-      lhs.h_border_pixels,
-      lhs.v_border_lines,
-      lhs.features_bitmap
-    ) == std::tie(
-      rhs.pixel_clock_hz,
-      rhs.h_res,
-      rhs.v_res,
-      rhs.h_blanking,
-      rhs.v_blanking,
-      rhs.h_front_porch,
-      rhs.v_front_porch,
-      rhs.h_sync_width,
-      rhs.v_sync_width,
-      rhs.h_image_size,
-      rhs.v_image_size,
-      rhs.h_border_pixels,
-      rhs.v_border_lines,
-      rhs.features_bitmap
-    );
-  }
-
   uint8_t make_dtd_features_bitmap(const DtdFeaturesBitmap& features_bitmap) {
     uint8_t result = 0;
 

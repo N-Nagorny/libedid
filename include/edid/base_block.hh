@@ -290,7 +290,9 @@ namespace Edid {
 #endif
   };
 
-  bool operator==(const StandardTiming& lhs, const StandardTiming& rhs);
+#define FIELDS(X) X.x_resolution, X.aspect_ratio, X.v_frequency
+  TIED_COMPARISONS(StandardTiming, FIELDS)
+#undef FIELDS
 
   enum VideoTimingSupport {
     VTS_DEFAULT_GTF = 0x00,
@@ -372,7 +374,10 @@ namespace Edid {
     }
   };
 
-  bool operator==(const DisplayRangeLimits& lhs, const DisplayRangeLimits& rhs);
+#define FIELDS(X) X.min_v_rate_hz, X.max_v_rate_hz, X.min_h_rate_khz, X.max_h_rate_khz, \
+                  X.max_pixel_clock_rate_mhz, X.video_timing_support
+  TIED_COMPARISONS(DisplayRangeLimits, FIELDS)
+#undef FIELDS
 
   enum AsciiStringType {
     ASCII_DISPLAY_NAME = 0xFC,
@@ -427,7 +432,9 @@ namespace Edid {
     };
   };
 
-  bool operator==(const AsciiString& lhs, const AsciiString& rhs);
+#define FIELDS(X) X.string, X.descriptor_type
+  TIED_COMPARISONS(AsciiString, FIELDS)
+#undef FIELDS
 
   struct DummyDescriptor {
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
@@ -438,7 +445,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs);
+  inline bool operator==(const DummyDescriptor& lhs, const DummyDescriptor& rhs) {
+    return true;
+  }
 
   struct EstablishedTimings3 {
     std::array<EstablishedTimings, 6> bytes_6_11{};
@@ -463,7 +472,9 @@ namespace Edid {
     };
   };
 
-  bool operator==(const EstablishedTimings3& lhs, const EstablishedTimings3& rhs);
+#define FIELDS(X) X.bytes_6_11
+  TIED_COMPARISONS(EstablishedTimings3, FIELDS)
+#undef FIELDS
 
   struct ManufactureDate {
     uint8_t week_of_manufacture;
@@ -477,7 +488,9 @@ namespace Edid {
 #endif
   };
 
-  bool operator==(const ManufactureDate& lhs, const ManufactureDate& rhs);
+#define FIELDS(X) X.week_of_manufacture, X.year_of_manufacture
+  TIED_COMPARISONS(ManufactureDate, FIELDS)
+#undef FIELDS
 
   struct ModelYear {
     uint16_t model_year;  // This value becomes uint8_t in EDID by subtracting 1990 from it
@@ -489,7 +502,10 @@ namespace Edid {
 #endif
   };
 
-  bool operator==(const ModelYear& lhs, const ModelYear& rhs);
+#define FIELDS(X) X.model_year
+  TIED_COMPARISONS(ModelYear, FIELDS)
+#undef FIELDS
+
 
   // See https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
   struct BaseBlock {
@@ -531,7 +547,57 @@ namespace Edid {
     }
   };
 
-  bool operator==(const BaseBlock& lhs, const BaseBlock& rhs);
+  inline bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
+    if (lhs.manufacturer_id != rhs.manufacturer_id)
+      return false;
+    if (lhs.product_code != rhs.product_code)
+      return false;
+    if (lhs.serial_number != rhs.serial_number)
+      return false;
+    if (lhs.manufacture_date_or_model_year != rhs.manufacture_date_or_model_year)
+      return false;
+    if (lhs.edid_major_version != rhs.edid_major_version)
+      return false;
+    if (lhs.edid_minor_version != rhs.edid_minor_version)
+      return false;
+    if (lhs.bits_per_color != rhs.bits_per_color)
+      return false;
+    if (lhs.video_interface != rhs.video_interface)
+      return false;
+    if (lhs.h_screen_size != rhs.h_screen_size)
+      return false;
+    if (lhs.v_screen_size != rhs.v_screen_size)
+      return false;
+    if (lhs.gamma != rhs.gamma)
+      return false;
+    if (lhs.dpms_standby != rhs.dpms_standby)
+      return false;
+    if (lhs.dpms_suspend != rhs.dpms_suspend)
+      return false;
+    if (lhs.dpms_active_off != rhs.dpms_active_off)
+      return false;
+    if (lhs.display_type != rhs.display_type)
+      return false;
+    if (lhs.standard_srgb != rhs.standard_srgb)
+      return false;
+    if (lhs.preferred_timing_mode != rhs.preferred_timing_mode)
+      return false;
+    if (lhs.continuous_timings != rhs.continuous_timings)
+      return false;
+    if (lhs.chromaticity != rhs.chromaticity)
+      return false;
+    if (lhs.established_timings_1 != rhs.established_timings_1)
+      return false;
+    if (lhs.established_timings_2 != rhs.established_timings_2)
+      return false;
+    if (lhs.manufacturers_timings != rhs.manufacturers_timings)
+      return false;
+    if (lhs.standard_timings != rhs.standard_timings)
+      return false;
+    if (lhs.eighteen_byte_descriptors != rhs.eighteen_byte_descriptors)
+      return false;
+    return true;
+  }
 
   /** Generates EDID Base Block binary */
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_base_block(

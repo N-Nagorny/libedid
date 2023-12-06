@@ -13,7 +13,9 @@ namespace Edid {
     std::optional<std::vector<Cta861Block>> extension_blocks;
   };
 
-  bool operator==(const EdidData& lhs, const EdidData& rhs);
+#define FIELDS(X) X.base_block, X.extension_blocks
+  TIED_OP(EdidData, ==, FIELDS)
+#undef FIELDS
 
   std::vector<uint8_t> generate_edid_binary(const EdidData& edid);
   EdidData parse_edid_binary(const std::vector<uint8_t>& edid);

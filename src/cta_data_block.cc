@@ -25,11 +25,6 @@ namespace Edid {
       std::dec << '\n';
   }
 
-  bool operator==(const UnknownDataBlock& lhs, const UnknownDataBlock& rhs) {
-    return std::tie(lhs.raw_data, lhs.data_block_tag, lhs.extended_tag) ==
-      std::tie(rhs.raw_data, rhs.data_block_tag, rhs.extended_tag);
-  }
-
   std::vector<uint8_t> VideoDataBlock::generate_byte_block() const {
     std::vector<uint8_t> result(size(), 0x0);
     int pos = 0;
@@ -52,10 +47,6 @@ namespace Edid {
     os << '\n';
   }
 
-  bool operator==(const VideoDataBlock& lhs, const VideoDataBlock& rhs) {
-    return lhs.vics == rhs.vics;
-  }
-
   std::vector<uint8_t> AudioDataBlock::generate_byte_block() const {
     std::vector<uint8_t> result(size(), 0x0);
     int pos = 0;
@@ -75,10 +66,6 @@ namespace Edid {
     return result;
   }
 
-  bool operator==(const CtaDataBlockType& lhs, const CtaDataBlockType& rhs) {
-    return std::tie(lhs.data_block_type, lhs.extended_tag, lhs.oui) ==
-      std::tie(rhs.data_block_type, rhs.extended_tag, rhs.oui);
-  }
   void AudioDataBlock::print(std::ostream& os, uint8_t tabs) const {
     os << "Audio Data Block:\n";
     for (const std::optional<ShortAudioDescriptor>& sad : sads) {
@@ -94,19 +81,6 @@ namespace Edid {
         }
     }
     os << '\n';
-  }
-
-  bool operator==(const ShortAudioDescriptor& lhs, const ShortAudioDescriptor& rhs) {
-    return std::tie(lhs.audio_format, lhs.channels, lhs.sampling_freqs, lhs.lpcm_bit_depths) ==
-      std::tie(rhs.audio_format, rhs.channels, rhs.sampling_freqs, rhs.lpcm_bit_depths);
-  }
-
-  bool operator==(const AudioDataBlock& lhs, const AudioDataBlock& rhs) {
-    return lhs.sads == rhs.sads;
-  }
-
-  bool operator==(const SpeakerAllocationDataBlock& lhs, const SpeakerAllocationDataBlock& rhs) {
-    return lhs.speaker_allocation == rhs.speaker_allocation;
   }
 
   std::vector<uint8_t> SpeakerAllocationDataBlock::generate_byte_block() const {
@@ -128,10 +102,6 @@ namespace Edid {
     for (Speaker speaker : bitfield_to_enums<Speaker>(speaker_allocation))
       os << '\t' << to_string(speaker) << '\n';
     os << '\n';
-  }
-
-  bool operator==(const YCbCr420CapabilityMapDataBlock& lhs, const YCbCr420CapabilityMapDataBlock& rhs) {
-    return lhs.svd_indices == rhs.svd_indices;
   }
 
   std::vector<uint8_t> YCbCr420CapabilityMapDataBlock::generate_byte_block() const {
@@ -156,11 +126,6 @@ namespace Edid {
     for (uint8_t svd_index : svd_indices)
       os << (int)svd_index << " ";
     os << '\n';
-  }
-
-  bool operator==(const ColorimetryDataBlock& lhs, const ColorimetryDataBlock& rhs) {
-    return lhs.colorimetry_standards == rhs.colorimetry_standards &&
-      lhs.gamut_metadata_profiles == rhs.gamut_metadata_profiles;
   }
 
   std::vector<uint8_t> ColorimetryDataBlock::generate_byte_block() const {

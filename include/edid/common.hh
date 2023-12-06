@@ -34,6 +34,23 @@
     return ((it != std::end(m)) ? it : std::begin(m))->second;                     \
   }                                                                                \
 
+
+#define TIED_OP(STRUCT, OP, GET_FIELDS)                                            \
+    inline bool operator OP(const STRUCT& lhs, const STRUCT& rhs)                  \
+    {                                                                              \
+        return std::tie(GET_FIELDS(lhs)) OP std::tie(GET_FIELDS(rhs));             \
+    }                                                                              \
+
+
+#define TIED_COMPARISONS(STRUCT, GET_FIELDS)                                       \
+    TIED_OP(STRUCT, ==, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, !=, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, <, GET_FIELDS)                                                 \
+    TIED_OP(STRUCT, <=, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, >=, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, >, GET_FIELDS)                                                 \
+
+
 #define EDID_BLOCK_SIZE 128
 #define NTSC_FACTOR_NUMERATOR 1000
 #define NTSC_FACTOR_DENOMINATOR 1001
@@ -69,14 +86,9 @@ namespace Edid {
 #endif
   };
 
-  namespace details {
-    template<typename T>
-    bool operator!=(const T& lhs, const T& rhs) {
-      return !(lhs == rhs);
-    }
-  }
-
-  bool operator==(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs);
+#define FIELDS(X) X.bipolar, X.serrations, X.sync_on_rgb_signals
+  TIED_COMPARISONS(AnalogCompositeSync, FIELDS)
+#undef FIELDS
 
   struct DigitalCompositeSync {
     bool serrations;
@@ -87,7 +99,9 @@ namespace Edid {
 #endif
   };
 
-  bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
+#define FIELDS(X) X.serrations, X.h_sync_polarity
+  TIED_COMPARISONS(DigitalCompositeSync, FIELDS)
+#undef FIELDS
 
   struct DigitalSeparateSync {
     bool v_sync_polarity;
@@ -98,7 +112,9 @@ namespace Edid {
 #endif
   };
 
-  bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);
+#define FIELDS(X) X.v_sync_polarity, X.h_sync_polarity
+  TIED_COMPARISONS(DigitalSeparateSync, FIELDS)
+#undef FIELDS
 
   struct DtdFeaturesBitmap {
     bool interlaced;
@@ -106,7 +122,9 @@ namespace Edid {
     std::variant<AnalogCompositeSync, DigitalCompositeSync, DigitalSeparateSync> sync;
   };
 
-  bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
+#define FIELDS(X) X.interlaced, X.stereo_mode, X.sync
+  TIED_COMPARISONS(DtdFeaturesBitmap, FIELDS)
+#undef FIELDS
 
   struct DetailedTimingDescriptor {
     uint64_t pixel_clock_hz;  // This value becomes uint16_t in EDID by dividing by 10'000
@@ -133,7 +151,12 @@ namespace Edid {
     }
   };
 
-  bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs);
+#define FIELDS(X) X.pixel_clock_hz, X.h_res, X.v_res, X.h_blanking, X.v_blanking,      \
+                  X.h_front_porch, X.h_sync_width, X.v_front_porch, X.v_sync_width,    \
+                  X.h_image_size, X.v_image_size, X.h_border_pixels, X.v_border_lines, \
+                  X.features_bitmap
+  TIED_COMPARISONS(DetailedTimingDescriptor, FIELDS)
+#undef FIELDS
 
   template<typename E, typename T>
   std::vector<E> bitfield_to_enums(T bitfield) {

@@ -106,7 +106,9 @@ namespace Edid {
     std::optional<uint16_t> vics;  // 3D_MASK_ALL_15..0
   };
 
-  bool operator==(const StereoVideoSupport& lhs, const StereoVideoSupport& rhs);
+#define FIELDS(X) X.formats, X.vics
+  TIED_COMPARISONS(StereoVideoSupport, FIELDS)
+#undef FIELDS
 
   // 3D_Structure in HDMI 1.4b
   enum StereoVideoTransmissionFormat {
@@ -158,7 +160,9 @@ namespace Edid {
     std::optional<StereoVideoSubsampling> subsampling_3d;
   };
 
-  bool operator==(const Vic3dSupport& lhs, const Vic3dSupport& rhs);
+#define FIELDS(X) X.vic_index, X.format, X.subsampling_3d
+  TIED_COMPARISONS(Vic3dSupport, FIELDS)
+#undef FIELDS
 
   // The block which presence is indicated by HDMI_Video_present bit
   // (HDMI1.4b Section 8.3.2)
@@ -169,7 +173,9 @@ namespace Edid {
     std::vector<Vic3dSupport> vic_3d_support;
   };
 
-  bool operator==(const HdmiVideoSubblock& lhs, const HdmiVideoSubblock& rhs);
+#define FIELDS(X) X.image_size_meaning, X.hdmi_vics, X.stereo_video_support, X.vic_3d_support
+  TIED_COMPARISONS(HdmiVideoSubblock, FIELDS)
+#undef FIELDS
 
   struct HdmiVendorDataBlock {
     std::array<uint8_t, 4> source_phy_addr;
@@ -413,5 +419,8 @@ namespace Edid {
     }
   };
 
-  bool operator==(const HdmiVendorDataBlock& lhs, const HdmiVendorDataBlock& rhs);
+#define FIELDS(X) X.source_phy_addr, X.capabilities, X.max_tmds_clock_mhz, \
+                  X.content_types, X.latency, X.interlaced_latency, X.hdmi_video
+  TIED_COMPARISONS(HdmiVendorDataBlock, FIELDS)
+#undef FIELDS
 }  // namespace Edid

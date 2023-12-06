@@ -9,11 +9,6 @@
 #include "edid/exceptions.hh"
 
 namespace Edid {
-  bool operator==(const EdidData& lhs, const EdidData& rhs) {
-    return std::tie(lhs.base_block, lhs.extension_blocks) ==
-      std::tie(rhs.base_block, rhs.extension_blocks);
-  }
-
   std::vector<uint8_t> generate_edid_binary(const EdidData& edid) {
     int ext_blocks = edid.extension_blocks.value_or(std::vector<Cta861Block>{}).size();
     size_t edid_size = (ext_blocks + 1) * EDID_BLOCK_SIZE;

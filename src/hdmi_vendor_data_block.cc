@@ -101,62 +101,6 @@ namespace Edid {
     return result;
   }
 
-  bool operator==(const StereoVideoSupport& lhs, const StereoVideoSupport& rhs) {
-    return std::tie(
-      lhs.formats,
-      lhs.vics
-    ) == std::tie(
-      rhs.formats,
-      rhs.vics
-    );
-  }
-
-  bool operator==(const Vic3dSupport& lhs, const Vic3dSupport& rhs) {
-  return std::tie(
-
-    lhs.vic_index,
-    lhs.format,
-    lhs.subsampling_3d) ==
-  std::tie(
-
-    rhs.vic_index,
-    rhs.format,
-    rhs.subsampling_3d);
-}
-  bool operator==(const HdmiVendorDataBlock& lhs, const HdmiVendorDataBlock& rhs) {
-    return std::tie(
-      lhs.source_phy_addr,
-      lhs.capabilities,
-      lhs.max_tmds_clock_mhz,
-      lhs.content_types,
-      lhs.latency,
-      lhs.interlaced_latency,
-      lhs.hdmi_video
-    ) == std::tie(
-      rhs.source_phy_addr,
-      rhs.capabilities,
-      rhs.max_tmds_clock_mhz,
-      rhs.content_types,
-      rhs.latency,
-      rhs.interlaced_latency,
-      rhs.hdmi_video
-    );
-  }
-
-  bool operator==(const HdmiVideoSubblock& lhs, const HdmiVideoSubblock& rhs) {
-    return std::tie(
-      lhs.image_size_meaning,
-      lhs.hdmi_vics,
-      lhs.stereo_video_support,
-      lhs.vic_3d_support
-    ) ==  std::tie(
-      rhs.image_size_meaning,
-      rhs.hdmi_vics,
-      rhs.stereo_video_support,
-      rhs.vic_3d_support
-    );
-  }
-
   // TODO(N-Nagorny)
   void HdmiVendorDataBlock::print(std::ostream& os, uint8_t tabs) const {
     os << "Vendor-Specific Data Block (HDMI), OUI 00-0C-03: " << '\n';
