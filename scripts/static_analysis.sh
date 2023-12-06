@@ -21,8 +21,6 @@ run_cppcheck() {
     "-j$(nproc)" \
     --error-exitcode=1 \
     --enable=all \
-    --suppress=missingInclude \
-    --suppress=missingIncludeSystem \
     --inline-suppr \
     --std=c++17 \
     --language=c++ \
