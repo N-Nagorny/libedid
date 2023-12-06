@@ -22,7 +22,7 @@ jobs:
     - run: find /nix/ -name ld-linux-x86-64.so.2
     - run: nix-shell --run "./scripts/static_analysis.sh"
     - run: find /nix/ -name ld-linux-x86-64.so.2
-  linuxhw_edid_coverage:
+  tests_and_linuxhw_edid_coverage:
     needs: build_and_static_analysis
     runs-on: ubuntu-latest
     steps:
@@ -37,9 +37,9 @@ jobs:
         path: ./result/
     - run: chmod +x ./result/bin/test-runner
     - run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
-    - name: Cache EDID DB
-      id: cache-edid-db
-      uses: actions/cache@v3
+
+    - id: cache-edid-db
+      uses: actions/cache/restore@v3
       with:
         path: linuxhw_edid
         key: ${{ hashFiles('./scripts/linuxhw_download.sh') }}
@@ -48,5 +48,11 @@ jobs:
       if: steps.cache-edid-db.outputs.cache-hit != 'true'
       run: ./scripts/linuxhw_download.sh
 
+    - uses: actions/cache/save@v3
+      id: cache
+      with:
+        path: linuxhw_edid
+        key: ${{ hashFiles('./scripts/linuxhw_download.sh') }}
+
     - name: Estimate EDID DB coverage
-      run: LD_LIBRARY_PATH=./result/lib ./scripts/linuxhw_coverage.sh
+      run: LD_LIBRARY_PATH=$(pwd)/result/lib ./scripts/linuxhw_coverage.sh
