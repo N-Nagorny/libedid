@@ -87,8 +87,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static UnknownDataBlock parse_byte_block(Iterator start) {
+    static UnknownDataBlock parse_byte_block(const uint8_t* start) {
       UnknownDataBlock result;
       int pos = 0;
 
@@ -140,8 +139,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static VideoDataBlock parse_byte_block(Iterator start) {
+    static VideoDataBlock parse_byte_block(const uint8_t* start) {
       VideoDataBlock result;
       int pos = 0;
 
@@ -300,8 +298,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static AudioDataBlock parse_byte_block(Iterator start) {
+    static AudioDataBlock parse_byte_block(const uint8_t* start) {
       AudioDataBlock result;
       int pos = 0;
 
@@ -374,8 +371,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static SpeakerAllocationDataBlock parse_byte_block(Iterator start) {
+    static SpeakerAllocationDataBlock parse_byte_block(const uint8_t* start) {
       SpeakerAllocationDataBlock result;
       int pos = 0;
 
@@ -418,8 +414,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static YCbCr420CapabilityMapDataBlock parse_byte_block(Iterator start) {
+    static YCbCr420CapabilityMapDataBlock parse_byte_block(const uint8_t* start) {
       YCbCr420CapabilityMapDataBlock result;
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
@@ -517,8 +512,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static ColorimetryDataBlock parse_byte_block(Iterator iter) {
+    static ColorimetryDataBlock parse_byte_block(const uint8_t* iter) {
       ColorimetryDataBlock result;
 
       const uint8_t data_block_tag = *iter++ >> 5 & BITMASK_TRUE(3);

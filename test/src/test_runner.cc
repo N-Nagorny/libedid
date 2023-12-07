@@ -75,14 +75,14 @@ TEST(YCbCr420CapabilityMapDataBlockTests, Parsing) {
   std::vector<uint8_t> capability_map_block = {0xe4, 0x0f, 0x03, 0x00, 0x00};
   YCbCr420CapabilityMapDataBlock block;
   block.svd_indices = {1, 2};
-  EXPECT_EQ(YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block.begin()), block);
+  EXPECT_EQ(YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block.data()), block);
 }
 
 TEST(YCbCr420CapabilityMapDataBlockTests, Roundtrip) {
   YCbCr420CapabilityMapDataBlock capability_map_block;
   capability_map_block.svd_indices = {1, 2};
   auto capability_map_block_binary = capability_map_block.generate_byte_block();
-  auto capability_map_block_parsed = YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block_binary.begin());
+  auto capability_map_block_parsed = YCbCr420CapabilityMapDataBlock::parse_byte_block(capability_map_block_binary.data());
   EXPECT_EQ(capability_map_block, capability_map_block_parsed);
 }
 
@@ -117,7 +117,7 @@ TEST(ColorimetryDataBlockTests, Parsing) {
     ENUM_NULL
   };
 
-  EXPECT_EQ(ColorimetryDataBlock::parse_byte_block(binary.begin()), expected);
+  EXPECT_EQ(ColorimetryDataBlock::parse_byte_block(binary.data()), expected);
 }
 
 TEST(ColorimetryDataBlockTests, Roundtrip) {
@@ -132,7 +132,7 @@ TEST(ColorimetryDataBlockTests, Roundtrip) {
   };
 
   const auto binary = initial.generate_byte_block();
-  const auto parsed = ColorimetryDataBlock::parse_byte_block(binary.begin());
+  const auto parsed = ColorimetryDataBlock::parse_byte_block(binary.data());
   EXPECT_EQ(initial, parsed);
 }
 
@@ -190,7 +190,7 @@ TEST(CommonRoundtrips, VideoDataBlock) {
   video_data_block.vics[5] = 18;
   video_data_block.vics[6] = 1;
   std::vector<uint8_t> vdb_binary = video_data_block.generate_byte_block();
-  EXPECT_EQ(video_data_block, VideoDataBlock::parse_byte_block(vdb_binary.begin()));
+  EXPECT_EQ(video_data_block, VideoDataBlock::parse_byte_block(vdb_binary.data()));
 }
 
 TEST(CommonRoundtrips, AudioDataBlock) {
@@ -204,7 +204,7 @@ TEST(CommonRoundtrips, AudioDataBlock) {
   AudioDataBlock audio_data_block;
   audio_data_block.sads[0] = sad;
   std::vector<uint8_t> adb_binary = audio_data_block.generate_byte_block();
-  EXPECT_EQ(audio_data_block, AudioDataBlock::parse_byte_block(adb_binary.begin()));
+  EXPECT_EQ(audio_data_block, AudioDataBlock::parse_byte_block(adb_binary.data()));
 }
 
 TEST(CommonRoundtrips, FullEdid) {

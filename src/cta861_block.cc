@@ -94,8 +94,7 @@ namespace Edid {
     return result;
   }
 
-  template<typename Iterator>
-  std::unique_ptr<CtaDataBlock> parse_extended_tag_data_block(Iterator iter_read) {
+  std::unique_ptr<CtaDataBlock> parse_extended_tag_data_block(const uint8_t* iter_read) {
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
     uint8_t extended_tag = *(iter_read + 1);
@@ -112,8 +111,7 @@ namespace Edid {
     return data_block_ptr;
   }
 
-  template<typename Iterator>
-  std::unique_ptr<CtaDataBlock> parse_vendor_specific_data_block(Iterator iter_read) {
+  std::unique_ptr<CtaDataBlock> parse_vendor_specific_data_block(const uint8_t* iter_read) {
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
     const std::array<uint8_t, 3> oui = {*(iter_read + 1), *(iter_read + 2), *(iter_read + 3)};
@@ -128,10 +126,10 @@ namespace Edid {
 
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection) {
     DataBlockCollection result;
-    auto iter_read = collection.begin();
+    auto iter_read = collection.data();
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
-    while (iter_read < collection.end()) {
+    while (iter_read < collection.data() + collection.size()) {
       uint8_t data_block_tag = *iter_read >> 5 & BITMASK_TRUE(3);
       switch (data_block_tag) {
         case CTA861_VIDEO_DATA_BLOCK_TAG:

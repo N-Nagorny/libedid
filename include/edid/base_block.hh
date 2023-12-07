@@ -334,8 +334,7 @@ namespace Edid {
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static DisplayRangeLimits parse_byte_block(Iterator start) {
+    static DisplayRangeLimits parse_byte_block(const uint8_t* start) {
       DisplayRangeLimits result;
       int pos = 0;
 
@@ -415,8 +414,7 @@ namespace Edid {
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static AsciiString parse_byte_block(Iterator start) {
+    static AsciiString parse_byte_block(const uint8_t* start) {
       AsciiString result;
       start += 3;
       result.descriptor_type = AsciiStringType(*start);
@@ -459,8 +457,7 @@ namespace Edid {
       return BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
     }
 
-    template<typename Iterator>
-    static EstablishedTimings3 parse_byte_block(Iterator start) {
+    static EstablishedTimings3 parse_byte_block(const uint8_t* start) {
       EstablishedTimings3 result;
       start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
       start++;

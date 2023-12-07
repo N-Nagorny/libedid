@@ -161,9 +161,9 @@ namespace Edid {
   template<typename E, typename T>
   std::vector<E> bitfield_to_enums(T bitfield) {
     static_assert(std::is_enum<E>::value,
-      "bitfield_to_enums: template parameter must be an enum!");
+      "bitfield_to_enums: Template parameter T must be an enum!");
     static_assert(std::is_arithmetic<T>::value,
-      "bitfield_to_enums: Not an arithmetic type!");
+      "bitfield_to_enums: Template parameter E must be an arithmetic type!");
     std::vector<E> result;
     for (int i = 0; i < 8 * sizeof(T); ++i)
       if (bitfield & (1 << i))

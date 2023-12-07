@@ -270,8 +270,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static HdmiVendorDataBlock parse_byte_block(Iterator start) {
+    static HdmiVendorDataBlock parse_byte_block(const uint8_t* start) {
       HdmiVendorDataBlock result;
 
       // byte 8
