@@ -111,43 +111,43 @@ namespace Edid {
     return result;
   };
 
-  DetailedTimingDescriptor DetailedTimingDescriptor::parse_byte_block(const std::array<uint8_t, EIGHTEEN_BYTES>& block) {
+  std::shared_ptr<DetailedTimingDescriptor> DetailedTimingDescriptor::parse_byte_block(const uint8_t* start) {
     DetailedTimingDescriptor result;
     int pos = 0;
 
-    result.pixel_clock_hz = block[pos++];
-    result.pixel_clock_hz |= (block[pos++] & BITMASK_TRUE(8)) << 8;
+    result.pixel_clock_hz = *(start + pos++);
+    result.pixel_clock_hz |= (*(start + pos++) & BITMASK_TRUE(8)) << 8;
     result.pixel_clock_hz *= 10'000;
 
-    result.h_res = block[pos++];
-    result.h_blanking = block[pos++];
-    result.h_res |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.h_blanking |= (block[pos++] & BITMASK_TRUE(4)) << 8;
+    result.h_res = *(start + pos++);
+    result.h_blanking = *(start + pos++);
+    result.h_res |= (*(start + pos) >> 4 & BITMASK_TRUE(4)) << 8;
+    result.h_blanking |= (*(start + pos++) & BITMASK_TRUE(4)) << 8;
 
-    result.v_res = block[pos++];
-    result.v_blanking = block[pos++];
-    result.v_res |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.v_blanking |= (block[pos++] & BITMASK_TRUE(4)) << 8;
+    result.v_res = *(start + pos++);
+    result.v_blanking = *(start + pos++);
+    result.v_res |= (*(start + pos) >> 4 & BITMASK_TRUE(4)) << 8;
+    result.v_blanking |= (*(start + pos++) & BITMASK_TRUE(4)) << 8;
 
-    result.h_front_porch = block[pos++];
-    result.h_sync_width = block[pos++];
-    result.v_front_porch = block[pos] >> 4 & BITMASK_TRUE(4);
-    result.v_sync_width = block[pos++] & BITMASK_TRUE(4);
-    result.h_front_porch |= (block[pos] >> 6 & BITMASK_TRUE(2)) << 8;
-    result.h_sync_width |= (block[pos] >> 4 & BITMASK_TRUE(2)) << 8;
-    result.v_front_porch |= (block[pos] >> 2 & BITMASK_TRUE(2)) << 4;
-    result.v_sync_width |= (block[pos++] & BITMASK_TRUE(2)) << 4;
+    result.h_front_porch = *(start + pos++);
+    result.h_sync_width = *(start + pos++);
+    result.v_front_porch = *(start + pos) >> 4 & BITMASK_TRUE(4);
+    result.v_sync_width = *(start + pos++) & BITMASK_TRUE(4);
+    result.h_front_porch |= (*(start + pos) >> 6 & BITMASK_TRUE(2)) << 8;
+    result.h_sync_width |= (*(start + pos) >> 4 & BITMASK_TRUE(2)) << 8;
+    result.v_front_porch |= (*(start + pos) >> 2 & BITMASK_TRUE(2)) << 4;
+    result.v_sync_width |= (*(start + pos++) & BITMASK_TRUE(2)) << 4;
 
-    result.h_image_size = block[pos++];
-    result.v_image_size = block[pos++];
-    result.h_image_size |= (block[pos] >> 4 & BITMASK_TRUE(4)) << 8;
-    result.v_image_size |= (block[pos++] & BITMASK_TRUE(4)) << 8;
+    result.h_image_size = *(start + pos++);
+    result.v_image_size = *(start + pos++);
+    result.h_image_size |= (*(start + pos) >> 4 & BITMASK_TRUE(4)) << 8;
+    result.v_image_size |= (*(start + pos++) & BITMASK_TRUE(4)) << 8;
 
-    result.h_border_pixels = block[pos++];
-    result.v_border_lines = block[pos++];
+    result.h_border_pixels = *(start + pos++);
+    result.v_border_lines = *(start + pos++);
 
-    result.features_bitmap = parse_dtd_features_bitmap(block[pos]);
-    return result;
+    result.features_bitmap = parse_dtd_features_bitmap(*(start + pos));
+    return std::make_unique<DetailedTimingDescriptor>(result);
   };
 
   void DetailedTimingDescriptor::print(std::ostream& os, uint8_t tabs) const {
@@ -208,5 +208,4 @@ namespace Edid {
 
     return vec;
   }
-
 }  // namespace Edid

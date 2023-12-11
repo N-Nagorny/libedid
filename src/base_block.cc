@@ -5,6 +5,101 @@
 #include "edid/exceptions.hh"
 
 namespace Edid {
+  bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
+    if (lhs.manufacturer_id != rhs.manufacturer_id)
+      return false;
+    if (lhs.product_code != rhs.product_code)
+      return false;
+    if (lhs.serial_number != rhs.serial_number)
+      return false;
+    if (lhs.manufacture_date_or_model_year != rhs.manufacture_date_or_model_year)
+      return false;
+    if (lhs.edid_major_version != rhs.edid_major_version)
+      return false;
+    if (lhs.edid_minor_version != rhs.edid_minor_version)
+      return false;
+    if (lhs.bits_per_color != rhs.bits_per_color)
+      return false;
+    if (lhs.video_interface != rhs.video_interface)
+      return false;
+    if (lhs.h_screen_size != rhs.h_screen_size)
+      return false;
+    if (lhs.v_screen_size != rhs.v_screen_size)
+      return false;
+    if (lhs.gamma != rhs.gamma)
+      return false;
+    if (lhs.dpms_standby != rhs.dpms_standby)
+      return false;
+    if (lhs.dpms_suspend != rhs.dpms_suspend)
+      return false;
+    if (lhs.dpms_active_off != rhs.dpms_active_off)
+      return false;
+    if (lhs.display_type != rhs.display_type)
+      return false;
+    if (lhs.standard_srgb != rhs.standard_srgb)
+      return false;
+    if (lhs.preferred_timing_mode != rhs.preferred_timing_mode)
+      return false;
+    if (lhs.continuous_timings != rhs.continuous_timings)
+      return false;
+    if (lhs.chromaticity != rhs.chromaticity)
+      return false;
+    if (lhs.established_timings_1 != rhs.established_timings_1)
+      return false;
+    if (lhs.established_timings_2 != rhs.established_timings_2)
+      return false;
+    if (lhs.manufacturers_timings != rhs.manufacturers_timings)
+      return false;
+    if (lhs.standard_timings != rhs.standard_timings)
+      return false;
+    for (int i = 0; i < BASE_18_BYTE_DESCRIPTORS; ++i) {
+      const IEighteenByteDescriptor& lh_18bd = *(lhs.eighteen_byte_descriptors.at(i).ptr);
+      const IEighteenByteDescriptor& rh_18bd = *(rhs.eighteen_byte_descriptors.at(i).ptr);
+      if (lh_18bd.type() != rh_18bd.type()) {
+        return false;
+      }
+      switch(lh_18bd.type()) {
+        case BASE_FAKE_DTD_TYPE: {
+          const DetailedTimingDescriptor& lhs_ = static_cast<const DetailedTimingDescriptor&>(lh_18bd);
+          const DetailedTimingDescriptor& rhs_ = static_cast<const DetailedTimingDescriptor&>(rh_18bd);
+          if (lhs_ != rhs_)
+            return false;
+          break;
+        }
+        case BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE: {
+          const DisplayRangeLimits& lhs_ = static_cast<const DisplayRangeLimits&>(lh_18bd);
+          const DisplayRangeLimits& rhs_ = static_cast<const DisplayRangeLimits&>(rh_18bd);
+          if (lhs_ != rhs_)
+            return false;
+          break;
+        }
+        case ASCII_DISPLAY_NAME:
+        case ASCII_UNSPECIFIED_TEXT:
+        case ASCII_SERIAL_NUMBER: {
+          const AsciiString& lhs_ = static_cast<const AsciiString&>(lh_18bd);
+          const AsciiString& rhs_ = static_cast<const AsciiString&>(rh_18bd);
+          if (lhs_ != rhs_)
+            return false;
+          break;
+        }
+        case BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE: {
+          const EstablishedTimings3& lhs_ = static_cast<const EstablishedTimings3&>(lh_18bd);
+          const EstablishedTimings3& rhs_ = static_cast<const EstablishedTimings3&>(rh_18bd);
+          if (lhs_ != rhs_)
+            return false;
+          break;
+        }
+        case BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE:
+          break;
+        default:
+          throw EdidException(__FUNCTION__,
+            "Display Descriptor at position " + std::to_string(i) +
+            " has unknown Display Descriptor Type " + std::to_string(lh_18bd.type()));
+      }
+    }
+    return true;
+  }
+
   std::array<uint8_t, EIGHTEEN_BYTES> DisplayRangeLimits::generate_byte_block() const {
     std::array<uint8_t, EIGHTEEN_BYTES> result;
     result.fill(0x0);
@@ -216,17 +311,8 @@ namespace Edid {
     }
 
     // 18 byte descriptors
-    for (const auto& eighteen_byte_descriptor : base_block.eighteen_byte_descriptors) {
-      auto eighteen_byte_descriptor_visitor =
-        [](const auto& descriptor) -> std::array<uint8_t, EIGHTEEN_BYTES> {
-          return descriptor.generate_byte_block();
-        };
-
-      std::array<uint8_t, EIGHTEEN_BYTES> block =
-        eighteen_byte_descriptor.has_value()
-        ? std::visit(eighteen_byte_descriptor_visitor, eighteen_byte_descriptor.value())
-        : DummyDescriptor().generate_byte_block();
-
+    for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
+      const std::array<uint8_t, EIGHTEEN_BYTES> block = descriptor.ptr->generate_byte_block();
       std::move(block.begin(), block.end(), result.begin() + pos);
       pos += block.size();
     }
@@ -355,34 +441,9 @@ namespace Edid {
       pos += 2;
     }
 
-    int eighteen_byte_descriptor_i = 0;
     for (int i = 0; i < BASE_18_BYTE_DESCRIPTORS; ++i) {
-      std::optional<EighteenByteDescriptor> descriptor;
-      if (base_block[pos] == 0x0 && base_block[pos + 1] == 0x0 && base_block[pos + 2] == 0x0) {
-        uint8_t display_descriptor_type = base_block[pos + 3];
-        if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE) {
-          descriptor = DisplayRangeLimits::parse_byte_block(base_block.begin() + pos);
-        } else if (is_18_byte_descriptor_ascii_string(display_descriptor_type)) {
-          descriptor = AsciiString::parse_byte_block(base_block.begin() + pos);
-        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE) {
-          descriptor = EstablishedTimings3::parse_byte_block(base_block.begin() + pos);
-        } else if (display_descriptor_type == BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE) {
-          descriptor = std::nullopt;
-        } else {
-          throw EdidException(__FUNCTION__,
-            "Display Descriptor at position " + std::to_string(i) +
-            " has unknown Display Descriptor Type " + std::to_string(display_descriptor_type));
-        }
-      } else {
-        std::array<uint8_t, EIGHTEEN_BYTES> dtd_binary;
-        std::move(
-          base_block.begin() + pos,
-          base_block.begin() + pos + EIGHTEEN_BYTES,
-          dtd_binary.begin()
-        );
-        descriptor = DetailedTimingDescriptor::parse_byte_block(dtd_binary);
-      }
-      result_struct.eighteen_byte_descriptors[eighteen_byte_descriptor_i++] = descriptor;
+      result_struct.eighteen_byte_descriptors[i] =
+        IEighteenByteDescriptor::parse_byte_block(base_block.data() + pos);
       pos += EIGHTEEN_BYTES;
     }
 
@@ -518,14 +579,7 @@ namespace Edid {
 
     os << "18 Byte Descriptors:\n";
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.has_value()) {
-        std::visit([&os](const auto& d) {
-          d.print(os);
-        }, descriptor.value());
-      }
-      else {
-        os << '\t' << "Dummy Descriptor\n";
-      }
+      descriptor.ptr->print(os);
     }
   }
 }  // namespace Edid

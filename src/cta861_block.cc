@@ -193,13 +193,7 @@ namespace Edid {
       }
 
       while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
-        std::array<uint8_t, EIGHTEEN_BYTES> dtd_binary;
-        std::move(
-          cta861.begin() + pos,
-          cta861.begin() + pos + EIGHTEEN_BYTES,
-          dtd_binary.begin()
-        );
-        result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(dtd_binary));
+        result.detailed_timing_descriptors.push_back(*DetailedTimingDescriptor::parse_byte_block(cta861.begin() + pos));
         pos += EIGHTEEN_BYTES;
       }
     }

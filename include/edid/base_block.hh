@@ -308,13 +308,33 @@ namespace Edid {
     {VTS_CVT, "CVT"},
   })
 
-  struct DisplayRangeLimits {
+  struct DisplayRangeLimits : IEighteenByteDescriptor {
     uint16_t min_v_rate_hz = 1;  // Range is 1..510 Hz with step of 1 Hz
     uint16_t max_v_rate_hz = 1;  // Range is 1..510 Hz with step of 1 Hz
     uint16_t min_h_rate_khz = 1;  // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_h_rate_khz = 1;  // Range is 1..510 kHz with step of 1 kHz
     uint16_t max_pixel_clock_rate_mhz = 10;  // Range is 10..2550 MHz with step of 10 MHz
-    VideoTimingSupport video_timing_support;
+    VideoTimingSupport video_timing_support = VideoTimingSupport::VTS_DEFAULT_GTF;
+
+    DisplayRangeLimits() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    DisplayRangeLimits(
+      uint16_t min_v_rate_hz_,
+      uint16_t max_v_rate_hz_,
+      uint16_t min_h_rate_khz_,
+      uint16_t max_h_rate_khz_,
+      uint16_t max_pixel_clock_rate_mhz_,
+      VideoTimingSupport video_timing_support_
+    )
+      : min_v_rate_hz(min_v_rate_hz_)
+      , max_v_rate_hz(max_v_rate_hz_)
+      , min_h_rate_khz(min_h_rate_khz_)
+      , max_h_rate_khz(max_h_rate_khz_)
+      , max_pixel_clock_rate_mhz(max_pixel_clock_rate_mhz_)
+      , video_timing_support(video_timing_support_)
+    {}
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(DisplayRangeLimits,
@@ -327,14 +347,14 @@ namespace Edid {
     )
 #endif
 
-    uint8_t type() const {
+    uint8_t type() const override {
       return BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE;
     }
 
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
-    static DisplayRangeLimits parse_byte_block(const uint8_t* start) {
+    static std::shared_ptr<DisplayRangeLimits> parse_byte_block(const uint8_t* start) {
       DisplayRangeLimits result;
       int pos = 0;
 
@@ -369,7 +389,7 @@ namespace Edid {
         result.max_h_rate_khz += 255;
       result.max_pixel_clock_rate_mhz = *(start + ++pos) * 10;
       result.video_timing_support = VideoTimingSupport(*(start + ++pos));
-      return result;
+      return std::make_unique<DisplayRangeLimits>(result);
     }
   };
 
@@ -390,31 +410,34 @@ namespace Edid {
     {ASCII_SERIAL_NUMBER,     "Serial Number"}
   })
 
-  inline bool is_18_byte_descriptor_ascii_string(uint8_t descriptor_type) {
-    for (uint8_t type : {ASCII_DISPLAY_NAME, ASCII_UNSPECIFIED_TEXT, ASCII_SERIAL_NUMBER}) {
-      if (descriptor_type == type) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  struct AsciiString {
+  struct AsciiString : IEighteenByteDescriptor {
     std::string string;  // The maximum is 13 chars
     AsciiStringType descriptor_type = AsciiStringType::ASCII_UNSPECIFIED_TEXT;
+
+    AsciiString() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    AsciiString(
+      const std::string& string_,
+      AsciiStringType descriptor_type_
+    )
+      : string(string_)
+      , descriptor_type(descriptor_type_)
+    {}
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(AsciiString, string, descriptor_type)
 #endif
 
-    uint8_t type() const {
+    uint8_t type() const override {
       return descriptor_type;
     }
 
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
-    static AsciiString parse_byte_block(const uint8_t* start) {
+    static std::shared_ptr<AsciiString> parse_byte_block(const uint8_t* start) {
       AsciiString result;
       start += 3;
       result.descriptor_type = AsciiStringType(*start);
@@ -426,7 +449,7 @@ namespace Edid {
         else
           break;
       }
-      return result;
+      return std::make_unique<AsciiString>(result);
     };
   };
 
@@ -434,11 +457,11 @@ namespace Edid {
   TIED_COMPARISONS(AsciiString, FIELDS)
 #undef FIELDS
 
-  struct DummyDescriptor {
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+  struct DummyDescriptor : IEighteenByteDescriptor {
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
-    uint8_t type() const {
+    uint8_t type() const override {
       return BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE;
     }
   };
@@ -447,17 +470,17 @@ namespace Edid {
     return true;
   }
 
-  struct EstablishedTimings3 {
+  struct EstablishedTimings3 : IEighteenByteDescriptor {
     std::array<EstablishedTimings, 6> bytes_6_11{};
 
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
-    uint8_t type() const {
+    uint8_t type() const override{
       return BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
     }
 
-    static EstablishedTimings3 parse_byte_block(const uint8_t* start) {
+    static std::shared_ptr<EstablishedTimings3> parse_byte_block(const uint8_t* start) {
       EstablishedTimings3 result;
       start += BASE_DISPLAY_DESCRIPTOR_HEADER_SIZE;
       start++;
@@ -465,7 +488,7 @@ namespace Edid {
       for (int i = 0; i < 6; ++i) {
         result.bytes_6_11[i] = *(start + i);
       }
-      return result;
+      return std::make_unique<EstablishedTimings3>(result);
     };
   };
 
@@ -504,6 +527,18 @@ namespace Edid {
 #undef FIELDS
 
 
+  struct EighteenByteDescriptor {
+    std::shared_ptr<IEighteenByteDescriptor> ptr;
+
+    EighteenByteDescriptor()
+      : ptr(std::make_shared<DummyDescriptor>())
+    {}
+
+    EighteenByteDescriptor(std::shared_ptr<IEighteenByteDescriptor> p)
+      : ptr(p)
+    {}
+  };
+
   // See https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
   struct BaseBlock {
     // Header
@@ -536,7 +571,7 @@ namespace Edid {
     EstablishedTimings manufacturers_timings = 0x0;
 
     std::array<std::optional<StandardTiming>, 8> standard_timings;
-    std::array<std::optional<EighteenByteDescriptor>, BASE_18_BYTE_DESCRIPTORS> eighteen_byte_descriptors;
+    std::array<EighteenByteDescriptor, BASE_18_BYTE_DESCRIPTORS> eighteen_byte_descriptors;
 
     BaseBlock() {
       manufacturer_id.fill('A');
@@ -544,57 +579,7 @@ namespace Edid {
     }
   };
 
-  inline bool operator==(const BaseBlock& lhs, const BaseBlock& rhs) {
-    if (lhs.manufacturer_id != rhs.manufacturer_id)
-      return false;
-    if (lhs.product_code != rhs.product_code)
-      return false;
-    if (lhs.serial_number != rhs.serial_number)
-      return false;
-    if (lhs.manufacture_date_or_model_year != rhs.manufacture_date_or_model_year)
-      return false;
-    if (lhs.edid_major_version != rhs.edid_major_version)
-      return false;
-    if (lhs.edid_minor_version != rhs.edid_minor_version)
-      return false;
-    if (lhs.bits_per_color != rhs.bits_per_color)
-      return false;
-    if (lhs.video_interface != rhs.video_interface)
-      return false;
-    if (lhs.h_screen_size != rhs.h_screen_size)
-      return false;
-    if (lhs.v_screen_size != rhs.v_screen_size)
-      return false;
-    if (lhs.gamma != rhs.gamma)
-      return false;
-    if (lhs.dpms_standby != rhs.dpms_standby)
-      return false;
-    if (lhs.dpms_suspend != rhs.dpms_suspend)
-      return false;
-    if (lhs.dpms_active_off != rhs.dpms_active_off)
-      return false;
-    if (lhs.display_type != rhs.display_type)
-      return false;
-    if (lhs.standard_srgb != rhs.standard_srgb)
-      return false;
-    if (lhs.preferred_timing_mode != rhs.preferred_timing_mode)
-      return false;
-    if (lhs.continuous_timings != rhs.continuous_timings)
-      return false;
-    if (lhs.chromaticity != rhs.chromaticity)
-      return false;
-    if (lhs.established_timings_1 != rhs.established_timings_1)
-      return false;
-    if (lhs.established_timings_2 != rhs.established_timings_2)
-      return false;
-    if (lhs.manufacturers_timings != rhs.manufacturers_timings)
-      return false;
-    if (lhs.standard_timings != rhs.standard_timings)
-      return false;
-    if (lhs.eighteen_byte_descriptors != rhs.eighteen_byte_descriptors)
-      return false;
-    return true;
-  }
+  bool operator==(const BaseBlock& lhs, const BaseBlock& rhs);
 
   /** Generates EDID Base Block binary */
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_base_block(

@@ -95,6 +95,7 @@ set(SOURCES
     src/cta_data_block.cc
     src/cta861_block.cc
     src/edid.cc
+    src/eighteen_byte_descriptor.cc
     src/hdmi_vendor_data_block.cc
     src/timing_modes.cc
 )

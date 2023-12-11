@@ -77,9 +77,9 @@ namespace Edid {
   };
 
   struct AnalogCompositeSync {
-    bool bipolar;
-    bool serrations;
-    bool sync_on_rgb_signals;
+    bool bipolar = false;
+    bool serrations = false;
+    bool sync_on_rgb_signals = false;
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(AnalogCompositeSync, bipolar, serrations, sync_on_rgb_signals)
@@ -91,8 +91,8 @@ namespace Edid {
 #undef FIELDS
 
   struct DigitalCompositeSync {
-    bool serrations;
-    bool h_sync_polarity;
+    bool serrations = false;
+    bool h_sync_polarity = false;
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalCompositeSync, serrations, h_sync_polarity)
@@ -104,8 +104,8 @@ namespace Edid {
 #undef FIELDS
 
   struct DigitalSeparateSync {
-    bool v_sync_polarity;
-    bool h_sync_polarity;
+    bool v_sync_polarity = false;
+    bool h_sync_polarity = false;
 
 #ifdef ENABLE_JSON
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalSeparateSync, v_sync_polarity, h_sync_polarity)
@@ -117,8 +117,8 @@ namespace Edid {
 #undef FIELDS
 
   struct DtdFeaturesBitmap {
-    bool interlaced;
-    StereoMode stereo_mode;
+    bool interlaced = false;
+    StereoMode stereo_mode = StereoMode::NO_STEREO;
     std::variant<AnalogCompositeSync, DigitalCompositeSync, DigitalSeparateSync> sync;
   };
 
@@ -126,27 +126,63 @@ namespace Edid {
   TIED_COMPARISONS(DtdFeaturesBitmap, FIELDS)
 #undef FIELDS
 
-  struct DetailedTimingDescriptor {
-    uint64_t pixel_clock_hz;  // This value becomes uint16_t in EDID by dividing by 10'000
-    uint16_t h_res;
-    uint16_t v_res;
-    uint16_t h_blanking;
-    uint16_t v_blanking;
-    uint16_t h_front_porch;
-    uint16_t h_sync_width;
-    uint8_t v_front_porch;
-    uint8_t v_sync_width;
-    uint16_t h_image_size;
-    uint16_t v_image_size;
-    uint8_t h_border_pixels;
-    uint8_t v_border_lines;
+  struct DetailedTimingDescriptor : IEighteenByteDescriptor {
+    uint64_t pixel_clock_hz = 0;  // This value becomes uint16_t in EDID by dividing by 10'000
+    uint16_t h_res = 0;
+    uint16_t v_res = 0;
+    uint16_t h_blanking = 0;
+    uint16_t v_blanking = 0;
+    uint16_t h_front_porch = 0;
+    uint16_t h_sync_width = 0;
+    uint8_t v_front_porch = 0;
+    uint8_t v_sync_width = 0;
+    uint16_t h_image_size = 0;
+    uint16_t v_image_size = 0;
+    uint8_t h_border_pixels = 0;
+    uint8_t v_border_lines = 0;
     DtdFeaturesBitmap features_bitmap;
 
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
-    static DetailedTimingDescriptor parse_byte_block(const std::array<uint8_t, EIGHTEEN_BYTES>& block);
+    DetailedTimingDescriptor() = default;
 
-    uint8_t type() const {
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    DetailedTimingDescriptor(
+      uint64_t pixel_clock_hz_,
+      uint16_t h_res_,
+      uint16_t v_res_,
+      uint16_t h_blanking_,
+      uint16_t v_blanking_,
+      uint16_t h_front_porch_,
+      uint16_t h_sync_width_,
+      uint8_t v_front_porch_,
+      uint8_t v_sync_width_,
+      uint16_t h_image_size_,
+      uint16_t v_image_size_,
+      uint8_t h_border_pixels_,
+      uint8_t v_border_lines_,
+      DtdFeaturesBitmap features_bitmap_
+    )
+      : pixel_clock_hz(pixel_clock_hz_)
+      , h_res(h_res_)
+      , v_res(v_res_)
+      , h_blanking(h_blanking_)
+      , v_blanking(v_blanking_)
+      , h_front_porch(h_front_porch_)
+      , h_sync_width(h_sync_width_)
+      , v_front_porch(v_front_porch_)
+      , v_sync_width(v_sync_width_)
+      , h_image_size(h_image_size_)
+      , v_image_size(v_image_size_)
+      , h_border_pixels(h_border_pixels_)
+      , v_border_lines(v_border_lines_)
+      , features_bitmap(features_bitmap_)
+    {}
+
+    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
+    static std::shared_ptr<DetailedTimingDescriptor> parse_byte_block(const uint8_t* start);
+
+    uint8_t type() const override{
       return BASE_FAKE_DTD_TYPE;
     }
   };

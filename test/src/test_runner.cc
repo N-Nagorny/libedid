@@ -53,14 +53,14 @@ TEST(DisplayRangeLimits, Parsing) {
     0x00, 0x00, 0x00, 0xfd, 0x00, 0x18, 0x4b, 0x0f, 0x8c, 0x32, 0x00, 0x0a, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
   };
   DisplayRangeLimits limits = DisplayRangeLimits{24, 75, 15, 140, 500, VideoTimingSupport::VTS_DEFAULT_GTF};
-  EXPECT_EQ(DisplayRangeLimits::parse_byte_block(drl_binary.begin()), limits);
+  EXPECT_EQ(*DisplayRangeLimits::parse_byte_block(drl_binary.begin()), limits);
 }
 
 TEST(DisplayRangeLimits, Roundtrip) {
   DisplayRangeLimits limits = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
   auto limits_binary = limits.generate_byte_block();
   auto limits_parsed = DisplayRangeLimits::parse_byte_block(limits_binary.begin());
-  EXPECT_EQ(limits, limits_parsed);
+  EXPECT_EQ(limits, *limits_parsed);
 }
 
 TEST(YCbCr420CapabilityMapDataBlockTests, Generating) {
@@ -140,7 +140,7 @@ TEST(CommonRoundtrips, DisplaySerialNumber) {
   auto name = AsciiString{"R8J00779SL012", ASCII_SERIAL_NUMBER};
   auto name_binary = name.generate_byte_block();
   auto name_parsed = AsciiString::parse_byte_block(name_binary.begin());
-  EXPECT_EQ(name, name_parsed);
+  EXPECT_EQ(name, *name_parsed);
 }
 
 TEST(CommonRoundtrips, EstablishedTimings3) {
@@ -152,14 +152,14 @@ TEST(CommonRoundtrips, EstablishedTimings3) {
   const auto et_3_binary = et_3.generate_byte_block();
   const auto et_3_parsed = EstablishedTimings3::parse_byte_block(et_3_binary.begin());
 
-  EXPECT_EQ(et_3, et_3_parsed);
+  EXPECT_EQ(et_3, *et_3_parsed);
 }
 
 TEST(CommonRoundtrips, DisplayName) {
   auto name = AsciiString{"TEST_NAME", ASCII_DISPLAY_NAME};
   auto name_binary = name.generate_byte_block();
   auto name_parsed = AsciiString::parse_byte_block(name_binary.begin());
-  EXPECT_EQ(name, name_parsed);
+  EXPECT_EQ(name, *name_parsed);
 }
 
 TEST(CommonRoundtrips, BaseEdid) {
@@ -177,7 +177,7 @@ TEST(CommonRoundtrips, DetailedTimingDescriptor) {
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
   auto binary = dtd.generate_byte_block();
-  EXPECT_EQ(dtd, DetailedTimingDescriptor::parse_byte_block(binary));
+  EXPECT_EQ(dtd, *DetailedTimingDescriptor::parse_byte_block(binary.data()));
 }
 
 TEST(CommonRoundtrips, VideoDataBlock) {
@@ -325,13 +325,16 @@ TEST(Cta861Block, Cta861BlockGenerating) {
 
 TEST(ForEachModeTests, DeleteModesFromBaseEdid) {
   BaseBlock edid_base_before = make_edid_base();
+  BaseBlock edid_base_after = edid_base_before;
+
   remove_mode_if(edid_base_before, [](const VideoTimingMode& mode) {
     return mode.v_res == 600 || mode.v_res == 1080;
   });
-  BaseBlock edid_base_after = make_edid_base();
+
   edid_base_after.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
-  edid_base_after.eighteen_byte_descriptors[0] = std::nullopt;
-  std::get<EstablishedTimings3>(edid_base_after.eighteen_byte_descriptors[3].value()).bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
+  edid_base_after.eighteen_byte_descriptors[0] = EighteenByteDescriptor{};
+  auto ptr = std::static_pointer_cast<EstablishedTimings3>(edid_base_after.eighteen_byte_descriptors[3].ptr);
+  ptr->bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
   edid_base_after.standard_timings[4] = std::nullopt;
   EXPECT_EQ(edid_base_before, edid_base_after);
 }
@@ -415,8 +418,11 @@ TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
   EdidData edid_after{make_edid_base(), std::vector{make_cta861_ext()}};
 
   edid_after.base_block.established_timings_1 &= ~EstablishedTiming1::ET_800x600_56;
-  edid_after.base_block.eighteen_byte_descriptors[0] = std::nullopt;
-  std::get<EstablishedTimings3>(edid_after.base_block.eighteen_byte_descriptors[3].value()).bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
+
+  edid_after.base_block.eighteen_byte_descriptors[0] = EighteenByteDescriptor{};
+  auto ptr = std::static_pointer_cast<EstablishedTimings3>(edid_after.base_block.eighteen_byte_descriptors[3].ptr);
+  ptr->bytes_6_11[0] &= ~EstablishedTiming3Byte6::ET_800x600_85;
+
   edid_after.base_block.standard_timings[4] = std::nullopt;
 
   auto iter = std::find_if(edid_after.extension_blocks->at(0).data_block_collection.begin(), edid_after.extension_blocks->at(0).data_block_collection.end(), [](const auto& data_block){
@@ -488,12 +494,18 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   edid_base.standard_timings[6] = StandardTiming{1360, AspectRatio::AR_16_9, 60};
   edid_base.standard_timings[7] = StandardTiming{256, AspectRatio::AR_16_10, 60};
 
-  edid_base.eighteen_byte_descriptors[0] = DetailedTimingDescriptor{
-    148'500'000, 1920, 1080, 280, 45, 88, 44,
-    4, 5, 477, 268, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
-  };
-  edid_base.eighteen_byte_descriptors[1] = AsciiString{"KALED24144F", ASCII_DISPLAY_NAME};
-  edid_base.eighteen_byte_descriptors[2] = DisplayRangeLimits{40, 144, 160, 160, 330, VideoTimingSupport::VTS_DEFAULT_GTF};
+  edid_base.eighteen_byte_descriptors[0] = EighteenByteDescriptor{std::make_shared<DetailedTimingDescriptor>(
+    DetailedTimingDescriptor{
+      148'500'000, 1920, 1080, 280, 45, 88, 44,
+      4, 5, 477, 268, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{false, false}}
+    }
+  )};
+  edid_base.eighteen_byte_descriptors[1] = EighteenByteDescriptor{std::make_shared<AsciiString>(
+    AsciiString{"KALED24144F", ASCII_DISPLAY_NAME}
+  )};
+  edid_base.eighteen_byte_descriptors[2] = EighteenByteDescriptor{std::make_shared<DisplayRangeLimits>(
+    DisplayRangeLimits{40, 144, 160, 160, 330, VideoTimingSupport::VTS_DEFAULT_GTF}
+  )};
 
   Cta861Block cta861;
   cta861.underscan = true;
