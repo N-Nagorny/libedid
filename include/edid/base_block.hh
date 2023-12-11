@@ -1,7 +1,9 @@
 // Copyright 2023 N-Nagorny
+
 #pragma once
 
 #include <array>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -476,7 +478,7 @@ namespace Edid {
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;
     void print(std::ostream& os, uint8_t tabs = 1) const override;
 
-    uint8_t type() const override{
+    uint8_t type() const override {
       return BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
     }
 

@@ -1,3 +1,5 @@
+// Copyright 2023 N-Nagorny
+
 #include "edid/eighteen_byte_descriptor.hh"
 
 #include "edid/base_block.hh"
@@ -30,4 +32,4 @@ namespace Edid {
     }
     return DetailedTimingDescriptor::parse_byte_block(start);
   }
-}
+}  // namespace Edid

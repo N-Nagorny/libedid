@@ -72,4 +72,4 @@ jobs:
     - name: Calculate EDID DB coverage (JSON)
       run: |
         LD_LIBRARY_PATH=$(pwd)/result/lib ./scripts/linuxhw_coverage.sh \
-        ./result/bin/json-roundtrip-tester 21125 ./linuxhw_edid
+        ./result/bin/json-roundtrip-tester 21313 ./linuxhw_edid

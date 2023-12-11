@@ -1,10 +1,12 @@
 // Copyright 2023 N-Nagorny
+
 #pragma once
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
