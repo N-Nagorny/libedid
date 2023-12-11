@@ -87,22 +87,25 @@ namespace Edid {
     if (j.contains("pixel_clock_khz")) {
       DetailedTimingDescriptor subresult;
       from_json(j, subresult);
-      descriptor = subresult;
+      descriptor.ptr = std::make_shared<DetailedTimingDescriptor>(subresult);
     }
     else if (j.contains("descriptor_type")) {
       AsciiString subresult;
       from_json(j, subresult);
-      descriptor = subresult;
+      descriptor.ptr = std::make_shared<AsciiString>(subresult);
     }
     else if (j.contains("established_timings_3")) {
       EstablishedTimings3 subresult;
       from_json(j, subresult);
-      descriptor = subresult;
+      descriptor.ptr = std::make_shared<EstablishedTimings3>(subresult);
     }
     else if (j.contains("min_v_rate_hz")) {
       DisplayRangeLimits subresult;
       from_json(j, subresult);
-      descriptor = subresult;
+      descriptor.ptr = std::make_shared<DisplayRangeLimits>(subresult);
+    }
+    else if (j.is_object() && j.size() == 0) {
+      descriptor.ptr = std::make_shared<DummyDescriptor>();
     }
   }
 
@@ -354,6 +357,41 @@ namespace Edid {
     base_block = std::move(result);
   }
 
+  // implicit dispatch in sake of keeping
+  // the JSON part of libedid optional
+  void to_json(nlohmann::json& j, const EighteenByteDescriptor& descriptor) {
+    switch(descriptor.ptr->type()) {
+      case BASE_FAKE_DTD_TYPE: {
+        const auto& descriptor_ = static_cast<const DetailedTimingDescriptor&>(*descriptor.ptr);
+        to_json(j, descriptor_);
+        return;
+      }
+      case BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE: {
+        const auto& descriptor_ = static_cast<const DisplayRangeLimits&>(*descriptor.ptr);
+        to_json(j, descriptor_);
+        return;
+      }
+      case ASCII_DISPLAY_NAME:
+      case ASCII_UNSPECIFIED_TEXT:
+      case ASCII_SERIAL_NUMBER: {
+        const auto& descriptor_ = static_cast<const AsciiString&>(*descriptor.ptr);
+        to_json(j, descriptor_);
+        return;
+      }
+      case BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE: {
+        const auto& descriptor_ = static_cast<const EstablishedTimings3&>(*descriptor.ptr);
+        to_json(j, descriptor_);
+        return;
+      }
+      case BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE:
+        j = nlohmann::json::object();
+        return;
+      default:
+        throw EdidException(__FUNCTION__,
+          "Display Descriptor has unknown Display Descriptor Type " + std::to_string(descriptor.ptr->type()));
+    }
+  }
+
   void to_json(nlohmann::json& j, const BaseBlock& base_block) {
     nlohmann::json result;
     std::string manufacturer_id = {
@@ -401,22 +439,9 @@ namespace Edid {
         result["standard_timings"].push_back(timing.value());
       }
     }
-    auto eighteen_byte_descriptor_visitor = Overload {
-      [](const DummyDescriptor&) -> std::optional<nlohmann::json> {
-        return std::nullopt;
-      },
-      [](const auto& d) -> std::optional<nlohmann::json> {
-        nlohmann::json result;
-        to_json(result, d);
-        return result;
-      },
-    };
+
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.has_value()) {
-        auto d_json = std::visit(eighteen_byte_descriptor_visitor, descriptor.value());
-        if (d_json.has_value())
-          result["eighteen_byte_descriptors"].push_back(d_json.value());
-      }
+      result["eighteen_byte_descriptors"].push_back(descriptor);
     }
     j = std::move(result);
   }
