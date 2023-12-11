@@ -31,6 +31,7 @@ and build output will appear in `result/`.
 - No pre-commit hooks and/or CI procedures that run `cpplint`, `cppcheck`, `test-runner` and `edid-workshop`.
 - No `.editorconfig`.
 - `src/json.cc` has too much boilerplate code.
+- `linuxhw/EDID` coverage could be indicated via GitHub Badges.
 
 ### Base EDID
 
