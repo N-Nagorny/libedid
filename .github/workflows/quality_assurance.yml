@@ -39,7 +39,11 @@ jobs:
       with:
         name: libedid
         path: ./result/
-    - run: chmod +x ./result/bin/test-runner
+    - run: |
+        chmod +x \
+        ./result/bin/test-runner \
+        ./result/bin/roundtrip-tester \
+        ./result/bin/json-roundtrip-tester
 
     - name: Run tests
       run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
