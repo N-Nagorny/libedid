@@ -171,6 +171,30 @@ if (BUILD_TESTS)
     )
 
     install(TARGETS test-runner DESTINATION bin)
+
+    #-------------------------------------------
+
+    add_executable(roundtrip-tester test/src/main_roundtrip.cc)
+
+    target_link_libraries(roundtrip-tester PRIVATE
+        ${PROJECT_NAME}
+        gtest
+    )
+
+    install(TARGETS roundtrip-tester DESTINATION bin)
+
+    #-------------------------------------------
+
+    if (ENABLE_JSON)
+        add_executable(json-roundtrip-tester test/src/main_json_roundtrip.cc)
+
+        target_link_libraries(json-roundtrip-tester PRIVATE
+            ${PROJECT_NAME}
+            gtest
+        )
+
+        install(TARGETS json-roundtrip-tester DESTINATION bin)
+    endif()
 endif()
 
 # Example applications

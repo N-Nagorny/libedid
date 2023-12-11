@@ -39,7 +39,11 @@ jobs:
       with:
         name: libedid
         path: ./result/
-    - run: chmod +x ./result/bin/test-runner
+    - run: |
+        chmod +x \
+        ./result/bin/test-runner \
+        ./result/bin/roundtrip-tester \
+        ./result/bin/json-roundtrip-tester
 
     - name: Run tests
       run: LD_LIBRARY_PATH=./result/lib ./result/bin/test-runner
@@ -60,5 +64,12 @@ jobs:
         path: linuxhw_edid
         key: ${{ hashFiles('./scripts/linuxhw_download.sh') }}
 
-    - name: Estimate EDID DB coverage
-      run: LD_LIBRARY_PATH=$(pwd)/result/lib ./scripts/linuxhw_coverage.sh
+    - name: Calculate EDID DB coverage
+      run: |
+        LD_LIBRARY_PATH=$(pwd)/result/lib ./scripts/linuxhw_coverage.sh \
+        ./result/bin/roundtrip-tester 40697 ./linuxhw_edid
+
+    - name: Calculate EDID DB coverage (JSON)
+      run: |
+        LD_LIBRARY_PATH=$(pwd)/result/lib ./scripts/linuxhw_coverage.sh \
+        ./result/bin/json-roundtrip-tester 21125 ./linuxhw_edid
