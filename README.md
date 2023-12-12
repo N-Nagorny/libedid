@@ -2,6 +2,8 @@
 
 This is a C++ library for parsing and generating EDID binaries. It's targeted against [E-EDID Release A, Revision 2][E-EDID] with EDID structure 1.4 and CTA Extension Version 3 (as described in [CTA-861-I][CTA-861-I]) however the full support of them is not guaranteed.
 
+Besides providing interfaces for working with EDID binaries in C++ applications, `libedid` provides bidirectional JSON adapters in order to achieve a language-independent interface.
+
 This code is written for educational purposes. Use it on your risk.
 
 ## Build procedure
@@ -22,6 +24,10 @@ nix-build
 and build output will appear in `result/`.
 
 ## Supported blocks
+
+The list of supported blocks of Base EDID is [here](include/edid/eighteen_byte_descriptor.hh) in `EighteenByteDescriptor`.
+
+The list of supported blocks of CTA Extension is [here](include/edid/cta861_block.hh) in `CtaDataBlock`.
 
 ## Known issues
 
@@ -51,5 +57,5 @@ and build output will appear in `result/`.
 - Format-specific parameters of Short Audio Descriptors are incorrect for any audio formats except of Linear PCM.
 
 [E-EDID]: https://vesa.org/vesa-standards/
-[CTA-861-G]: https://shop.cta.tech/collections/standards/products/a-dtv-profile-for-uncompressed-high-speed-digital-interfaces-cta-861-i-errata
+[CTA-861-I]: https://shop.cta.tech/collections/standards/products/a-dtv-profile-for-uncompressed-high-speed-digital-interfaces-cta-861-i-errata
 [BT.601]: https://www.itu.int/rec/R-REC-BT.601/
