@@ -6,8 +6,8 @@
 #include <optional>
 #include <vector>
 
-#include "common.hh"
 #include "cta_data_block.hh"
+#include "dtd.hh"
 #include "hdmi_vendor_data_block.hh"
 
 #define CTA861_EXT_TAG 0x02
@@ -15,10 +15,13 @@
 
 namespace Edid {
   using CtaDataBlock = std::variant<
-    UnknownDataBlock, VideoDataBlock,
-    AudioDataBlock, SpeakerAllocationDataBlock,
-    YCbCr420CapabilityMapDataBlock, HdmiVendorDataBlock,
-    ColorimetryDataBlock
+    UnknownDataBlock,
+    VideoDataBlock,                 // [CTA-861-I] Section 7.5.1
+    AudioDataBlock,                 // [CTA-861-I] Section 7.5.2
+    SpeakerAllocationDataBlock,     // [CTA-861-I] Section 7.5.3
+    YCbCr420CapabilityMapDataBlock, // [CTA-861-I] Section 7.5.11
+    HdmiVendorDataBlock,            // [HDMI1.4b] Section 8.3.2
+    ColorimetryDataBlock            // [CTA-861-I] Section 7.5.5
   >;
   using DataBlockCollection = std::vector<CtaDataBlock>;
 

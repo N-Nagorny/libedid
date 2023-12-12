@@ -185,12 +185,12 @@ namespace Edid {
       }
     }
 
-    for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.ptr->type() == BASE_FAKE_DTD_TYPE) {
-        fn(to_video_timing_mode(static_cast<const DetailedTimingDescriptor&>(*descriptor.ptr)));
+    for (const EighteenByteDescriptor& descriptor : base_block.eighteen_byte_descriptors) {
+      if (has_18_byte_descr_type(descriptor, BASE_FAKE_DTD_TYPE)) {
+        fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor)));
       }
-      else if (descriptor.ptr->type() == BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE) {
-        const auto& established_timings_3 = static_cast<const EstablishedTimings3&>(*descriptor.ptr);
+      else if (has_18_byte_descr_type(descriptor, BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE)) {
+        const auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor);
         for (int i = 0; i < 6; ++i) {
           for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
             fn(et_3_to_video_mode.at({i, et}));
@@ -237,13 +237,13 @@ namespace Edid {
     }
 
     for (auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.ptr->type() == BASE_FAKE_DTD_TYPE) {
-        if (fn(to_video_timing_mode(static_cast<const DetailedTimingDescriptor&>(*descriptor.ptr)))) {
-          descriptor = EighteenByteDescriptor{};
+      if (has_18_byte_descr_type(descriptor, BASE_FAKE_DTD_TYPE)) {
+        if (fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor)))) {
+          descriptor = DummyDescriptor{};
         }
       }
-      else if (descriptor.ptr->type() == BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE) {
-        auto& established_timings_3 = static_cast<EstablishedTimings3&>(*descriptor.ptr);
+      else if (has_18_byte_descr_type(descriptor, BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE)) {
+        auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor);
         for (int i = 0; i < 6; ++i) {
           for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
             if (fn(et_3_to_video_mode.at({i, et}))) {

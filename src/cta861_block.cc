@@ -193,7 +193,7 @@ namespace Edid {
       }
 
       while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
-        result.detailed_timing_descriptors.push_back(*DetailedTimingDescriptor::parse_byte_block(cta861.begin() + pos));
+        result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(cta861.begin() + pos));
         pos += EIGHTEEN_BYTES;
       }
     }

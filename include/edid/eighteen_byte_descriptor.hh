@@ -6,21 +6,25 @@
 #include <iostream>
 #include <memory>
 
-#define EIGHTEEN_BYTES 18
-
-#define BASE_FAKE_DTD_TYPE 0xF6  // reserved so it should be safe (Section 3.10.3.10)
-#define BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE 0x10
-#define BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE 0xF7
-#define BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE 0xFD
+#include "dtd.hh"
+#include "eighteen_byte_descriptors.hh"
 
 namespace Edid {
-  struct IEighteenByteDescriptor {
-    virtual ~IEighteenByteDescriptor() = default;
+  template<typename T>
+  concept EighteenByteDescriptorInterface = std::is_base_of_v<IEighteenByteDescriptor, T>;
 
-    virtual uint8_t type() const = 0;
-    virtual std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const = 0;
-    virtual void print(std::ostream& os, uint8_t tabs = 1) const = 0;
+  template<EighteenByteDescriptorInterface... Ts>
+  using EighteenByteDescriptorVariant = std::variant<Ts...>;
 
-    static std::shared_ptr<IEighteenByteDescriptor> parse_byte_block(const uint8_t* start);
-  };
+  using EighteenByteDescriptor = EighteenByteDescriptorVariant<
+    DummyDescriptor,          // [E-EDID] Section 3.10.3.11
+    DetailedTimingDescriptor, // [E-EDID] Section 3.10.2
+    DisplayRangeLimits,       // [E-EDID] Section 3.10.3.3
+    AsciiString,              // [E-EDID] Sections 3.10.3.1, 3.10.3.2, 3.10.3.4
+    EstablishedTimings3       // [E-EDID] Section 3.10.3.9
+  >;
+
+  static bool has_18_byte_descr_type(const EighteenByteDescriptor& descriptor, uint8_t type) {
+    return std::visit([type](auto&& descr){ return descr.type() == type; }, descriptor);
+  }
 }  // namespace Edid

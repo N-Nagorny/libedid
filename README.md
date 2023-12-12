@@ -1,6 +1,6 @@
 # C++ EDID library
 
-This is a C++ library for parsing and generating EDID binaries. It's targeted against [E-EDID Release A, Revision 2][E-EDID] with EDID structure 1.4 and CTA Extension Version 3 (as described in [CTA-861-G][CTA-861-G]) though it doesn't guarantee full support of them.
+This is a C++ library for parsing and generating EDID binaries. It's targeted against [E-EDID Release A, Revision 2][E-EDID] with EDID structure 1.4 and CTA Extension Version 3 (as described in [CTA-861-I][CTA-861-I]) however the full support of them is not guaranteed.
 
 This code is written for educational purposes. Use it on your risk.
 
@@ -21,6 +21,8 @@ nix-build
 ```
 and build output will appear in `result/`.
 
+## Supported blocks
+
 ## Known issues
 
 ### Development-related (TODO)
@@ -31,6 +33,7 @@ and build output will appear in `result/`.
 - Some cpplint checks are skipped (see TODOs in `scripts/static_analysis.sh`).
 - `src/json.cc` has too much boilerplate code.
 - `linuxhw/EDID` coverage could be indicated via GitHub Badges.
+- Rework Established Timings III multi-byte enums in the Colorimetry Data Block style.
 
 ### Base EDID
 
@@ -41,11 +44,12 @@ and build output will appear in `result/`.
 - Gamma is printed in the floating-point format though BaseBlock stores it in the integer format.
 - YCbCr color encodings are named as YCrCb (in [the spec also][E-EDID], maybe due to the order mentioned in [BT.601][BT.601]).
 - ID Serial Number always exists even if it's all zero.
+- No `UnknownDataBlock` for Base EDID.
 
 ### CTA Extension
 
 - Format-specific parameters of Short Audio Descriptors are incorrect for any audio formats except of Linear PCM.
 
 [E-EDID]: https://vesa.org/vesa-standards/
-[CTA-861-G]: https://shop.cta.tech/products/a-dtv-profile-for-uncompressed-high-speed-digital-interfaces-cta-861-g
+[CTA-861-G]: https://shop.cta.tech/collections/standards/products/a-dtv-profile-for-uncompressed-high-speed-digital-interfaces-cta-861-i-errata
 [BT.601]: https://www.itu.int/rec/R-REC-BT.601/
