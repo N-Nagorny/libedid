@@ -25,7 +25,9 @@ BaseBlock make_edid_base() {
     148'500'000, 1920, 1080, 280, 45, 88, 44,
     4, 5, 1039, 584, 0, 0, DtdFeaturesBitmap{false, NO_STEREO, DigitalSeparateSync{true, true}}
   };
-  edid_base.eighteen_byte_descriptors[1] = DisplayRangeLimits{56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS};
+  edid_base.eighteen_byte_descriptors[1] = DisplayRangeLimits{
+    56, 75, 30, 83, 170, VideoTimingSupport::VTS_BARE_LIMITS
+  };
   edid_base.eighteen_byte_descriptors[2] = AsciiString{"Hello", ASCII_UNSPECIFIED_TEXT};
 
   auto et_3 = EstablishedTimings3{};

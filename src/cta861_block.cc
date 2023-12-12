@@ -8,11 +8,6 @@
 #include "edid/cta861_block.hh"
 
 namespace Edid {
-  bool operator==(const Cta861Block& lhs, const Cta861Block& rhs) {
-    return std::tie(lhs.underscan, lhs.basic_audio, lhs.ycbcr_444, lhs.ycbcr_422, lhs.data_block_collection, lhs.detailed_timing_descriptors) ==
-      std::tie(rhs.underscan, rhs.basic_audio, rhs.ycbcr_444, rhs.ycbcr_422, rhs.data_block_collection, rhs.detailed_timing_descriptors);
-  }
-
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection) {
     size_t collection_size = std::accumulate(collection.begin(), collection.end(), 0, [](size_t size, const CtaDataBlock& data_block) {
       return size + std::visit(get_cta_data_block_size, data_block);
@@ -99,8 +94,7 @@ namespace Edid {
     return result;
   }
 
-  template<typename Iterator>
-  std::unique_ptr<CtaDataBlock> parse_extended_tag_data_block(Iterator iter_read) {
+  std::unique_ptr<CtaDataBlock> parse_extended_tag_data_block(const uint8_t* iter_read) {
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
     uint8_t extended_tag = *(iter_read + 1);
@@ -117,8 +111,7 @@ namespace Edid {
     return data_block_ptr;
   }
 
-  template<typename Iterator>
-  std::unique_ptr<CtaDataBlock> parse_vendor_specific_data_block(Iterator iter_read) {
+  std::unique_ptr<CtaDataBlock> parse_vendor_specific_data_block(const uint8_t* iter_read) {
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
     const std::array<uint8_t, 3> oui = {*(iter_read + 1), *(iter_read + 2), *(iter_read + 3)};
@@ -133,10 +126,10 @@ namespace Edid {
 
   DataBlockCollection parse_data_block_collection(const std::vector<uint8_t>& collection) {
     DataBlockCollection result;
-    auto iter_read = collection.begin();
+    auto iter_read = collection.data();
     std::unique_ptr<CtaDataBlock> data_block_ptr = nullptr;
 
-    while (iter_read < collection.end()) {
+    while (iter_read < collection.data() + collection.size()) {
       uint8_t data_block_tag = *iter_read >> 5 & BITMASK_TRUE(3);
       switch (data_block_tag) {
         case CTA861_VIDEO_DATA_BLOCK_TAG:
@@ -200,13 +193,7 @@ namespace Edid {
       }
 
       while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
-        std::array<uint8_t, EIGHTEEN_BYTES> dtd_binary;
-        std::move(
-          cta861.begin() + pos,
-          cta861.begin() + pos + EIGHTEEN_BYTES,
-          dtd_binary.begin()
-        );
-        result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(dtd_binary));
+        result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(cta861.begin() + pos));
         pos += EIGHTEEN_BYTES;
       }
     }

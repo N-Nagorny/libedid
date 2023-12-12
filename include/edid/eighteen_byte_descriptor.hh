@@ -1,30 +1,30 @@
 // Copyright 2023 N-Nagorny
 #pragma once
 
-#define EIGHTEEN_BYTES 18
+#include <array>
+#include <cstdint>
+#include <iostream>
+#include <memory>
 
-#define BASE_FAKE_DTD_TYPE 0xF6  // reserved so we should be safe (Section 3.10.3.10)
-#define BASE_DISPLAY_DESCRIPTOR_DUMMY_TYPE 0x10
-#define BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE 0xF7
-#define BASE_DISPLAY_DESCRIPTOR_RANGE_LIMITS_TYPE 0xFD
+#include "dtd.hh"
+#include "eighteen_byte_descriptors.hh"
 
 namespace Edid {
-  struct DetailedTimingDescriptor;
-  struct DisplayRangeLimits;
-  struct AsciiString;
-  struct DummyDescriptor;
-  struct EstablishedTimings3;
+  template<typename T>
+  concept EighteenByteDescriptorInterface = std::is_base_of_v<IEighteenByteDescriptor, T>;
 
-  using EighteenByteDescriptor = std::variant<
-    DetailedTimingDescriptor, DisplayRangeLimits, AsciiString,
-    DummyDescriptor, EstablishedTimings3
+  template<EighteenByteDescriptorInterface... Ts>
+  using EighteenByteDescriptorVariant = std::variant<Ts...>;
+
+  using EighteenByteDescriptor = EighteenByteDescriptorVariant<
+    DummyDescriptor,            // [E-EDID] Section 3.10.3.11
+    DetailedTimingDescriptor,   // [E-EDID] Section 3.10.2
+    DisplayRangeLimits,         // [E-EDID] Section 3.10.3.3
+    AsciiString,                // [E-EDID] Sections 3.10.3.1, 3.10.3.2, 3.10.3.4
+    EstablishedTimings3         // [E-EDID] Section 3.10.3.9
   >;
 
-  static auto is_dtd_visitor = [](const auto& descriptor) -> bool {
-    return descriptor.type() == BASE_FAKE_DTD_TYPE;
-  };
-
-  static auto is_et3_visitor = [](const auto& descriptor) -> bool {
-    return descriptor.type() == BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE;
-  };
+  static bool has_18_byte_descr_type(const EighteenByteDescriptor& descriptor, uint8_t type) {
+    return std::visit([type](auto&& descr){ return descr.type() == type; }, descriptor);
+  }
 }  // namespace Edid

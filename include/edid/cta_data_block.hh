@@ -48,6 +48,10 @@ namespace Edid {
     }
   };
 
+#define FIELDS(X) X.data_block_type, X.extended_tag, X.oui
+  TIED_COMPARISONS(CtaDataBlockType, FIELDS)
+#undef FIELDS
+
   static auto get_cta_data_block_size = [](const auto& cta_data_block) -> size_t {
     return cta_data_block.size();
   };
@@ -83,8 +87,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static UnknownDataBlock parse_byte_block(Iterator start) {
+    static UnknownDataBlock parse_byte_block(const uint8_t* start) {
       UnknownDataBlock result;
       int pos = 0;
 
@@ -101,7 +104,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const UnknownDataBlock& lhs, const UnknownDataBlock& rhs);
+#define FIELDS(X) X.raw_data, X.data_block_tag, X.extended_tag
+  TIED_COMPARISONS(UnknownDataBlock, FIELDS)
+#undef FIELDS
 
   struct VideoDataBlock {
     std::array<std::optional<uint8_t>, 31> vics;
@@ -134,8 +139,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static VideoDataBlock parse_byte_block(Iterator start) {
+    static VideoDataBlock parse_byte_block(const uint8_t* start) {
       VideoDataBlock result;
       int pos = 0;
 
@@ -155,7 +159,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const VideoDataBlock& lhs, const VideoDataBlock& rhs);
+#define FIELDS(X) X.vics
+  TIED_COMPARISONS(VideoDataBlock, FIELDS)
+#undef FIELDS
 
   enum AudioFormatCode {
     RESERVED_0   = 0b0000,
@@ -266,7 +272,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const ShortAudioDescriptor& lhs, const ShortAudioDescriptor& rhs);
+#define FIELDS(X) X.audio_format, X.channels, X.sampling_freqs, X.lpcm_bit_depths
+  TIED_COMPARISONS(ShortAudioDescriptor, FIELDS)
+#undef FIELDS
 
   struct AudioDataBlock {
     std::array<std::optional<ShortAudioDescriptor>, 10> sads;
@@ -290,8 +298,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static AudioDataBlock parse_byte_block(Iterator start) {
+    static AudioDataBlock parse_byte_block(const uint8_t* start) {
       AudioDataBlock result;
       int pos = 0;
 
@@ -322,7 +329,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const AudioDataBlock& lhs, const AudioDataBlock& rhs);
+#define FIELDS(X) X.sads
+  TIED_COMPARISONS(AudioDataBlock, FIELDS)
+#undef FIELDS
 
   enum Speaker {
     RESERVED                    = 1 << 7,
@@ -362,8 +371,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static SpeakerAllocationDataBlock parse_byte_block(Iterator start) {
+    static SpeakerAllocationDataBlock parse_byte_block(const uint8_t* start) {
       SpeakerAllocationDataBlock result;
       int pos = 0;
 
@@ -384,7 +392,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const SpeakerAllocationDataBlock& lhs, const SpeakerAllocationDataBlock& rhs);
+#define FIELDS(X) X.speaker_allocation
+  TIED_COMPARISONS(SpeakerAllocationDataBlock, FIELDS)
+#undef FIELDS
 
   struct YCbCr420CapabilityMapDataBlock {
     std::set<uint8_t> svd_indices;
@@ -404,8 +414,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static YCbCr420CapabilityMapDataBlock parse_byte_block(Iterator start) {
+    static YCbCr420CapabilityMapDataBlock parse_byte_block(const uint8_t* start) {
       YCbCr420CapabilityMapDataBlock result;
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
@@ -437,7 +446,9 @@ namespace Edid {
     }
   };
 
-  bool operator==(const YCbCr420CapabilityMapDataBlock& lhs, const YCbCr420CapabilityMapDataBlock& rhs);
+#define FIELDS(X) X.svd_indices
+  TIED_COMPARISONS(YCbCr420CapabilityMapDataBlock, FIELDS)
+#undef FIELDS
 
   enum ColorimetryStandard {
     CS_XV_YCC601   = 1 << 0,
@@ -501,8 +512,7 @@ namespace Edid {
     std::vector<uint8_t> generate_byte_block() const;
     void print(std::ostream& os, uint8_t tabs = 1) const;
 
-    template<typename Iterator>
-    static ColorimetryDataBlock parse_byte_block(Iterator iter) {
+    static ColorimetryDataBlock parse_byte_block(const uint8_t* iter) {
       ColorimetryDataBlock result;
 
       const uint8_t data_block_tag = *iter++ >> 5 & BITMASK_TRUE(3);
@@ -525,8 +535,7 @@ namespace Edid {
     }
   };
 
-  bool operator==(const ColorimetryDataBlock& lhs, const ColorimetryDataBlock& rhs);
-
-  bool operator==(const CtaDataBlockType& lhs, const CtaDataBlockType& rhs);
-
+#define FIELDS(X) X.colorimetry_standards, X.gamut_metadata_profiles
+  TIED_COMPARISONS(ColorimetryDataBlock, FIELDS)
+#undef FIELDS
 }  // namespace Edid

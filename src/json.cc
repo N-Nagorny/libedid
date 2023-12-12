@@ -104,6 +104,9 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
+    else if (j.is_object() && j.size() == 0) {
+      descriptor = DummyDescriptor{};
+    }
   }
 
   void from_json(const nlohmann::json& j, VideoDataBlock& result) {
@@ -401,23 +404,18 @@ namespace Edid {
         result["standard_timings"].push_back(timing.value());
       }
     }
-    auto eighteen_byte_descriptor_visitor = Overload {
-      [](const DummyDescriptor&) -> std::optional<nlohmann::json> {
-        return std::nullopt;
-      },
-      [](const auto& d) -> std::optional<nlohmann::json> {
+
+    const auto eighteen_byte_descriptor_visitor =
+      [](const auto& d) -> nlohmann::json {
         nlohmann::json result;
         to_json(result, d);
         return result;
-      },
-    };
+      };
+
     for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.has_value()) {
-        auto d_json = std::visit(eighteen_byte_descriptor_visitor, descriptor.value());
-        if (d_json.has_value())
-          result["eighteen_byte_descriptors"].push_back(d_json.value());
-      }
+      result["eighteen_byte_descriptors"].push_back(std::visit(eighteen_byte_descriptor_visitor, descriptor));
     }
+
     j = std::move(result);
   }
 
@@ -507,6 +505,10 @@ namespace Edid {
     if (block.extension_blocks.has_value()) {
       j["extension_blocks"] = block.extension_blocks.value();
     }
+  }
+
+  void to_json(nlohmann::json& j, const DummyDescriptor& block) {
+    j = nlohmann::json::object();
   }
 
   void from_json(const nlohmann::json& j, Vic3dSupport& result) {

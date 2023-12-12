@@ -6,8 +6,8 @@
 #include <optional>
 #include <vector>
 
-#include "common.hh"
 #include "cta_data_block.hh"
+#include "dtd.hh"
 #include "hdmi_vendor_data_block.hh"
 
 #define CTA861_EXT_TAG 0x02
@@ -15,10 +15,13 @@
 
 namespace Edid {
   using CtaDataBlock = std::variant<
-    UnknownDataBlock, VideoDataBlock,
-    AudioDataBlock, SpeakerAllocationDataBlock,
-    YCbCr420CapabilityMapDataBlock, HdmiVendorDataBlock,
-    ColorimetryDataBlock
+    UnknownDataBlock,
+    VideoDataBlock,                   // [CTA-861-I] Section 7.5.1
+    AudioDataBlock,                   // [CTA-861-I] Section 7.5.2
+    SpeakerAllocationDataBlock,       // [CTA-861-I] Section 7.5.3
+    YCbCr420CapabilityMapDataBlock,   // [CTA-861-I] Section 7.5.11
+    HdmiVendorDataBlock,              // [HDMI1.4b] Section 8.3.2
+    ColorimetryDataBlock              // [CTA-861-I] Section 7.5.5
   >;
   using DataBlockCollection = std::vector<CtaDataBlock>;
 
@@ -32,7 +35,10 @@ namespace Edid {
     std::vector<DetailedTimingDescriptor> detailed_timing_descriptors;
   };
 
-  bool operator==(const Cta861Block& lhs, const Cta861Block& rhs);
+#define FIELDS(X) X.underscan, X.basic_audio, X.ycbcr_444, X.ycbcr_422, \
+                  X.data_block_collection, X.detailed_timing_descriptors
+  TIED_COMPARISONS(Cta861Block, FIELDS)
+#undef FIELDS
 
   std::vector<uint8_t> generate_data_block_collection(const DataBlockCollection& collection);
   std::array<uint8_t, EDID_BLOCK_SIZE> generate_cta861_block(const Cta861Block& cta861_block);

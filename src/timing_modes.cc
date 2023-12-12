@@ -3,11 +3,6 @@
 #include "edid/timing_modes.hh"
 
 namespace Edid {
-  bool operator==(const VideoTimingMode& lhs, const VideoTimingMode& rhs) {
-    return std::tie(lhs.h_res, lhs.v_res, lhs.v_rate_hz, lhs.interlaced) ==
-      std::tie(rhs.h_res, rhs.v_res, rhs.v_rate_hz, rhs.interlaced);
-  }
-
   // Number
   #define N(x) uint8_t(x)
   // Range

@@ -47,7 +47,7 @@ TEST(HdmiVdb, Roundtrip) {
 
   std::vector<uint8_t> hdmi_vdb_binary = hdmi_vdb.generate_byte_block();
 
-  const auto parsed = HdmiVendorDataBlock::parse_byte_block(hdmi_vdb_binary.begin());
+  const auto parsed = HdmiVendorDataBlock::parse_byte_block(hdmi_vdb_binary.data());
   EXPECT_EQ(parsed.source_phy_addr, hdmi_vdb.source_phy_addr);
   EXPECT_EQ(parsed.capabilities, hdmi_vdb.capabilities);
   EXPECT_EQ(parsed.max_tmds_clock_mhz, hdmi_vdb.max_tmds_clock_mhz);

@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 2.8)
 cmake_policy(SET CMP0048 NEW)
 project (edid VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
@@ -12,80 +12,81 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "Enable example applications")
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build using shared libraries")
 
 # JSON schemas library
+if (ENABLE_JSON)
+    set(JSON_SCHEMAS_HEADERS
+        include/edid/json_schemas.hh
+    )
 
-set(JSON_SCHEMAS_HEADERS
-    include/edid/json_schemas.hh
-)
+    set(JSON_SCHEMAS_BASE_BLOCK_FOLDER base_block)
+    set(JSON_SCHEMAS_CTA861_BLOCK_FOLDER cta861_block)
+    set(JSON_SCHEMAS_COMMON_FOLDER common)
 
-set(JSON_SCHEMAS_BASE_BLOCK_FOLDER base_block)
-set(JSON_SCHEMAS_CTA861_BLOCK_FOLDER cta861_block)
-set(JSON_SCHEMAS_COMMON_FOLDER common)
+    set(JSON_SCHEMAS_FILES
+        schemas/${JSON_SCHEMAS_COMMON_FOLDER}/ascii_string.json
+        schemas/${JSON_SCHEMAS_COMMON_FOLDER}/detailed_timing_descriptor.json
+        schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_range_limits.json
+        schemas/${JSON_SCHEMAS_COMMON_FOLDER}/established_timings_3.json
+        schemas/${JSON_SCHEMAS_COMMON_FOLDER}/edid.json
 
-set(JSON_SCHEMAS_FILES
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/ascii_string.json
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/detailed_timing_descriptor.json
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/display_range_limits.json
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/established_timings_3.json
-    schemas/${JSON_SCHEMAS_COMMON_FOLDER}/edid.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/audio_data_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/colorimetry_data_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/cta861_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/hdmi_vsdb.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/speaker_allocation_data_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/unknown_data_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/video_data_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/ycbcr420_capability_map_data_block.json
 
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/audio_data_block.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/colorimetry_data_block.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/cta861_block.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/hdmi_vsdb.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/speaker_allocation_data_block.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/unknown_data_block.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/video_data_block.json
-    schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/ycbcr420_capability_map_data_block.json
+        schemas/${JSON_SCHEMAS_BASE_BLOCK_FOLDER}/base_block.json
+        schemas/${JSON_SCHEMAS_BASE_BLOCK_FOLDER}/standard_timing.json
+    )
 
-    schemas/${JSON_SCHEMAS_BASE_BLOCK_FOLDER}/base_block.json
-    schemas/${JSON_SCHEMAS_BASE_BLOCK_FOLDER}/standard_timing.json
-)
+    set(JSON_SCHEMAS_PATH_REGEX "schemas/([^/]+)/([^;]+)\\.json")
+    set(JSON_SCHEMAS_SOURCE_REPLACE "${CMAKE_CURRENT_BINARY_DIR}/src/\\1/\\2.cc")
+    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}(;|$)" "${JSON_SCHEMAS_SOURCE_REPLACE}\\3" JSON_SCHEMAS_SOURCES "${JSON_SCHEMAS_FILES}")
 
-set(JSON_SCHEMAS_PATH_REGEX "schemas/([^/]+)/([^;]+)\\.json")
-set(JSON_SCHEMAS_SOURCE_REPLACE "${CMAKE_CURRENT_BINARY_DIR}/src/\\1/\\2.cc")
-string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}(;|$)" "${JSON_SCHEMAS_SOURCE_REPLACE}\\3" JSON_SCHEMAS_SOURCES "${JSON_SCHEMAS_FILES}")
+    foreach(JSON ${JSON_SCHEMAS_FILES})
+        string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "${JSON_SCHEMAS_SOURCE_REPLACE}" SOURCE "${JSON}")
+        string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "\\1" NS "${JSON}")
+        string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "\\2" VAR "${JSON}")
+        string(MAKE_C_IDENTIFIER "${NS}" NS)
+        string(MAKE_C_IDENTIFIER "${VAR}" VAR)
 
-foreach(JSON ${JSON_SCHEMAS_FILES})
-    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "${JSON_SCHEMAS_SOURCE_REPLACE}" SOURCE "${JSON}")
-    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "\\1" NS "${JSON}")
-    string(REGEX REPLACE "${JSON_SCHEMAS_PATH_REGEX}" "\\2" VAR "${JSON}")
-    string(MAKE_C_IDENTIFIER "${NS}" NS)
-    string(MAKE_C_IDENTIFIER "${VAR}" VAR)
+        file(WRITE "${SOURCE}.in" "\
+    // Auto-generated from: ${JSON}\n\
+    \n\
+    namespace Edid {\n\
+    namespace json_schemas {\n\
+        namespace ${NS} {\n\
+        const char* ${VAR} = R\"-auto-generated-(")
 
-    file(WRITE "${SOURCE}.in" "\
-// Auto-generated from: ${JSON}\n\
-\n\
-namespace Edid {\n\
-  namespace json_schemas {\n\
-    namespace ${NS} {\n\
-      const char* ${VAR} = R\"-auto-generated-(")
+        file(READ "${JSON}" RAW)
+        file(APPEND "${SOURCE}.in" "${RAW}")
 
-    file(READ "${JSON}" RAW)
-    file(APPEND "${SOURCE}.in" "${RAW}")
-
-    file(APPEND "${SOURCE}.in" ")-auto-generated-\";\n\
+        file(APPEND "${SOURCE}.in" ")-auto-generated-\";\n\
+        }\n\
     }\n\
-  }\n\
-}\n")
+    }\n")
 
-    configure_file("${SOURCE}.in" "${SOURCE}" COPYONLY)
-endforeach()
+        configure_file("${SOURCE}.in" "${SOURCE}" COPYONLY)
+    endforeach()
 
-list(APPEND JSON_SCHEMAS_SOURCES src/json_schemas.cc)
+    list(APPEND JSON_SCHEMAS_SOURCES src/json_schemas.cc)
 
-add_library(
-    json_schemas STATIC
-    ${JSON_SCHEMAS_HEADERS}
-    ${JSON_SCHEMAS_SOURCES}
-)
+    add_library(
+        json_schemas STATIC
+        ${JSON_SCHEMAS_HEADERS}
+        ${JSON_SCHEMAS_SOURCES}
+    )
 
-target_include_directories(json_schemas PRIVATE
-    include/
-)
+    target_include_directories(json_schemas PRIVATE
+        include/
+    )
 
-set_target_properties(json_schemas PROPERTIES
-    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
-)
+    set_target_properties(json_schemas PROPERTIES
+        POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
+    )
+endif()
 
 # libedid
 
@@ -94,6 +95,7 @@ set(SOURCES
     src/common.cc
     src/cta_data_block.cc
     src/cta861_block.cc
+    src/dtd.cc
     src/edid.cc
     src/hdmi_vendor_data_block.cc
     src/timing_modes.cc

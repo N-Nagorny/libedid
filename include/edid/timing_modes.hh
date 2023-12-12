@@ -21,7 +21,9 @@ namespace Edid {
     bool interlaced;
   };
 
-  bool operator==(const VideoTimingMode& lhs, const VideoTimingMode& rhs);
+#define FIELDS(X) X.h_res, X.v_res, X.v_rate_hz, X.interlaced
+  TIED_COMPARISONS(VideoTimingMode, FIELDS)
+#undef FIELDS
 
   struct Cta861VideoTimingMode {
     DetailedTimingDescriptor dtd;
@@ -183,17 +185,15 @@ namespace Edid {
       }
     }
 
-    for (const auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.has_value()) {
-        if (std::visit(is_dtd_visitor, descriptor.value())) {
-          fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor.value())));
-        }
-        else if (std::visit(is_et3_visitor, descriptor.value())) {
-          const auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor.value());
-          for (int i = 0; i < 6; ++i) {
-            for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
-              fn(et_3_to_video_mode.at({i, et}));
-            }
+    for (const EighteenByteDescriptor& descriptor : base_block.eighteen_byte_descriptors) {
+      if (has_18_byte_descr_type(descriptor, BASE_FAKE_DTD_TYPE)) {
+        fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor)));
+      }
+      else if (has_18_byte_descr_type(descriptor, BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE)) {
+        const auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor);
+        for (int i = 0; i < 6; ++i) {
+          for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
+            fn(et_3_to_video_mode.at({i, et}));
           }
         }
       }
@@ -237,19 +237,17 @@ namespace Edid {
     }
 
     for (auto& descriptor : base_block.eighteen_byte_descriptors) {
-      if (descriptor.has_value()) {
-        if (std::visit(is_dtd_visitor, descriptor.value())) {
-          if (fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor.value())))) {
-            descriptor = std::nullopt;
-          }
+      if (has_18_byte_descr_type(descriptor, BASE_FAKE_DTD_TYPE)) {
+        if (fn(to_video_timing_mode(std::get<DetailedTimingDescriptor>(descriptor)))) {
+          descriptor = DummyDescriptor{};
         }
-        else if (std::visit(is_et3_visitor, descriptor.value())) {
-          auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor.value());
-          for (int i = 0; i < 6; ++i) {
-            for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
-              if (fn(et_3_to_video_mode.at({i, et}))) {
-                established_timings_3.bytes_6_11.at(i) &= ~et;
-              }
+      }
+      else if (has_18_byte_descr_type(descriptor, BASE_DISPLAY_DESCRIPTOR_ESTABLISHED_TIMINGS_III_TYPE)) {
+        auto& established_timings_3 = std::get<EstablishedTimings3>(descriptor);
+        for (int i = 0; i < 6; ++i) {
+          for (uint8_t et : bitfield_to_enums<EstablishedTiming3Byte6>(established_timings_3.bytes_6_11.at(i))) {
+            if (fn(et_3_to_video_mode.at({i, et}))) {
+              established_timings_3.bytes_6_11.at(i) &= ~et;
             }
           }
         }

@@ -1,24 +1,24 @@
 // Copyright 2023 N-Nagorny
+
 #pragma once
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <ostream>
 #include <string>
 #include <utility>
-#include <variant>
 #include <vector>
 
+#ifdef ENABLE_JSON
 #include <nlohmann/json.hpp>
-
-#include "eighteen_byte_descriptor.hh"
+#endif
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 #define BITMASK_TRUE(length) static_cast<uint8_t>(std::pow(2.0, length) - 1)
 
+#ifdef ENABLE_JSON
 #define STRINGIFY_ENUM(ENUM_TYPE, ...)                                             \
   NLOHMANN_JSON_SERIALIZE_ENUM(ENUM_TYPE, __VA_ARGS__)                             \
                                                                                    \
@@ -32,7 +32,37 @@
       return es_pair.first == e;                                                   \
     });                                                                            \
     return ((it != std::end(m)) ? it : std::begin(m))->second;                     \
-  }                                                                                \
+  }
+#else
+#define STRINGIFY_ENUM(ENUM_TYPE, ...)                                             \
+  inline std::string to_string(const ENUM_TYPE& e)                                 \
+  {                                                                                \
+    static_assert(std::is_enum<ENUM_TYPE>::value, #ENUM_TYPE " must be an enum!"); \
+    static const std::pair<ENUM_TYPE, std::string> m[] = __VA_ARGS__;              \
+    auto it = std::find_if(std::begin(m), std::end(m),                             \
+      [e](const std::pair<ENUM_TYPE, std::string>& es_pair) -> bool                \
+    {                                                                              \
+      return es_pair.first == e;                                                   \
+    });                                                                            \
+    return ((it != std::end(m)) ? it : std::begin(m))->second;                     \
+  }
+#endif
+
+#define TIED_OP(STRUCT, OP, GET_FIELDS)                                            \
+    inline bool operator OP(const STRUCT& lhs, const STRUCT& rhs)                  \
+    {                                                                              \
+        return std::tie(GET_FIELDS(lhs)) OP std::tie(GET_FIELDS(rhs));             \
+    }                                                                              \
+
+
+#define TIED_COMPARISONS(STRUCT, GET_FIELDS)                                       \
+    TIED_OP(STRUCT, ==, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, !=, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, <, GET_FIELDS)                                                 \
+    TIED_OP(STRUCT, <=, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, >=, GET_FIELDS)                                                \
+    TIED_OP(STRUCT, >, GET_FIELDS)                                                 \
+
 
 #define EDID_BLOCK_SIZE 128
 #define NTSC_FACTOR_NUMERATOR 1000
@@ -49,98 +79,12 @@ namespace Edid {
   };
   template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
-  enum StereoMode {
-    NO_STEREO = 0b000,
-    FIELD_SEQUENTIAL_L_R = 0b010,
-    FIELD_SEQUENTIAL_R_L = 0b100,
-    INTERLEAVED_RIGHT_EVEN = 0b011,
-    INTERLEAVED_LEFT_EVEN = 0b101,
-    FOUR_WAY_INTERLEAVED = 0b110,
-    SIDE_BY_SIDE_INTERLEAVED = 0b111
-  };
-
-  struct AnalogCompositeSync {
-    bool bipolar;
-    bool serrations;
-    bool sync_on_rgb_signals;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(AnalogCompositeSync, bipolar, serrations, sync_on_rgb_signals)
-#endif
-  };
-
-  namespace details {
-    template<typename T>
-    bool operator!=(const T& lhs, const T& rhs) {
-      return !(lhs == rhs);
-    }
-  }
-
-  bool operator==(const AnalogCompositeSync& lhs, const AnalogCompositeSync& rhs);
-
-  struct DigitalCompositeSync {
-    bool serrations;
-    bool h_sync_polarity;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalCompositeSync, serrations, h_sync_polarity)
-#endif
-  };
-
-  bool operator==(const DigitalCompositeSync& lhs, const DigitalCompositeSync& rhs);
-
-  struct DigitalSeparateSync {
-    bool v_sync_polarity;
-    bool h_sync_polarity;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalSeparateSync, v_sync_polarity, h_sync_polarity)
-#endif
-  };
-
-  bool operator==(const DigitalSeparateSync& lhs, const DigitalSeparateSync& rhs);
-
-  struct DtdFeaturesBitmap {
-    bool interlaced;
-    StereoMode stereo_mode;
-    std::variant<AnalogCompositeSync, DigitalCompositeSync, DigitalSeparateSync> sync;
-  };
-
-  bool operator==(const DtdFeaturesBitmap& lhs, const DtdFeaturesBitmap& rhs);
-
-  struct DetailedTimingDescriptor {
-    uint64_t pixel_clock_hz;  // This value becomes uint16_t in EDID by dividing by 10'000
-    uint16_t h_res;
-    uint16_t v_res;
-    uint16_t h_blanking;
-    uint16_t v_blanking;
-    uint16_t h_front_porch;
-    uint16_t h_sync_width;
-    uint8_t v_front_porch;
-    uint8_t v_sync_width;
-    uint16_t h_image_size;
-    uint16_t v_image_size;
-    uint8_t h_border_pixels;
-    uint8_t v_border_lines;
-    DtdFeaturesBitmap features_bitmap;
-
-    std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
-    static DetailedTimingDescriptor parse_byte_block(const std::array<uint8_t, EIGHTEEN_BYTES>& block);
-
-    uint8_t type() const {
-      return BASE_FAKE_DTD_TYPE;
-    }
-  };
-
-  bool operator==(const DetailedTimingDescriptor& lhs, const DetailedTimingDescriptor& rhs);
-
   template<typename E, typename T>
   std::vector<E> bitfield_to_enums(T bitfield) {
     static_assert(std::is_enum<E>::value,
-      "bitfield_to_enums: template parameter must be an enum!");
+      "bitfield_to_enums: Template parameter T must be an enum!");
     static_assert(std::is_arithmetic<T>::value,
-      "bitfield_to_enums: Not an arithmetic type!");
+      "bitfield_to_enums: Template parameter E must be an arithmetic type!");
     std::vector<E> result;
     for (int i = 0; i < 8 * sizeof(T); ++i)
       if (bitfield & (1 << i))
