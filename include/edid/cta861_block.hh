@@ -16,12 +16,12 @@
 namespace Edid {
   using CtaDataBlock = std::variant<
     UnknownDataBlock,
-    VideoDataBlock,                 // [CTA-861-I] Section 7.5.1
-    AudioDataBlock,                 // [CTA-861-I] Section 7.5.2
-    SpeakerAllocationDataBlock,     // [CTA-861-I] Section 7.5.3
-    YCbCr420CapabilityMapDataBlock, // [CTA-861-I] Section 7.5.11
-    HdmiVendorDataBlock,            // [HDMI1.4b] Section 8.3.2
-    ColorimetryDataBlock            // [CTA-861-I] Section 7.5.5
+    VideoDataBlock,                   // [CTA-861-I] Section 7.5.1
+    AudioDataBlock,                   // [CTA-861-I] Section 7.5.2
+    SpeakerAllocationDataBlock,       // [CTA-861-I] Section 7.5.3
+    YCbCr420CapabilityMapDataBlock,   // [CTA-861-I] Section 7.5.11
+    HdmiVendorDataBlock,              // [HDMI1.4b] Section 8.3.2
+    ColorimetryDataBlock              // [CTA-861-I] Section 7.5.5
   >;
   using DataBlockCollection = std::vector<CtaDataBlock>;
 

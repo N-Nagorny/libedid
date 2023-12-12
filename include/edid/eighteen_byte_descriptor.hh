@@ -17,11 +17,11 @@ namespace Edid {
   using EighteenByteDescriptorVariant = std::variant<Ts...>;
 
   using EighteenByteDescriptor = EighteenByteDescriptorVariant<
-    DummyDescriptor,          // [E-EDID] Section 3.10.3.11
-    DetailedTimingDescriptor, // [E-EDID] Section 3.10.2
-    DisplayRangeLimits,       // [E-EDID] Section 3.10.3.3
-    AsciiString,              // [E-EDID] Sections 3.10.3.1, 3.10.3.2, 3.10.3.4
-    EstablishedTimings3       // [E-EDID] Section 3.10.3.9
+    DummyDescriptor,            // [E-EDID] Section 3.10.3.11
+    DetailedTimingDescriptor,   // [E-EDID] Section 3.10.2
+    DisplayRangeLimits,         // [E-EDID] Section 3.10.3.3
+    AsciiString,                // [E-EDID] Sections 3.10.3.1, 3.10.3.2, 3.10.3.4
+    EstablishedTimings3         // [E-EDID] Section 3.10.3.9
   >;
 
   static bool has_18_byte_descr_type(const EighteenByteDescriptor& descriptor, uint8_t type) {

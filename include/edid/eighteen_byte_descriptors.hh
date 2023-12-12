@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <string>
 
 #include "eighteen_byte_descriptor_interface.hh"
 
