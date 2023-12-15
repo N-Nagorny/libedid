@@ -365,7 +365,9 @@ TEST(ForEachModeTests, DeleteModesFromCta861) {
 
 TEST(ForEachModeTests, DeleteModesFromHdmiVsdb) {
   Cta861Block cta861_before = make_cta861_ext();
-  HdmiVendorDataBlock block_before{1, 0, 0, 0};
+  HdmiVendorDataBlock block_before{
+    {1, 0, 0, 0}
+  };
   block_before.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, {1, 2, 3, 4}};
   cta861_before.data_block_collection.push_back(block_before);
 
@@ -374,7 +376,9 @@ TEST(ForEachModeTests, DeleteModesFromHdmiVsdb) {
   });
 
   Cta861Block cta861_after = make_cta861_ext();
-  HdmiVendorDataBlock block_after{1, 0, 0, 0};
+  HdmiVendorDataBlock block_after{
+    {1, 0, 0, 0}
+  };
   block_after.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, { 4}};
   cta861_after.data_block_collection.push_back(block_after);
 

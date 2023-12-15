@@ -14,7 +14,13 @@
 #define CTA861_VERSION 3
 
 namespace Edid {
-  using CtaDataBlock = std::variant<
+  template<typename T>
+  concept CtaDataBlockInterface = std::is_base_of_v<ICtaDataBlock, T>;
+
+  template<CtaDataBlockInterface... Ts>
+  using CtaDataBlockVariant = std::variant<Ts...>;
+
+  using CtaDataBlock = CtaDataBlockVariant<
     UnknownDataBlock,
     VideoDataBlock,                   // [CTA-861-I] Section 7.5.1
     AudioDataBlock,                   // [CTA-861-I] Section 7.5.2

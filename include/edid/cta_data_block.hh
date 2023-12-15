@@ -67,25 +67,47 @@ namespace Edid {
     );
   };
 
+  struct ICtaDataBlock {
+    virtual ~ICtaDataBlock() = default;
 
-  struct UnknownDataBlock {
+    virtual CtaDataBlockType type() const = 0;
+    virtual std::vector<uint8_t> generate_byte_block() const = 0;
+    virtual void print(std::ostream& os, uint8_t tabs = 1) const = 0;
+    virtual size_t size() const = 0;
+  };
+
+  struct UnknownDataBlock : ICtaDataBlock {
     std::vector<uint8_t> raw_data;
     uint8_t data_block_tag;
     std::optional<uint8_t> extended_tag;
 
-    CtaDataBlockType type() const {
+    UnknownDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    UnknownDataBlock(
+      const std::vector<uint8_t>& raw_data,
+      uint8_t data_block_tag,
+      const std::optional<uint8_t>& extended_tag = std::nullopt
+    )
+      : raw_data(raw_data)
+      , data_block_tag(data_block_tag)
+      , extended_tag(extended_tag)
+    {}
+
+    CtaDataBlockType type() const override {
       if (extended_tag.has_value()) {
         return CtaDataBlockType(data_block_tag, extended_tag.value());
       }
       return CtaDataBlockType(data_block_tag);
     }
 
-    size_t size() const {
+    size_t size() const override {
       return raw_data.size() + CTA861_DATA_BLOCK_HEADER_SIZE + (extended_tag.has_value() ? CTA861_EXTENDED_TAG_SIZE : 0);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static UnknownDataBlock parse_byte_block(const uint8_t* start) {
       UnknownDataBlock result;
@@ -108,7 +130,7 @@ namespace Edid {
   TIED_COMPARISONS(UnknownDataBlock, FIELDS)
 #undef FIELDS
 
-  struct VideoDataBlock {
+  struct VideoDataBlock : ICtaDataBlock {
     std::array<std::optional<uint8_t>, 31> vics;
 
     uint8_t valid_vics() const {
@@ -119,11 +141,11 @@ namespace Edid {
       return result;
     }
 
-    size_t size() const {
+    size_t size() const override {
       return valid_vics() * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_VIDEO_DATA_BLOCK_TAG);
     }
 
@@ -136,8 +158,8 @@ namespace Edid {
       return result;
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static VideoDataBlock parse_byte_block(const uint8_t* start) {
       VideoDataBlock result;
@@ -276,7 +298,7 @@ namespace Edid {
   TIED_COMPARISONS(ShortAudioDescriptor, FIELDS)
 #undef FIELDS
 
-  struct AudioDataBlock {
+  struct AudioDataBlock : ICtaDataBlock {
     std::array<std::optional<ShortAudioDescriptor>, 10> sads;
 
     uint8_t valid_sads() const {
@@ -287,16 +309,16 @@ namespace Edid {
       return result;
     }
 
-    size_t size() const {
+    size_t size() const override {
       return valid_sads() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_AUDIO_DATA_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static AudioDataBlock parse_byte_block(const uint8_t* start) {
       AudioDataBlock result;
@@ -357,19 +379,19 @@ namespace Edid {
 
   using SpeakerAllocation = uint8_t;
 
-  struct SpeakerAllocationDataBlock {
+  struct SpeakerAllocationDataBlock : ICtaDataBlock {
     SpeakerAllocation speaker_allocation = 0;
 
-    size_t size() const {
+    size_t size() const override {
       return CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_SPEAKERS_DATA_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static SpeakerAllocationDataBlock parse_byte_block(const uint8_t* start) {
       SpeakerAllocationDataBlock result;
@@ -396,10 +418,10 @@ namespace Edid {
   TIED_COMPARISONS(SpeakerAllocationDataBlock, FIELDS)
 #undef FIELDS
 
-  struct YCbCr420CapabilityMapDataBlock {
+  struct YCbCr420CapabilityMapDataBlock : ICtaDataBlock {
     std::set<uint8_t> svd_indices;
 
-    size_t size() const {
+    size_t size() const override {
       if (!svd_indices.size())
         return CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
       auto last_element = svd_indices.rbegin();
@@ -407,12 +429,12 @@ namespace Edid {
       return bytes + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static YCbCr420CapabilityMapDataBlock parse_byte_block(const uint8_t* start) {
       YCbCr420CapabilityMapDataBlock result;
@@ -495,22 +517,33 @@ namespace Edid {
     {GMP_3, "MD3"},
   })
 
-  // CTA-861-I Section 7.5.5
-  struct ColorimetryDataBlock {
+  struct ColorimetryDataBlock : ICtaDataBlock {
     uint16_t colorimetry_standards = 0;
     uint8_t gamut_metadata_profiles = 0;
 
-    size_t size() const {
+    ColorimetryDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    ColorimetryDataBlock(
+      uint16_t colorimetry_standards,
+      uint8_t gamut_metadata_profiles
+    )
+      : colorimetry_standards(colorimetry_standards)
+      , gamut_metadata_profiles(gamut_metadata_profiles)
+    {}
+
+    size_t size() const override {
       const size_t payload_size = 2;
       return payload_size + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static ColorimetryDataBlock parse_byte_block(const uint8_t* iter) {
       ColorimetryDataBlock result;
