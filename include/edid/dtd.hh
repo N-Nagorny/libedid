@@ -6,15 +6,10 @@
 #include <iostream>
 #include <variant>
 
-#ifdef ENABLE_JSON
-#include <nlohmann/json.hpp>
-#endif
-
 #include "common.hh"
 #include "eighteen_byte_descriptor_interface.hh"
 
 namespace Edid {
-
   enum StereoMode {
     NO_STEREO = 0b000,
     FIELD_SEQUENTIAL_L_R = 0b010,
@@ -25,14 +20,20 @@ namespace Edid {
     SIDE_BY_SIDE_INTERLEAVED = 0b111
   };
 
+  STRINGIFY_ENUM(StereoMode, {
+    { NO_STEREO,                 "NO_STEREO" },
+    { FIELD_SEQUENTIAL_L_R,      "FIELD_SEQUENTIAL_L_R" },
+    { FIELD_SEQUENTIAL_R_L,      "FIELD_SEQUENTIAL_R_L" },
+    { INTERLEAVED_RIGHT_EVEN,    "INTERLEAVED_RIGHT_EVEN" },
+    { INTERLEAVED_LEFT_EVEN,     "INTERLEAVED_LEFT_EVEN" },
+    { FOUR_WAY_INTERLEAVED,      "FOUR_WAY_INTERLEAVED" },
+    { SIDE_BY_SIDE_INTERLEAVED,  "SIDE_BY_SIDE_INTERLEAVED" }
+  })
+
   struct AnalogCompositeSync {
     bool bipolar = false;
     bool serrations = false;
     bool sync_on_rgb_signals = false;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(AnalogCompositeSync, bipolar, serrations, sync_on_rgb_signals)
-#endif
   };
 
 #define FIELDS(X) X.bipolar, X.serrations, X.sync_on_rgb_signals
@@ -42,10 +43,6 @@ namespace Edid {
   struct DigitalCompositeSync {
     bool serrations = false;
     bool h_sync_polarity = false;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalCompositeSync, serrations, h_sync_polarity)
-#endif
   };
 
 #define FIELDS(X) X.serrations, X.h_sync_polarity
@@ -55,10 +52,6 @@ namespace Edid {
   struct DigitalSeparateSync {
     bool v_sync_polarity = false;
     bool h_sync_polarity = false;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(DigitalSeparateSync, v_sync_polarity, h_sync_polarity)
-#endif
   };
 
 #define FIELDS(X) X.v_sync_polarity, X.h_sync_polarity
@@ -96,35 +89,35 @@ namespace Edid {
     // for brace-enclosed initialization despite
     // inheritance from a base class with virtual funcs
     DetailedTimingDescriptor(
-      uint64_t pixel_clock_hz_,
-      uint16_t h_res_,
-      uint16_t v_res_,
-      uint16_t h_blanking_,
-      uint16_t v_blanking_,
-      uint16_t h_front_porch_,
-      uint16_t h_sync_width_,
-      uint8_t v_front_porch_,
-      uint8_t v_sync_width_,
-      uint16_t h_image_size_,
-      uint16_t v_image_size_,
-      uint8_t h_border_pixels_,
-      uint8_t v_border_lines_,
-      DtdFeaturesBitmap features_bitmap_
+      uint64_t pixel_clock_hz,
+      uint16_t h_res,
+      uint16_t v_res,
+      uint16_t h_blanking,
+      uint16_t v_blanking,
+      uint16_t h_front_porch,
+      uint16_t h_sync_width,
+      uint8_t v_front_porch,
+      uint8_t v_sync_width,
+      uint16_t h_image_size,
+      uint16_t v_image_size,
+      uint8_t h_border_pixels,
+      uint8_t v_border_lines,
+      DtdFeaturesBitmap features_bitmap
     )
-      : pixel_clock_hz(pixel_clock_hz_)
-      , h_res(h_res_)
-      , v_res(v_res_)
-      , h_blanking(h_blanking_)
-      , v_blanking(v_blanking_)
-      , h_front_porch(h_front_porch_)
-      , h_sync_width(h_sync_width_)
-      , v_front_porch(v_front_porch_)
-      , v_sync_width(v_sync_width_)
-      , h_image_size(h_image_size_)
-      , v_image_size(v_image_size_)
-      , h_border_pixels(h_border_pixels_)
-      , v_border_lines(v_border_lines_)
-      , features_bitmap(features_bitmap_)
+      : pixel_clock_hz(pixel_clock_hz)
+      , h_res(h_res)
+      , v_res(v_res)
+      , h_blanking(h_blanking)
+      , v_blanking(v_blanking)
+      , h_front_porch(h_front_porch)
+      , h_sync_width(h_sync_width)
+      , v_front_porch(v_front_porch)
+      , v_sync_width(v_sync_width)
+      , h_image_size(h_image_size)
+      , v_image_size(v_image_size)
+      , h_border_pixels(h_border_pixels)
+      , v_border_lines(v_border_lines)
+      , features_bitmap(features_bitmap)
     {}
 
     std::array<uint8_t, EIGHTEEN_BYTES> generate_byte_block() const override;

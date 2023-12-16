@@ -8,10 +8,6 @@
 #include <utility>
 #include <variant>
 
-#ifdef ENABLE_JSON
-#include <nlohmann/json.hpp>
-#endif
-
 #include "common.hh"
 #include "eighteen_byte_descriptor.hh"
 
@@ -284,10 +280,6 @@ namespace Edid {
     uint16_t x_resolution;  // This value becomes uint8_t in EDID by dividing by 8 and subtracting 31 from it
     AspectRatio aspect_ratio;
     uint8_t v_frequency;
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StandardTiming, x_resolution, aspect_ratio, v_frequency)
-#endif
   };
 
 #define FIELDS(X) X.x_resolution, X.aspect_ratio, X.v_frequency
@@ -297,13 +289,6 @@ namespace Edid {
   struct ManufactureDate {
     uint8_t week_of_manufacture;
     uint16_t year_of_manufacture;  // This value becomes uint8_t in EDID by subtracting 1990 from it
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ManufactureDate,
-      week_of_manufacture,
-      year_of_manufacture
-    )
-#endif
   };
 
 #define FIELDS(X) X.week_of_manufacture, X.year_of_manufacture
@@ -312,12 +297,6 @@ namespace Edid {
 
   struct ModelYear {
     uint16_t model_year;  // This value becomes uint8_t in EDID by subtracting 1990 from it
-
-#ifdef ENABLE_JSON
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModelYear,
-      model_year
-    )
-#endif
   };
 
 #define FIELDS(X) X.model_year

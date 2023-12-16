@@ -6,15 +6,22 @@
 #include "edid.hh"
 
 namespace Edid {
-  NLOHMANN_JSON_SERIALIZE_ENUM(StereoMode, {
-    {NO_STEREO, "NO_STEREO"},
-    {FIELD_SEQUENTIAL_L_R, "FIELD_SEQUENTIAL_L_R"},
-    {FIELD_SEQUENTIAL_R_L, "FIELD_SEQUENTIAL_R_L"},
-    {INTERLEAVED_RIGHT_EVEN, "INTERLEAVED_RIGHT_EVEN"},
-    {INTERLEAVED_LEFT_EVEN, "INTERLEAVED_LEFT_EVEN"},
-    {FOUR_WAY_INTERLEAVED, "FOUR_WAY_INTERLEAVED"},
-    {SIDE_BY_SIDE_INTERLEAVED, "SIDE_BY_SIDE_INTERLEAVED"}
-  })
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StandardTiming, x_resolution, aspect_ratio, v_frequency)
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ManufactureDate,
+    week_of_manufacture,
+    year_of_manufacture
+  )
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ModelYear,
+    model_year
+  )
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AnalogCompositeSync, bipolar, serrations, sync_on_rgb_signals)
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DigitalCompositeSync, serrations, h_sync_polarity)
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DigitalSeparateSync, v_sync_polarity, h_sync_polarity)
 
   void from_json(const nlohmann::json& j, BaseBlock&);
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor&);
