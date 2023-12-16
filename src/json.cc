@@ -109,21 +109,6 @@ namespace Edid {
     }
   }
 
-  void from_json(const nlohmann::json& j, VideoDataBlock& result) {
-    auto vics = j.at("vics").get<std::vector<uint8_t>>();
-    for (int i = 0; i < vics.size(); ++i) {
-      result.vics[i] = vics.at(i);
-    }
-  }
-
-  void to_json(nlohmann::json& j, const VideoDataBlock& block) {
-    for (const auto& vic : block.vics) {
-      if (vic.has_value()) {
-        j["vics"].push_back(vic.value());
-      }
-    }
-  }
-
   void from_json(const nlohmann::json& j, SpeakerAllocationDataBlock& result) {
     auto speakers = j.at("speaker_allocation").get<std::vector<Speaker>>();
     for (auto speaker : speakers) {
@@ -172,21 +157,6 @@ namespace Edid {
     }
   }
 
-  void from_json(const nlohmann::json& j, UnknownDataBlock& result) {
-    result.raw_data = j.at("raw_data").get<std::vector<uint8_t>>();
-    result.data_block_tag = j.at("tag");
-    if (j.contains("extended_tag")) {
-      result.extended_tag = j.at("extended_tag").get<uint8_t>();
-    }
-  }
-
-  void to_json(nlohmann::json& j, const UnknownDataBlock& block) {
-    j["raw_data"] = block.raw_data;
-    j["tag"] = block.data_block_tag;
-    if (block.extended_tag.has_value())
-      j["extended_tag"] = block.extended_tag.value();
-  }
-
   void from_json(const nlohmann::json& j, ShortAudioDescriptor& result) {
     result.audio_format = j.at("audio_format");
     result.channels = AudioChannels(j.at("channels").get<uint8_t>() - 1);
@@ -228,21 +198,6 @@ namespace Edid {
         case LPCM_BD_16:
           j["lpcm_bit_depths"].push_back(16);
           break;
-      }
-    }
-  }
-
-  void from_json(const nlohmann::json& j, AudioDataBlock& result) {
-    auto sads = j.at("sads").get<std::vector<ShortAudioDescriptor>>();
-    for (int i = 0; i < sads.size(); ++i) {
-      result.sads[i] = sads.at(i);
-    }
-  }
-
-  void to_json(nlohmann::json& j, const AudioDataBlock& block) {
-    for (const auto& sad : block.sads) {
-      if (sad.has_value()) {
-        j["sads"].push_back(sad.value());
       }
     }
   }

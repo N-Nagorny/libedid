@@ -131,18 +131,18 @@ namespace Edid {
 #undef FIELDS
 
   struct VideoDataBlock : ICtaDataBlock {
-    std::array<std::optional<uint8_t>, 31> vics;
+    std::vector<uint8_t> vics;
 
-    uint8_t valid_vics() const {
-      uint8_t result = 0;
-      for (const auto& vic : vics)
-        if (vic.has_value())
-          ++result;
-      return result;
-    }
+    VideoDataBlock() = default;
+
+    VideoDataBlock(
+      const std::vector<uint8_t>& vics
+    )
+      : vics(vics)
+    {}
 
     size_t size() const override {
-      return valid_vics() * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE;
+      return vics.size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
     CtaDataBlockType type() const override {
@@ -151,10 +151,9 @@ namespace Edid {
 
     uint8_t native_vics() const {
       uint8_t result = 0;
-      for (const auto& vic : vics)
-        if (vic.has_value())
-          if (vic.value() >= 129 && vic.value() <= 192)
-            ++result;
+      for (uint8_t vic : vics)
+        if (vic >= 129 && vic <= 192)
+          ++result;
       return result;
     }
 
@@ -163,7 +162,6 @@ namespace Edid {
 
     static VideoDataBlock parse_byte_block(const uint8_t* start) {
       VideoDataBlock result;
-      int pos = 0;
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       if (data_block_tag != CTA861_VIDEO_DATA_BLOCK_TAG)
@@ -171,10 +169,11 @@ namespace Edid {
           std::to_string(data_block_tag)
         );
 
-      int vics = *start & BITMASK_TRUE(5);
+      const size_t vics = *start & BITMASK_TRUE(5);
 
-      for (int i = 0; i < vics; ++i) {
-        result.vics[i] = *(start + ++pos);
+      if (vics > 0) {
+        result.vics.resize(vics, 0x0);
+        std::copy(start + 1, start + 1 + vics, result.vics.data());
       }
 
       return result;
@@ -299,18 +298,10 @@ namespace Edid {
 #undef FIELDS
 
   struct AudioDataBlock : ICtaDataBlock {
-    std::array<std::optional<ShortAudioDescriptor>, 10> sads;
-
-    uint8_t valid_sads() const {
-      uint8_t result = 0;
-      for (const auto& sad : sads)
-        if (sad.has_value())
-          ++result;
-      return result;
-    }
+    std::vector<ShortAudioDescriptor> sads;
 
     size_t size() const override {
-      return valid_sads() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
+      return sads.size() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
     CtaDataBlockType type() const override {
@@ -326,17 +317,20 @@ namespace Edid {
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       if (data_block_tag != CTA861_AUDIO_DATA_BLOCK_TAG)
-        throw EdidException(__FUNCTION__, "Audio Data Block has incorrect header: " +
-          std::to_string(data_block_tag));
+        throw EdidException(__FUNCTION__, "Audio Data Block has incorrect Data Block Tag: " +
+          std::to_string(data_block_tag)
+        );
 
       int sads = *start & BITMASK_TRUE(5);
 
       if (sads % ShortAudioDescriptor::size() != 0)
-        throw EdidException(__FUNCTION__, "Audio Data Block has size which is not"
+        throw EdidException(__FUNCTION__, "Audio Data Block has size which is not "
           "a factor of " + std::to_string(ShortAudioDescriptor::size()) +
           ": " + std::to_string(sads));
       else
         sads /= ShortAudioDescriptor::size();
+
+      result.sads.resize(sads);
 
       for (int i = 0; i < sads; ++i) {
         ShortAudioDescriptor sad;
@@ -399,8 +393,9 @@ namespace Edid {
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       if (data_block_tag != CTA861_SPEAKERS_DATA_BLOCK_TAG)
-        throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has incorrect header: " +
-          std::to_string(data_block_tag));
+        throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has incorrect Data Block Tag: " +
+          std::to_string(data_block_tag)
+        );
 
       int data_block_size = *start & BITMASK_TRUE(5);
 
@@ -471,6 +466,8 @@ namespace Edid {
 #define FIELDS(X) X.svd_indices
   TIED_COMPARISONS(YCbCr420CapabilityMapDataBlock, FIELDS)
 #undef FIELDS
+
+  // ---------- CTA-861-I Section 7.5.5 ----------
 
   enum ColorimetryStandard {
     CS_XV_YCC601   = 1 << 0,

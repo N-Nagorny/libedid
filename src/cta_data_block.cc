@@ -26,41 +26,57 @@ namespace Edid {
   }
 
   std::vector<uint8_t> VideoDataBlock::generate_byte_block() const {
+    // Note that data blocks with CTA Tag Codes of 1 through 6
+    // are limited to containing 31 payload bytes
+    //
+    // See CTA-861-I Section 7.4
+    if (vics.size() > 31)
+      throw EdidException("Video Data Block is longer than 31 VICs: " +
+        vics.size()
+      );
+
     std::vector<uint8_t> result(size(), 0x0);
     int pos = 0;
 
     result[pos] = CTA861_VIDEO_DATA_BLOCK_TAG << 5;
-    result[pos++] |= valid_vics() & BITMASK_TRUE(5);
+    result[pos++] |= vics.size() & BITMASK_TRUE(5);
 
-    for (const std::optional<uint8_t>& vic : vics)
-      if (vic.has_value())
-        result[pos++] = vic.value();
+    std::copy(vics.data(), vics.data() + vics.size(), result.data() + pos);
 
     return result;
   }
 
   void VideoDataBlock::print(std::ostream& os, uint8_t tabs) const {
-    os << "Video Data Block: ";
-    for (const std::optional<uint8_t>& vic : vics)
-      if (vic.has_value())
-        os << (int)vic.value() << " ";
-    os << '\n';
+    std::string indent(tabs, '\t');
+
+    os << indent << "Video Data Block:\n";
+    indent += '\t';
+
+    for (uint8_t vic : vics)
+      os << indent << static_cast<int>(vic) << "\n";
   }
 
   std::vector<uint8_t> AudioDataBlock::generate_byte_block() const {
+    // Each Short Audio Descriptor is 3-bytes long. There can be up to 31 bytes of payload in a Data
+    // Block, therefore there may be up to 10 Short Audio Descriptors
+    //
+    // See CTA-861-I Section 7.5.2
+    if (sads.size() > 10)
+      throw EdidException("Audio Data Block is longer than 10 SADs: " +
+        sads.size()
+      );
+
     std::vector<uint8_t> result(size(), 0x0);
     int pos = 0;
 
     result[pos] = CTA861_AUDIO_DATA_BLOCK_TAG << 5;
-    result[pos++] |= valid_sads() * ShortAudioDescriptor::size() & BITMASK_TRUE(5);
+    result[pos++] |= sads.size() * ShortAudioDescriptor::size() & BITMASK_TRUE(5);
 
-    for (const std::optional<ShortAudioDescriptor>& sad : sads) {
-      if (sad.has_value()) {
-        result[pos] = sad->audio_format << 3;
-        result[pos++] |= sad->channels;
-        result[pos++] = sad->sampling_freqs;
-        result[pos++] = sad->lpcm_bit_depths;
-      }
+    for (const ShortAudioDescriptor& sad : sads) {
+      result[pos] = sad.audio_format << 3;
+      result[pos++] |= sad.channels;
+      result[pos++] = sad.sampling_freqs;
+      result[pos++] = sad.lpcm_bit_depths;
     }
 
     return result;

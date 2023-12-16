@@ -6,7 +6,8 @@
   "additionalProperties": false,
   "required": [
     "raw_data",
-    "tag"
+    "data_block_tag",
+    "extended_tag"
   ],
   "properties": {
     "raw_data": {
@@ -18,7 +19,7 @@
         "maximum": 255
       }
     },
-    "tag": {
+    "data_block_tag": {
       "description": "Data Block Tag",
       "type": "integer",
       "minimum": 0,
@@ -26,7 +27,7 @@
     },
     "extended_tag": {
       "description": "Extended Data Block Tag",
-      "type": "integer"
+      "type": ["integer", "null"]
     }
   }
 }

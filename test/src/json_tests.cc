@@ -264,6 +264,38 @@ TEST(ShortAudioDescriptorTests, Generating) {
   EXPECT_EQ(j, j1);
 }
 
+TEST(UnknownDataBlockTests, Generating) {
+  nlohmann::json reserved_expected = R"(
+    {
+      "raw_data": [1, 2, 3, 4, 5],
+      "data_block_tag": 0,
+      "extended_tag": null
+    }
+  )"_json;
+  UnknownDataBlock reserved = {
+    {1, 2, 3, 4, 5},
+    0
+  };
+  nlohmann::json reserved_actual = reserved;
+
+  nlohmann::json extended_reserved_expected = R"(
+    {
+      "raw_data": [1, 2, 3, 4, 5],
+      "data_block_tag": 7,
+      "extended_tag": 128
+    }
+  )"_json;
+  UnknownDataBlock extended_reserved = {
+    {1, 2, 3, 4, 5},
+    7,
+    128
+  };
+  nlohmann::json extended_reserved_actual = extended_reserved;
+
+  EXPECT_EQ(reserved_expected, reserved_actual);
+  EXPECT_EQ(extended_reserved_expected, extended_reserved_actual);
+}
+
 TEST(JsonTests, FullEdidGenerating) {
   nlohmann::json j = R"(
     {
