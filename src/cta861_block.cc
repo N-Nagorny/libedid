@@ -105,6 +105,9 @@ namespace Edid {
       case CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(ColorimetryDataBlock::parse_byte_block(iter_read)));
         break;
+      case CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG:
+        data_block_ptr = std::make_unique<CtaDataBlock>(std::move(HdrStaticMetadataDataBlock::parse_byte_block(iter_read)));
+        break;
       default:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));
     }

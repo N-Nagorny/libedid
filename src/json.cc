@@ -157,6 +157,40 @@ namespace Edid {
     }
   }
 
+  void from_json(const nlohmann::json& j, HdrStaticMetadataDataBlock& result) {
+    const auto tfs = j.at("transfer_functions").get<std::vector<ElectroOpticalTransferFunction>>();
+    const auto md_types = j.at("static_metadata_types").get<std::vector<StaticMetadataType>>();
+
+    for (const auto& tf : tfs) {
+      result.transfer_functions |= tf;
+    }
+    for (const auto& type : md_types) {
+      result.static_metadata_types |= type;
+    }
+
+    result.max_luminance_code_value = j.at("max_luminance_code_value").get<std::optional<uint8_t>>();
+    result.max_frame_average_luminance_code_value = j.at("max_frame_average_luminance_code_value").get<std::optional<uint8_t>>();
+    result.min_luminance_code_value = j.at("min_luminance_code_value").get<std::optional<uint8_t>>();
+  }
+
+  void to_json(nlohmann::json& j, const HdrStaticMetadataDataBlock& block) {
+    j = {
+      {"transfer_functions",   nlohmann::json::array()},
+      {"static_metadata_types", nlohmann::json::array()}
+    };
+
+    for (ElectroOpticalTransferFunction tf : bitfield_to_enums<ElectroOpticalTransferFunction>(block.transfer_functions)) {
+      j["transfer_functions"].push_back(to_string(tf));
+    }
+    for (StaticMetadataType type : bitfield_to_enums<StaticMetadataType>(block.static_metadata_types)) {
+      j["static_metadata_types"].push_back(to_string(type));
+    }
+
+    j["max_luminance_code_value"] = block.max_luminance_code_value;
+    j["max_frame_average_luminance_code_value"] = block.max_frame_average_luminance_code_value;
+    j["min_luminance_code_value"] = block.min_luminance_code_value;
+  }
+
   void from_json(const nlohmann::json& j, ShortAudioDescriptor& result) {
     result.audio_format = j.at("audio_format");
     result.channels = AudioChannels(j.at("channels").get<uint8_t>() - 1);
@@ -397,6 +431,11 @@ namespace Edid {
     }
     else if (j.contains("colorimetry_standards")) {
       ColorimetryDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("static_metadata_types")) {
+      HdrStaticMetadataDataBlock subresult;
       from_json(j, subresult);
       descriptor = subresult;
     }

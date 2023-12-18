@@ -57,17 +57,19 @@ namespace Edid {
 
   // CTA Data Block
 
-  void from_json(const nlohmann::json& j, SpeakerAllocationDataBlock&);
-  void from_json(const nlohmann::json& j, YCbCr420CapabilityMapDataBlock&);
-  void from_json(const nlohmann::json& j, ColorimetryDataBlock&);
-  void from_json(const nlohmann::json& j, Cta861Block&);
-  void from_json(const nlohmann::json& j, ShortAudioDescriptor& result);
+  void from_json(const nlohmann::json&, ColorimetryDataBlock&);
+  void from_json(const nlohmann::json&, Cta861Block&);
+  void from_json(const nlohmann::json&, HdrStaticMetadataDataBlock&);
+  void from_json(const nlohmann::json&, ShortAudioDescriptor&);
+  void from_json(const nlohmann::json&, SpeakerAllocationDataBlock&);
+  void from_json(const nlohmann::json&, YCbCr420CapabilityMapDataBlock&);
 
-  void to_json(nlohmann::json& j, const ShortAudioDescriptor&);
-  void to_json(nlohmann::json& j, const SpeakerAllocationDataBlock&);
-  void to_json(nlohmann::json& j, const YCbCr420CapabilityMapDataBlock&);
-  void to_json(nlohmann::json& j, const ColorimetryDataBlock&);
-  void to_json(nlohmann::json& j, const Cta861Block&);
+  void to_json(nlohmann::json&, const ColorimetryDataBlock&);
+  void to_json(nlohmann::json&, const Cta861Block&);
+  void to_json(nlohmann::json&, const HdrStaticMetadataDataBlock&);
+  void to_json(nlohmann::json&, const ShortAudioDescriptor&);
+  void to_json(nlohmann::json&, const SpeakerAllocationDataBlock&);
+  void to_json(nlohmann::json&, const YCbCr420CapabilityMapDataBlock&);
 
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VideoDataBlock, vics)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioDataBlock, sads)

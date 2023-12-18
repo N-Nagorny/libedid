@@ -21,6 +21,7 @@
 #define CTA861_EXTENDED_TAG 0b111
 
 #define CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG                   0x05
+#define CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG           0x06
 #define CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG  0x0F
 
 #define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
@@ -567,5 +568,101 @@ namespace Edid {
 
 #define FIELDS(X) X.colorimetry_standards, X.gamut_metadata_profiles
   TIED_COMPARISONS(ColorimetryDataBlock, FIELDS)
+#undef FIELDS
+
+  // ---------- CTA-861-I Section 7.5.13 ----------
+
+  enum ElectroOpticalTransferFunction {
+    TF_SDR = 1 << 0,
+    TF_HDR = 1 << 1,
+    TF_PQ  = 1 << 2,
+    TF_HLG = 1 << 3,
+    TF_4   = 1 << 4,
+    TF_5   = 1 << 5,
+  };
+
+  STRINGIFY_ENUM(ElectroOpticalTransferFunction, {
+    {TF_SDR, "SDR"},
+    {TF_HDR, "HDR"},
+    {TF_PQ,  "PQ"},
+    {TF_HLG, "HLG"},
+    {TF_4,   "TF_4"},
+    {TF_5,   "TF_5"}
+  })
+
+  enum StaticMetadataType {
+    SM_TYPE_1 = 1 << 0,
+    SM_1      = 1 << 1,
+    SM_2      = 1 << 2,
+    SM_3      = 1 << 3,
+    SM_4      = 1 << 4,
+    SM_5      = 1 << 5,
+    SM_6      = 1 << 6,
+    SM_7      = 1 << 7,
+  };
+
+  STRINGIFY_ENUM(StaticMetadataType, {
+    {SM_TYPE_1, "StaticMetadataType1"},
+    {SM_1,      "SM_1"},
+    {SM_2,      "SM_2"},
+    {SM_3,      "SM_3"},
+    {SM_4,      "SM_4"},
+    {SM_5,      "SM_5"},
+    {SM_6,      "SM_6"},
+    {SM_7,      "SM_7"}
+  })
+
+  struct HdrStaticMetadataDataBlock : ICtaDataBlock {
+    uint8_t transfer_functions = 0;
+    uint8_t static_metadata_types = 0;
+    std::optional<uint8_t> max_luminance_code_value;
+    std::optional<uint8_t> max_frame_average_luminance_code_value;
+    std::optional<uint8_t> min_luminance_code_value;
+
+    HdrStaticMetadataDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    HdrStaticMetadataDataBlock(
+      uint8_t transfer_functions,
+      uint8_t static_metadata_types,
+      const std::optional<uint8_t>& max_luminance_code_value = std::nullopt,
+      const std::optional<uint8_t>& max_frame_average_luminance_code_value = std::nullopt,
+      const std::optional<uint8_t>& min_luminance_code_value = std::nullopt
+    )
+      : transfer_functions(transfer_functions)
+      , static_metadata_types(static_metadata_types)
+      , max_luminance_code_value(max_luminance_code_value)
+      , max_frame_average_luminance_code_value(max_frame_average_luminance_code_value)
+      , min_luminance_code_value(min_luminance_code_value)
+    {}
+
+    size_t size() const override {
+      size_t payload_size = 2;
+      if (min_luminance_code_value.has_value()) {
+        payload_size += 3;
+      }
+      else if (max_frame_average_luminance_code_value.has_value()) {
+        payload_size += 2;
+      }
+      else if (max_luminance_code_value.has_value()) {
+        payload_size += 1;
+      }
+      return payload_size + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+    }
+
+    CtaDataBlockType type() const override {
+      return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG);
+    }
+
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
+    static HdrStaticMetadataDataBlock parse_byte_block(const uint8_t* iter);
+  };
+
+#define FIELDS(X) X.transfer_functions, X.static_metadata_types, \
+                  X.max_luminance_code_value, X.max_frame_average_luminance_code_value, \
+                  X.min_luminance_code_value
+  TIED_COMPARISONS(HdrStaticMetadataDataBlock, FIELDS)
 #undef FIELDS
 }  // namespace Edid

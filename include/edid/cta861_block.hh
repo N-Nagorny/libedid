@@ -27,6 +27,7 @@ namespace Edid {
     SpeakerAllocationDataBlock,       // [CTA-861-I] Section 7.5.3
     YCbCr420CapabilityMapDataBlock,   // [CTA-861-I] Section 7.5.11
     HdmiVendorDataBlock,              // [HDMI1.4b] Section 8.3.2
+    HdrStaticMetadataDataBlock,       // [CTA-861-I] Section 7.5.13
     ColorimetryDataBlock              // [CTA-861-I] Section 7.5.5
   >;
   using DataBlockCollection = std::vector<CtaDataBlock>;

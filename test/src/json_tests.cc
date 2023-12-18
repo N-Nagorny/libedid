@@ -651,3 +651,81 @@ TEST(JsonTests, ColorimetryDataBlockRoundtrip) {
   const ColorimetryDataBlock parsed = json;
   EXPECT_EQ(initial, parsed);
 }
+
+TEST(JsonTests, HdrStaticMetadataDataBlockGenerating) {
+  const nlohmann::json expected = R"(
+    {
+      "transfer_functions": [
+        "SDR",
+        "TF_5"
+      ],
+      "static_metadata_types": [
+        "StaticMetadataType1",
+        "SM_5"
+      ],
+      "max_luminance_code_value": null,
+      "max_frame_average_luminance_code_value": null,
+      "min_luminance_code_value": null
+    }
+  )"_json;
+
+  HdrStaticMetadataDataBlock block{
+    ENUM_NULL
+    | TF_SDR
+    | TF_5,
+
+    ENUM_NULL
+    | SM_TYPE_1
+    | SM_5
+  };
+
+  const nlohmann::json actual = block;
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(JsonTests, HdrStaticMetadataDataBlockParsing) {
+  const nlohmann::json json = R"(
+    {
+      "transfer_functions": [],
+      "static_metadata_types": [
+        "StaticMetadataType1",
+        "SM_5"
+      ],
+      "max_luminance_code_value": null,
+      "max_frame_average_luminance_code_value": 50,
+      "min_luminance_code_value": null
+    }
+  )"_json;
+
+  HdrStaticMetadataDataBlock expected{
+    ENUM_NULL,
+
+    ENUM_NULL
+    | SM_TYPE_1
+    | SM_5,
+
+    std::nullopt,
+    50
+  };
+
+  HdrStaticMetadataDataBlock actual = json;
+
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(JsonTests, HdrStaticMetadataDataBlockRoundtrip) {
+  HdrStaticMetadataDataBlock initial{
+    ENUM_NULL,
+
+    ENUM_NULL
+    | SM_TYPE_1
+    | SM_5,
+
+    0,
+    50
+  };
+
+  const nlohmann::json json = initial;
+  const HdrStaticMetadataDataBlock parsed = json;
+  EXPECT_EQ(initial, parsed);
+}

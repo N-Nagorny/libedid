@@ -13,6 +13,7 @@ function download_edid_db {
 
 function decoded_to_binary {
   local INDEX_PATH="${1}"
+  # IGNORE contains EDID read failures
   local IGNORE=(
     "Digital/Apple/APPAE22/F1F2AA8940D8"
     "Digital/Apple/APPAE22/89635EDE05B1"
@@ -48,7 +49,10 @@ function decoded_to_binary {
     done
     if [ "$IS_IGNORED" = "false" ]; then
       cat "$file" | grep -E '^([a-f0-9]{32}|[a-f0-9 ]{47})$' | tr -d '[:space:]' | xxd -r -p > "$file".bin
-      echo "${file}.bin" >> "${BINARY_PATH}"
+      # Also ignore EDIDs larger than 256 bytes
+      if [[ $(wc -c "${file}.bin" | cut -d' ' -f1) -lt 257 ]]; then
+        echo "${file}.bin" >> "${BINARY_PATH}"
+      fi
     fi
   done
 }

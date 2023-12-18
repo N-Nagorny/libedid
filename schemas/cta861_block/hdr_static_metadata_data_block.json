@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "HDR Static Metadata Data Block (CTA-861-I Section 7.5.13)",
+  "description": "Indicates the Static HDR capabilities of a Sink",
+  "additionalProperties": false,
+  "minProperties": 2,
+  "required": [
+    "transfer_functions",
+    "static_metadata_types",
+    "max_luminance_code_value",
+    "max_frame_average_luminance_code_value",
+    "min_luminance_code_value"
+  ],
+  "properties": {
+    "transfer_functions": {
+      "type": "array",
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "SDR",
+          "HDR",
+          "PQ",
+          "HLG",
+          "TF_4",
+          "TF_5"
+        ]
+      }
+    },
+    "static_metadata_types": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "StaticMetadataType1",
+          "SM_1",
+          "SM_2",
+          "SM_3",
+          "SM_4",
+          "SM_5",
+          "SM_6",
+          "SM_7"
+        ]
+      }
+    },
+    "max_luminance_code_value": {
+      "description": "Luminance value = 50 * 2 ^ (CV / 32), where CV is this code value",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 255
+    },
+    "max_frame_average_luminance_code_value": {
+      "description": "Luminance value = 50 * 2 ^ (CV / 32), where CV is this code value",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 255
+    },
+    "min_luminance_code_value": {
+      "description": "Min Luminance value = Max Luminance value * (CV / 255) ^ 2 / 100, where CV is this code value",
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 255
+    }
+  }
+}
