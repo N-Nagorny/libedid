@@ -3,9 +3,11 @@
   fetchFromGitHub,
   clipp,
   cmake,
+  git,
   gtest,
   nlohmann_json,
   pkg-config,
+  run_tests
 }:
 
 let
@@ -30,15 +32,17 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     clipp
     cmake
+    git  # for scripts/linuxhw_coverage.sh
     json_schema_validator
     nlohmann_json
     pkg-config
   ];
+
   cmakeFlags = [
     "-DENABLE_JSON=ON"
     "-DBUILD_TESTS=ON"
     "-DBUILD_EXAMPLES=ON"
-  ];
+  ] ++ (if run_tests then [ "-DRUN_TESTS=ON" ] else []);
 
   src = builtins.path { path = ./.; name = "libedid-src"; };
 }

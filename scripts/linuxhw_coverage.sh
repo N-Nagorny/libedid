@@ -1,4 +1,5 @@
-#! /usr/bin/env bash
+# no shebang because of
+# https://github.com/NixOS/nixpkgs/issues/6227
 
 set -euox pipefail
 
