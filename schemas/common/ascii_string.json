@@ -7,15 +7,15 @@
   "properties": {
     "string": {
       "type": "string",
-      "maxLength": 12
+      "maxLength": 13
     },
     "descriptor_type": {
-        "type": "string",
-        "enum": [
-            "Unspecified Text",
-            "Display Name",
-            "Serial Number"
-        ]
-      }
+      "type": "string",
+      "enum": [
+        "Unspecified Text",
+        "Display Name",
+        "Serial Number"
+      ]
+    }
   }
 }

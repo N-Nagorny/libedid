@@ -33,6 +33,9 @@ function decoded_to_binary {
     "Digital/Others/MSF1003/03CA7D56B4D6"
     "Digital/BOE/BOE9001/33E71EDD4E0D"
     "Digital/Dell/DEL4284/317CAF62DB5C"
+    "Digital/Corsair/CRM1B1C/A22F34D527B5"
+    "Digital/Corsair/CRM1B1C/D8C47E01839A"
+    "Digital/Corsair/CRM1B1C/D6A169A461AA"
   )
   local BINARY_PATH="$(echo "${INDEX_PATH}" | sed 's/decoded/binary/')"
 

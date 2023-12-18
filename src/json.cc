@@ -597,14 +597,16 @@ namespace Edid {
     j["vic_3d_support"] = block.vic_3d_support;
   }
 
-  void from_json(const nlohmann::json& j, HdmiVendorDataBlock& result) {
+  void from_json(const nlohmann::json& j_, HdmiVendorDataBlock& result) {
+    const nlohmann::json& j = j_.at("hdmi_vsdb");
+
     const auto source_phy_addr = j.at("source_phy_addr").get<std::vector<uint8_t>>();
     for (int i = 0; i < 4; ++i) {
       result.source_phy_addr[i] = source_phy_addr[i];
     }
     if (j.contains("capabilities")) {
-      const auto caps = j.at("capabilities").get<std::vector<HdmiVendorDataBlockCapabilities>>();
-      result.capabilities = std::accumulate(caps.begin(), caps.end(), ENUM_NULL, [](HdmiVendorDataBlockCapabilities result, HdmiVendorDataBlockCapabilities cap) {
+      const auto caps = j.at("capabilities").get<std::vector<HdmiVendorDataBlockByte6Flags>>();
+      result.capabilities = std::accumulate(caps.begin(), caps.end(), ENUM_NULL, [](uint8_t result, uint8_t cap) {
         return result |= cap;
       });
     }
@@ -627,7 +629,9 @@ namespace Edid {
   }
 
   void to_json(nlohmann::json& j_, const HdmiVendorDataBlock& block) {
-    nlohmann::json j;
+    nlohmann::json j{
+      {"content_types",   nlohmann::json::array()}
+    };
 
     j["source_phy_addr"] = block.source_phy_addr;
     if (block.capabilities.has_value()) {
