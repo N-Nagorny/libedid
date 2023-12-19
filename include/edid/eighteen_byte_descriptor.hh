@@ -10,6 +10,7 @@
 #include "eighteen_byte_descriptors.hh"
 
 namespace Edid {
+#if (defined(__cplusplus) && __cplusplus >= 202002L)
   template<typename T>
   concept EighteenByteDescriptorInterface = std::is_base_of_v<IEighteenByteDescriptor, T>;
 
@@ -17,6 +18,9 @@ namespace Edid {
   using EighteenByteDescriptorVariant = std::variant<Ts...>;
 
   using EighteenByteDescriptor = EighteenByteDescriptorVariant<
+#else
+  using EighteenByteDescriptor = std::variant<
+#endif
     DummyDescriptor,            // [E-EDID] Section 3.10.3.11
     DetailedTimingDescriptor,   // [E-EDID] Section 3.10.2
     DisplayRangeLimits,         // [E-EDID] Section 3.10.3.3

@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 project (edid VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ENABLE_JSON ON CACHE BOOL "Enable EDID <-> JSON and EDID -> NMOS Receiver Capabilities conversion functions")
@@ -226,7 +226,7 @@ if (BUILD_TESTS)
         if(RUN_TESTS)
             add_custom_command(TARGET json-roundtrip-tester POST_BUILD
                 COMMAND ${CMAKE_SOURCE_DIR}/scripts/linuxhw_coverage.sh
-                ARGS ${CMAKE_BINARY_DIR}/json-roundtrip-tester 35908 ${LINUXHW_EDID_DIR} ${CMAKE_BINARY_DIR}/test_result_json
+                ARGS ${CMAKE_BINARY_DIR}/json-roundtrip-tester 37020 ${LINUXHW_EDID_DIR} ${CMAKE_BINARY_DIR}/test_result_json
             )
         endif()
 

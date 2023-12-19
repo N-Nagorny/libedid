@@ -14,6 +14,7 @@
 #define CTA861_VERSION 3
 
 namespace Edid {
+#if (defined(__cplusplus) && __cplusplus >= 202002L)
   template<typename T>
   concept CtaDataBlockInterface = std::is_base_of_v<ICtaDataBlock, T>;
 
@@ -21,6 +22,9 @@ namespace Edid {
   using CtaDataBlockVariant = std::variant<Ts...>;
 
   using CtaDataBlock = CtaDataBlockVariant<
+#else
+  using CtaDataBlock = std::variant<
+#endif
     UnknownDataBlock,
     VideoDataBlock,                   // [CTA-861-I] Section 7.5.1
     AudioDataBlock,                   // [CTA-861-I] Section 7.5.2
