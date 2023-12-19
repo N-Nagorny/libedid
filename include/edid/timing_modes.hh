@@ -317,29 +317,30 @@ namespace Edid {
     for (auto& data_block : cta861_block.data_block_collection) {
       if (std::visit(is_vdb_visitor, data_block)) {
         auto& vics = std::get<VideoDataBlock>(data_block).vics;
-        for (std::optional<uint8_t>& vic : vics) {
-          if (vic.has_value()) {
-            auto mode = get_cta861_video_timing_mode(vic.value());
-            if (mode.has_value()) {
-              uint8_t pixel_repetition_factor = 1;
-              if (std::holds_alternative<uint8_t>(mode->pixel_repetition_factor)) {
-                pixel_repetition_factor = std::get<uint8_t>(mode->pixel_repetition_factor);
-              }
-              else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor)) {
-                pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor).first;
-              }
-              else if (std::holds_alternative<std::vector<uint8_t>>(mode->pixel_repetition_factor)) {
-                pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode->pixel_repetition_factor).at(0);
-              }
-
-              if (fn(to_video_timing_mode(mode->dtd, pixel_repetition_factor))) {
-                vic = std::nullopt;
-              }
+        for (auto it = vics.begin(); it != vics.end();) {
+          const auto mode = get_cta861_video_timing_mode(*it);
+          if (mode.has_value()) {
+            uint8_t pixel_repetition_factor = 1;
+            if (std::holds_alternative<uint8_t>(mode->pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<uint8_t>(mode->pixel_repetition_factor);
             }
-            else if (remove_unknown) {
-              vic = std::nullopt;
+            else if (std::holds_alternative<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<std::pair<uint8_t, uint8_t>>(mode->pixel_repetition_factor).first;
+            }
+            else if (std::holds_alternative<std::vector<uint8_t>>(mode->pixel_repetition_factor)) {
+              pixel_repetition_factor = std::get<std::vector<uint8_t>>(mode->pixel_repetition_factor).at(0);
+            }
+
+            if (fn(to_video_timing_mode(mode->dtd, pixel_repetition_factor))) {
+              it = vics.erase(it);
+              continue;
             }
           }
+          else if (remove_unknown) {
+            it = vics.erase(it);
+            continue;
+          }
+          ++it;
         }
       }
       else if (std::visit(is_hdmi_vsdb_visitor, data_block)) {

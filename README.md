@@ -33,13 +33,12 @@ The list of supported blocks of CTA Extension is [here](include/edid/cta861_bloc
 
 ### Development-related (TODO)
 
-- CMake doesn't regenerate C++ with JSON Schemas when they're changed.
-- `std::variant` is used for writing generalized functions working with any CTA data blocks, mostly because of `parse_byte_block` template functions. Need to consider using inheritance instead.
 - GitHub Actions workflows could be cleaned up.
 - Some cpplint checks are skipped (see TODOs in `scripts/static_analysis.sh`).
 - `src/json.cc` has too much boilerplate code.
 - `linuxhw/EDID` coverage could be indicated via GitHub Badges.
 - Rework Established Timings III multi-byte enums in the Colorimetry Data Block style.
+- Unify using of optional values in JSON Schemas.
 
 ### Base EDID
 

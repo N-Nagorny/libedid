@@ -5,16 +5,39 @@
 
 #include "edid.hh"
 
+namespace std {
+  template<typename T>
+  void from_json(const nlohmann::json& j, std::optional<T>& opt) {
+    if (j.is_null()) {
+      opt = std::nullopt;
+    }
+    else {
+      opt = j.get<T>();
+    }
+  }
+
+  template<typename T>
+  void to_json(nlohmann::json& j, const std::optional<T>& opt) {
+    if (opt.has_value()) {
+      j = *opt;
+    }
+    else {
+      j = nullptr;
+    }
+  }
+}  // namespace std
+
 namespace Edid {
-  NLOHMANN_JSON_SERIALIZE_ENUM(StereoMode, {
-    {NO_STEREO, "NO_STEREO"},
-    {FIELD_SEQUENTIAL_L_R, "FIELD_SEQUENTIAL_L_R"},
-    {FIELD_SEQUENTIAL_R_L, "FIELD_SEQUENTIAL_R_L"},
-    {INTERLEAVED_RIGHT_EVEN, "INTERLEAVED_RIGHT_EVEN"},
-    {INTERLEAVED_LEFT_EVEN, "INTERLEAVED_LEFT_EVEN"},
-    {FOUR_WAY_INTERLEAVED, "FOUR_WAY_INTERLEAVED"},
-    {SIDE_BY_SIDE_INTERLEAVED, "SIDE_BY_SIDE_INTERLEAVED"}
-  })
+  // Base Block
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StandardTiming, x_resolution, aspect_ratio, v_frequency)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ManufactureDate,
+    week_of_manufacture,
+    year_of_manufacture
+  )
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ModelYear,
+    model_year
+  )
 
   void from_json(const nlohmann::json& j, BaseBlock&);
   void from_json(const nlohmann::json& j, DetailedTimingDescriptor&);
@@ -26,23 +49,35 @@ namespace Edid {
   void to_json(nlohmann::json& j, const EstablishedTimings3&);
   void to_json(nlohmann::json& j, const EdidData&);
 
-  void from_json(const nlohmann::json& j, UnknownDataBlock&);
-  void from_json(const nlohmann::json& j, VideoDataBlock&);
-  void from_json(const nlohmann::json& j, AudioDataBlock&);
-  void from_json(const nlohmann::json& j, SpeakerAllocationDataBlock&);
-  void from_json(const nlohmann::json& j, YCbCr420CapabilityMapDataBlock&);
-  void from_json(const nlohmann::json& j, ColorimetryDataBlock&);
-  void from_json(const nlohmann::json& j, Cta861Block&);
-  void from_json(const nlohmann::json& j, ShortAudioDescriptor& result);
+  // DTD
 
-  void to_json(nlohmann::json& j, const UnknownDataBlock&);
-  void to_json(nlohmann::json& j, const ShortAudioDescriptor&);
-  void to_json(nlohmann::json& j, const VideoDataBlock&);
-  void to_json(nlohmann::json& j, const AudioDataBlock&);
-  void to_json(nlohmann::json& j, const SpeakerAllocationDataBlock&);
-  void to_json(nlohmann::json& j, const YCbCr420CapabilityMapDataBlock&);
-  void to_json(nlohmann::json& j, const ColorimetryDataBlock&);
-  void to_json(nlohmann::json& j, const Cta861Block&);
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AnalogCompositeSync, bipolar, serrations, sync_on_rgb_signals)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DigitalCompositeSync, serrations, h_sync_polarity)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DigitalSeparateSync, v_sync_polarity, h_sync_polarity)
+
+  // CTA Data Block
+
+  void from_json(const nlohmann::json&, ColorimetryDataBlock&);
+  void from_json(const nlohmann::json&, Cta861Block&);
+  void from_json(const nlohmann::json&, HdrStaticMetadataDataBlock&);
+  void from_json(const nlohmann::json&, ShortAudioDescriptor&);
+  void from_json(const nlohmann::json&, SpeakerAllocationDataBlock&);
+  void from_json(const nlohmann::json&, YCbCr420CapabilityMapDataBlock&);
+
+  void to_json(nlohmann::json&, const ColorimetryDataBlock&);
+  void to_json(nlohmann::json&, const Cta861Block&);
+  void to_json(nlohmann::json&, const HdrStaticMetadataDataBlock&);
+  void to_json(nlohmann::json&, const ShortAudioDescriptor&);
+  void to_json(nlohmann::json&, const SpeakerAllocationDataBlock&);
+  void to_json(nlohmann::json&, const YCbCr420CapabilityMapDataBlock&);
+
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VideoDataBlock, vics)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioDataBlock, sads)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(UnknownDataBlock, raw_data, data_block_tag, extended_tag)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VideoCapabilityDataBlock, is_ycc_quantization_range_selectable,
+    is_rgb_quantization_range_selectable, pt_scan_behaviour, it_scan_behaviour, ce_scan_behaviour)
+
+  // HDMI VSDB
 
   void from_json(const nlohmann::json& j, Vic3dSupport&);
   void from_json(const nlohmann::json& j, StereoVideoSupport&);

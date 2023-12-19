@@ -264,6 +264,38 @@ TEST(ShortAudioDescriptorTests, Generating) {
   EXPECT_EQ(j, j1);
 }
 
+TEST(UnknownDataBlockTests, Generating) {
+  nlohmann::json reserved_expected = R"(
+    {
+      "raw_data": [1, 2, 3, 4, 5],
+      "data_block_tag": 0,
+      "extended_tag": null
+    }
+  )"_json;
+  UnknownDataBlock reserved = {
+    {1, 2, 3, 4, 5},
+    0
+  };
+  nlohmann::json reserved_actual = reserved;
+
+  nlohmann::json extended_reserved_expected = R"(
+    {
+      "raw_data": [1, 2, 3, 4, 5],
+      "data_block_tag": 7,
+      "extended_tag": 128
+    }
+  )"_json;
+  UnknownDataBlock extended_reserved = {
+    {1, 2, 3, 4, 5},
+    7,
+    128
+  };
+  nlohmann::json extended_reserved_actual = extended_reserved;
+
+  EXPECT_EQ(reserved_expected, reserved_actual);
+  EXPECT_EQ(extended_reserved_expected, extended_reserved_actual);
+}
+
 TEST(JsonTests, FullEdidGenerating) {
   nlohmann::json j = R"(
     {
@@ -617,5 +649,83 @@ TEST(JsonTests, ColorimetryDataBlockRoundtrip) {
 
   const nlohmann::json json = initial;
   const ColorimetryDataBlock parsed = json;
+  EXPECT_EQ(initial, parsed);
+}
+
+TEST(JsonTests, HdrStaticMetadataDataBlockGenerating) {
+  const nlohmann::json expected = R"(
+    {
+      "transfer_functions": [
+        "SDR",
+        "TF_5"
+      ],
+      "static_metadata_types": [
+        "StaticMetadataType1",
+        "SM_5"
+      ],
+      "max_luminance_code_value": null,
+      "max_frame_average_luminance_code_value": null,
+      "min_luminance_code_value": null
+    }
+  )"_json;
+
+  HdrStaticMetadataDataBlock block{
+    ENUM_NULL
+    | TF_SDR
+    | TF_5,
+
+    ENUM_NULL
+    | SM_TYPE_1
+    | SM_5
+  };
+
+  const nlohmann::json actual = block;
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(JsonTests, HdrStaticMetadataDataBlockParsing) {
+  const nlohmann::json json = R"(
+    {
+      "transfer_functions": [],
+      "static_metadata_types": [
+        "StaticMetadataType1",
+        "SM_5"
+      ],
+      "max_luminance_code_value": null,
+      "max_frame_average_luminance_code_value": 50,
+      "min_luminance_code_value": null
+    }
+  )"_json;
+
+  HdrStaticMetadataDataBlock expected{
+    ENUM_NULL,
+
+    ENUM_NULL
+    | SM_TYPE_1
+    | SM_5,
+
+    std::nullopt,
+    50
+  };
+
+  HdrStaticMetadataDataBlock actual = json;
+
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(JsonTests, HdrStaticMetadataDataBlockRoundtrip) {
+  HdrStaticMetadataDataBlock initial{
+    ENUM_NULL,
+
+    ENUM_NULL
+    | SM_TYPE_1
+    | SM_5,
+
+    0,
+    50
+  };
+
+  const nlohmann::json json = initial;
+  const HdrStaticMetadataDataBlock parsed = json;
   EXPECT_EQ(initial, parsed);
 }

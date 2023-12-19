@@ -14,13 +14,21 @@
 #define CTA861_VERSION 3
 
 namespace Edid {
-  using CtaDataBlock = std::variant<
+  template<typename T>
+  concept CtaDataBlockInterface = std::is_base_of_v<ICtaDataBlock, T>;
+
+  template<CtaDataBlockInterface... Ts>
+  using CtaDataBlockVariant = std::variant<Ts...>;
+
+  using CtaDataBlock = CtaDataBlockVariant<
     UnknownDataBlock,
     VideoDataBlock,                   // [CTA-861-I] Section 7.5.1
     AudioDataBlock,                   // [CTA-861-I] Section 7.5.2
     SpeakerAllocationDataBlock,       // [CTA-861-I] Section 7.5.3
     YCbCr420CapabilityMapDataBlock,   // [CTA-861-I] Section 7.5.11
     HdmiVendorDataBlock,              // [HDMI1.4b] Section 8.3.2
+    HdrStaticMetadataDataBlock,       // [CTA-861-I] Section 7.5.13
+    VideoCapabilityDataBlock,         // [CTA-861-I] Section 7.5.6
     ColorimetryDataBlock              // [CTA-861-I] Section 7.5.5
   >;
   using DataBlockCollection = std::vector<CtaDataBlock>;

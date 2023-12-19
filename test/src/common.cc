@@ -48,14 +48,9 @@ Cta861Block make_cta861_ext() {
   cta861.ycbcr_444 = true;
   cta861.ycbcr_422 = true;
 
-  VideoDataBlock video_data_block;
-  video_data_block.vics[0] = 16;
-  video_data_block.vics[1] = 4;
-  video_data_block.vics[2] = 31;
-  video_data_block.vics[3] = 19;
-  video_data_block.vics[4] = 2;
-  video_data_block.vics[5] = 18;
-  video_data_block.vics[6] = 1;
+  VideoDataBlock video_data_block = {
+    {16, 4, 31, 19, 2, 18, 1}
+  };
   cta861.data_block_collection.push_back(video_data_block);
 
   ShortAudioDescriptor sad;
@@ -67,7 +62,7 @@ Cta861Block make_cta861_ext() {
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
 
   AudioDataBlock audio_data_block;
-  audio_data_block.sads[0] = sad;
+  audio_data_block.sads.push_back(sad);
   cta861.data_block_collection.push_back(audio_data_block);
 
   cta861.detailed_timing_descriptors.push_back(DetailedTimingDescriptor{

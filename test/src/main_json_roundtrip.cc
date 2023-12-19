@@ -2,6 +2,7 @@
 
 #include "edid/edid.hh"
 #include "edid/json.hh"
+#include "edid/json_schemas.hh"
 
 #include <fstream>
 #include <iostream>
@@ -9,12 +10,21 @@
 #include <strstream>
 
 #include <nlohmann/json.hpp>
+#include <nlohmann/json-schema.hpp>
 
 #include <gtest/gtest.h>
 
 using namespace Edid;
 
 static std::vector<std::string> edid_files = {};
+
+void validate_edid_json(const nlohmann::json& j) {
+  nlohmann::json_schema::json_validator validator{
+    Edid::json_schemas::schemas.at(nlohmann::json_uri{"edid.json"}),
+    Edid::json_schemas::schema_loader
+  };
+  validator.validate(j);
+}
 
 class EdidRoundtripTest : public testing::TestWithParam<std::string> {};
 
@@ -24,6 +34,8 @@ TEST_P(EdidRoundtripTest, EdidRoundtrip) {
   const nlohmann::json j = Edid::parse_edid_binary(edid_binary);
   const EdidData generated_edid_data = j;
   auto generated_edid_binary = Edid::generate_edid_binary(generated_edid_data);
+  validate_edid_json(j);
+
   EXPECT_EQ(edid_binary, generated_edid_binary);
 }
 

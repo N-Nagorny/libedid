@@ -1,4 +1,5 @@
 // Copyright 2023 N-Nagorny
+
 #pragma once
 
 #include <map>
@@ -31,11 +32,13 @@ namespace Edid {
       extern const char* colorimetry_data_block;
       extern const char* cta861_block;
       extern const char* hdmi_vsdb;
+      extern const char* hdr_static_metadata_data_block;
       extern const char* speaker_allocation_data_block;
       extern const char* unknown_data_block;
+      extern const char* video_capability_data_block;
       extern const char* video_data_block;
       extern const char* ycbcr420_capability_map_data_block;
-    }
+    }  // namespace cta861_block
 
     static const std::map<json_uri, json> schemas = {
       { json_uri{"base_block.json"}, json::parse(base_block::base_block) },
@@ -51,8 +54,10 @@ namespace Edid {
       { json_uri{"colorimetry_data_block.json"}, json::parse(cta861_block::colorimetry_data_block) },
       { json_uri{"cta861_block.json"}, json::parse(cta861_block::cta861_block) },
       { json_uri{"hdmi_vsdb.json"}, json::parse(cta861_block::hdmi_vsdb) },
+      { json_uri{"hdr_static_metadata_data_block.json"}, json::parse(cta861_block::hdr_static_metadata_data_block) },
       { json_uri{"speaker_allocation_data_block.json"}, json::parse(cta861_block::speaker_allocation_data_block) },
       { json_uri{"unknown_data_block.json"}, json::parse(cta861_block::unknown_data_block) },
+      { json_uri{"video_capability_data_block.json"}, json::parse(cta861_block::video_capability_data_block) },
       { json_uri{"video_data_block.json"}, json::parse(cta861_block::video_data_block) },
       { json_uri{"ycbcr420_capability_map_data_block.json"}, json::parse(cta861_block::ycbcr420_capability_map_data_block) },
     };

@@ -177,7 +177,7 @@ namespace Edid {
   TIED_COMPARISONS(HdmiVideoSubblock, FIELDS)
 #undef FIELDS
 
-  struct HdmiVendorDataBlock {
+  struct HdmiVendorDataBlock : ICtaDataBlock {
     std::array<uint8_t, 4> source_phy_addr;
     std::optional<HdmiVendorDataBlockCapabilities> capabilities;
     std::optional<uint16_t> max_tmds_clock_mhz;  // Max is 1280 MHz
@@ -186,13 +186,35 @@ namespace Edid {
     std::optional<std::pair<uint8_t, uint8_t>> interlaced_latency;
     std::optional<HdmiVideoSubblock> hdmi_video;
 
-    size_t size() const {
+    HdmiVendorDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    HdmiVendorDataBlock(
+      const std::array<uint8_t, 4>& source_phy_addr,
+      const std::optional<HdmiVendorDataBlockCapabilities>& capabilities = std::nullopt,
+      const std::optional<uint16_t>& max_tmds_clock_mhz = std::nullopt,
+      ContentTypes content_types = 0,
+      const std::optional<std::pair<uint8_t, uint8_t>>& latency = std::nullopt,
+      const std::optional<std::pair<uint8_t, uint8_t>>& interlaced_latency = std::nullopt,
+      const std::optional<HdmiVideoSubblock>& hdmi_video = std::nullopt
+    )
+      : source_phy_addr(source_phy_addr)
+      , capabilities(capabilities)
+      , max_tmds_clock_mhz(max_tmds_clock_mhz)
+      , content_types(content_types)
+      , latency(latency)
+      , interlaced_latency(interlaced_latency)
+      , hdmi_video(hdmi_video)
+    {}
+
+    size_t size() const override {
       return CTA861_DATA_BLOCK_HEADER_SIZE +
         IEEE_OUI_SIZE +
         payload_size();
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(
         CTA861_VENDOR_DATA_BLOCK_TAG,
         hdmi_oui_little_endian
@@ -267,8 +289,8 @@ namespace Edid {
       return result;
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static HdmiVendorDataBlock parse_byte_block(const uint8_t* start) {
       HdmiVendorDataBlock result;

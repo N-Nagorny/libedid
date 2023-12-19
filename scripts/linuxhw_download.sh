@@ -13,6 +13,7 @@ function download_edid_db {
 
 function decoded_to_binary {
   local INDEX_PATH="${1}"
+  # IGNORE contains EDID read failures
   local IGNORE=(
     "Digital/Apple/APPAE22/F1F2AA8940D8"
     "Digital/Apple/APPAE22/89635EDE05B1"

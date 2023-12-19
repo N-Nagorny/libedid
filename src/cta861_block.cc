@@ -105,6 +105,12 @@ namespace Edid {
       case CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(ColorimetryDataBlock::parse_byte_block(iter_read)));
         break;
+      case CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG:
+        data_block_ptr = std::make_unique<CtaDataBlock>(std::move(HdrStaticMetadataDataBlock::parse_byte_block(iter_read)));
+        break;
+      case CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG:
+        data_block_ptr = std::make_unique<CtaDataBlock>(std::move(VideoCapabilityDataBlock::parse_byte_block(iter_read)));
+        break;
       default:
         data_block_ptr = std::make_unique<CtaDataBlock>(std::move(UnknownDataBlock::parse_byte_block(iter_read)));
     }
@@ -192,7 +198,8 @@ namespace Edid {
         pos = dtd_start_pos;
       }
 
-      while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
+      // While not Beginning of Padding or Checksum (Table 60)
+      while (cta861[pos] != 0 && cta861[pos + 1] != 0 && pos + 1 < EDID_BLOCK_SIZE - 1) {
         result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(cta861.begin() + pos));
         pos += EIGHTEEN_BYTES;
       }

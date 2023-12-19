@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Video Capability Data Block (CTA-861-I Section 7.5.6)",
+  "additionalProperties": false,
+  "required": [
+    "is_ycc_quantization_range_selectable",
+    "is_rgb_quantization_range_selectable",
+    "pt_scan_behaviour",
+    "it_scan_behaviour",
+    "ce_scan_behaviour"
+  ],
+  "properties": {
+    "is_ycc_quantization_range_selectable": {
+      "type": "boolean"
+    },
+    "is_rgb_quantization_range_selectable": {
+      "type": "boolean"
+    },
+    "pt_scan_behaviour": {
+      "type": "string",
+      "enum": [
+        "no_data",
+        "always_overscanned",
+        "always_underscanned",
+        "supports_over_and_underscan"
+      ]
+    },
+    "it_scan_behaviour": {
+      "type": "string",
+      "enum": [
+        "no_data",
+        "always_overscanned",
+        "always_underscanned",
+        "supports_over_and_underscan"
+      ]
+    },
+    "ce_scan_behaviour": {
+      "type": "string",
+      "enum": [
+        "no_data",
+        "always_overscanned",
+        "always_underscanned",
+        "supports_over_and_underscan"
+      ]
+    }
+  }
+}

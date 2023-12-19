@@ -109,21 +109,6 @@ namespace Edid {
     }
   }
 
-  void from_json(const nlohmann::json& j, VideoDataBlock& result) {
-    auto vics = j.at("vics").get<std::vector<uint8_t>>();
-    for (int i = 0; i < vics.size(); ++i) {
-      result.vics[i] = vics.at(i);
-    }
-  }
-
-  void to_json(nlohmann::json& j, const VideoDataBlock& block) {
-    for (const auto& vic : block.vics) {
-      if (vic.has_value()) {
-        j["vics"].push_back(vic.value());
-      }
-    }
-  }
-
   void from_json(const nlohmann::json& j, SpeakerAllocationDataBlock& result) {
     auto speakers = j.at("speaker_allocation").get<std::vector<Speaker>>();
     for (auto speaker : speakers) {
@@ -172,19 +157,38 @@ namespace Edid {
     }
   }
 
-  void from_json(const nlohmann::json& j, UnknownDataBlock& result) {
-    result.raw_data = j.at("raw_data").get<std::vector<uint8_t>>();
-    result.data_block_tag = j.at("tag");
-    if (j.contains("extended_tag")) {
-      result.extended_tag = j.at("extended_tag").get<uint8_t>();
+  void from_json(const nlohmann::json& j, HdrStaticMetadataDataBlock& result) {
+    const auto tfs = j.at("transfer_functions").get<std::vector<ElectroOpticalTransferFunction>>();
+    const auto md_types = j.at("static_metadata_types").get<std::vector<StaticMetadataType>>();
+
+    for (const auto& tf : tfs) {
+      result.transfer_functions |= tf;
     }
+    for (const auto& type : md_types) {
+      result.static_metadata_types |= type;
+    }
+
+    result.max_luminance_code_value = j.at("max_luminance_code_value").get<std::optional<uint8_t>>();
+    result.max_frame_average_luminance_code_value = j.at("max_frame_average_luminance_code_value").get<std::optional<uint8_t>>();
+    result.min_luminance_code_value = j.at("min_luminance_code_value").get<std::optional<uint8_t>>();
   }
 
-  void to_json(nlohmann::json& j, const UnknownDataBlock& block) {
-    j["raw_data"] = block.raw_data;
-    j["tag"] = block.data_block_tag;
-    if (block.extended_tag.has_value())
-      j["extended_tag"] = block.extended_tag.value();
+  void to_json(nlohmann::json& j, const HdrStaticMetadataDataBlock& block) {
+    j = {
+      {"transfer_functions",   nlohmann::json::array()},
+      {"static_metadata_types", nlohmann::json::array()}
+    };
+
+    for (ElectroOpticalTransferFunction tf : bitfield_to_enums<ElectroOpticalTransferFunction>(block.transfer_functions)) {
+      j["transfer_functions"].push_back(to_string(tf));
+    }
+    for (StaticMetadataType type : bitfield_to_enums<StaticMetadataType>(block.static_metadata_types)) {
+      j["static_metadata_types"].push_back(to_string(type));
+    }
+
+    j["max_luminance_code_value"] = block.max_luminance_code_value;
+    j["max_frame_average_luminance_code_value"] = block.max_frame_average_luminance_code_value;
+    j["min_luminance_code_value"] = block.min_luminance_code_value;
   }
 
   void from_json(const nlohmann::json& j, ShortAudioDescriptor& result) {
@@ -228,21 +232,6 @@ namespace Edid {
         case LPCM_BD_16:
           j["lpcm_bit_depths"].push_back(16);
           break;
-      }
-    }
-  }
-
-  void from_json(const nlohmann::json& j, AudioDataBlock& result) {
-    auto sads = j.at("sads").get<std::vector<ShortAudioDescriptor>>();
-    for (int i = 0; i < sads.size(); ++i) {
-      result.sads[i] = sads.at(i);
-    }
-  }
-
-  void to_json(nlohmann::json& j, const AudioDataBlock& block) {
-    for (const auto& sad : block.sads) {
-      if (sad.has_value()) {
-        j["sads"].push_back(sad.value());
       }
     }
   }
@@ -445,6 +434,16 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
+    else if (j.contains("static_metadata_types")) {
+      HdrStaticMetadataDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
+    else if (j.contains("is_ycc_quantization_range_selectable")) {
+      VideoCapabilityDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
     else if (j.contains("hdmi_vsdb")) {
       HdmiVendorDataBlock subresult;
       from_json(j, subresult);
@@ -603,14 +602,16 @@ namespace Edid {
     j["vic_3d_support"] = block.vic_3d_support;
   }
 
-  void from_json(const nlohmann::json& j, HdmiVendorDataBlock& result) {
+  void from_json(const nlohmann::json& j_, HdmiVendorDataBlock& result) {
+    const nlohmann::json& j = j_.at("hdmi_vsdb");
+
     const auto source_phy_addr = j.at("source_phy_addr").get<std::vector<uint8_t>>();
     for (int i = 0; i < 4; ++i) {
       result.source_phy_addr[i] = source_phy_addr[i];
     }
     if (j.contains("capabilities")) {
-      const auto caps = j.at("capabilities").get<std::vector<HdmiVendorDataBlockCapabilities>>();
-      result.capabilities = std::accumulate(caps.begin(), caps.end(), ENUM_NULL, [](HdmiVendorDataBlockCapabilities result, HdmiVendorDataBlockCapabilities cap) {
+      const auto caps = j.at("capabilities").get<std::vector<HdmiVendorDataBlockByte6Flags>>();
+      result.capabilities = std::accumulate(caps.begin(), caps.end(), ENUM_NULL, [](uint8_t result, uint8_t cap) {
         return result |= cap;
       });
     }
@@ -633,7 +634,9 @@ namespace Edid {
   }
 
   void to_json(nlohmann::json& j_, const HdmiVendorDataBlock& block) {
-    nlohmann::json j;
+    nlohmann::json j{
+      {"content_types",   nlohmann::json::array()}
+    };
 
     j["source_phy_addr"] = block.source_phy_addr;
     if (block.capabilities.has_value()) {

@@ -20,7 +20,9 @@
 #define CTA861_VESA_DISPLAY_TRANSFER_DATA_BLOCK_TAG 0b101
 #define CTA861_EXTENDED_TAG 0b111
 
+#define CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG              0x00
 #define CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG                   0x05
+#define CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG           0x06
 #define CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG  0x0F
 
 #define CTA861_SPEAKERS_DATA_BLOCK_LENGTH 3
@@ -67,25 +69,47 @@ namespace Edid {
     );
   };
 
+  struct ICtaDataBlock {
+    virtual ~ICtaDataBlock() = default;
 
-  struct UnknownDataBlock {
+    virtual CtaDataBlockType type() const = 0;
+    virtual std::vector<uint8_t> generate_byte_block() const = 0;
+    virtual void print(std::ostream& os, uint8_t tabs = 1) const = 0;
+    virtual size_t size() const = 0;
+  };
+
+  struct UnknownDataBlock : ICtaDataBlock {
     std::vector<uint8_t> raw_data;
     uint8_t data_block_tag;
     std::optional<uint8_t> extended_tag;
 
-    CtaDataBlockType type() const {
+    UnknownDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    UnknownDataBlock(
+      const std::vector<uint8_t>& raw_data,
+      uint8_t data_block_tag,
+      const std::optional<uint8_t>& extended_tag = std::nullopt
+    )
+      : raw_data(raw_data)
+      , data_block_tag(data_block_tag)
+      , extended_tag(extended_tag)
+    {}
+
+    CtaDataBlockType type() const override {
       if (extended_tag.has_value()) {
         return CtaDataBlockType(data_block_tag, extended_tag.value());
       }
       return CtaDataBlockType(data_block_tag);
     }
 
-    size_t size() const {
+    size_t size() const override {
       return raw_data.size() + CTA861_DATA_BLOCK_HEADER_SIZE + (extended_tag.has_value() ? CTA861_EXTENDED_TAG_SIZE : 0);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static UnknownDataBlock parse_byte_block(const uint8_t* start) {
       UnknownDataBlock result;
@@ -108,40 +132,38 @@ namespace Edid {
   TIED_COMPARISONS(UnknownDataBlock, FIELDS)
 #undef FIELDS
 
-  struct VideoDataBlock {
-    std::array<std::optional<uint8_t>, 31> vics;
+  struct VideoDataBlock : ICtaDataBlock {
+    std::vector<uint8_t> vics;
 
-    uint8_t valid_vics() const {
-      uint8_t result = 0;
-      for (const auto& vic : vics)
-        if (vic.has_value())
-          ++result;
-      return result;
+    VideoDataBlock() = default;
+
+    VideoDataBlock(
+      const std::vector<uint8_t>& vics
+    )
+      : vics(vics)
+    {}
+
+    size_t size() const override {
+      return vics.size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    size_t size() const {
-      return valid_vics() * sizeof(uint8_t) + CTA861_DATA_BLOCK_HEADER_SIZE;
-    }
-
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_VIDEO_DATA_BLOCK_TAG);
     }
 
     uint8_t native_vics() const {
       uint8_t result = 0;
-      for (const auto& vic : vics)
-        if (vic.has_value())
-          if (vic.value() >= 129 && vic.value() <= 192)
-            ++result;
+      for (uint8_t vic : vics)
+        if (vic >= 129 && vic <= 192)
+          ++result;
       return result;
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static VideoDataBlock parse_byte_block(const uint8_t* start) {
       VideoDataBlock result;
-      int pos = 0;
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       if (data_block_tag != CTA861_VIDEO_DATA_BLOCK_TAG)
@@ -149,10 +171,11 @@ namespace Edid {
           std::to_string(data_block_tag)
         );
 
-      int vics = *start & BITMASK_TRUE(5);
+      const size_t vics = *start & BITMASK_TRUE(5);
 
-      for (int i = 0; i < vics; ++i) {
-        result.vics[i] = *(start + ++pos);
+      if (vics > 0) {
+        result.vics.resize(vics, 0x0);
+        std::copy(start + 1, start + 1 + vics, result.vics.data());
       }
 
       return result;
@@ -276,27 +299,19 @@ namespace Edid {
   TIED_COMPARISONS(ShortAudioDescriptor, FIELDS)
 #undef FIELDS
 
-  struct AudioDataBlock {
-    std::array<std::optional<ShortAudioDescriptor>, 10> sads;
+  struct AudioDataBlock : ICtaDataBlock {
+    std::vector<ShortAudioDescriptor> sads;
 
-    uint8_t valid_sads() const {
-      uint8_t result = 0;
-      for (const auto& sad : sads)
-        if (sad.has_value())
-          ++result;
-      return result;
+    size_t size() const override {
+      return sads.size() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    size_t size() const {
-      return valid_sads() * ShortAudioDescriptor::size() + CTA861_DATA_BLOCK_HEADER_SIZE;
-    }
-
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_AUDIO_DATA_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static AudioDataBlock parse_byte_block(const uint8_t* start) {
       AudioDataBlock result;
@@ -304,17 +319,20 @@ namespace Edid {
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       if (data_block_tag != CTA861_AUDIO_DATA_BLOCK_TAG)
-        throw EdidException(__FUNCTION__, "Audio Data Block has incorrect header: " +
-          std::to_string(data_block_tag));
+        throw EdidException(__FUNCTION__, "Audio Data Block has incorrect Data Block Tag: " +
+          std::to_string(data_block_tag)
+        );
 
       int sads = *start & BITMASK_TRUE(5);
 
       if (sads % ShortAudioDescriptor::size() != 0)
-        throw EdidException(__FUNCTION__, "Audio Data Block has size which is not"
+        throw EdidException(__FUNCTION__, "Audio Data Block has size which is not "
           "a factor of " + std::to_string(ShortAudioDescriptor::size()) +
           ": " + std::to_string(sads));
       else
         sads /= ShortAudioDescriptor::size();
+
+      result.sads.resize(sads);
 
       for (int i = 0; i < sads; ++i) {
         ShortAudioDescriptor sad;
@@ -357,19 +375,19 @@ namespace Edid {
 
   using SpeakerAllocation = uint8_t;
 
-  struct SpeakerAllocationDataBlock {
+  struct SpeakerAllocationDataBlock : ICtaDataBlock {
     SpeakerAllocation speaker_allocation = 0;
 
-    size_t size() const {
+    size_t size() const override {
       return CTA861_SPEAKERS_DATA_BLOCK_LENGTH + CTA861_DATA_BLOCK_HEADER_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_SPEAKERS_DATA_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static SpeakerAllocationDataBlock parse_byte_block(const uint8_t* start) {
       SpeakerAllocationDataBlock result;
@@ -377,8 +395,9 @@ namespace Edid {
 
       int data_block_tag = *start >> 5 & BITMASK_TRUE(3);
       if (data_block_tag != CTA861_SPEAKERS_DATA_BLOCK_TAG)
-        throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has incorrect header: " +
-          std::to_string(data_block_tag));
+        throw EdidException(__FUNCTION__, "Speaker Allocation Data Block has incorrect Data Block Tag: " +
+          std::to_string(data_block_tag)
+        );
 
       int data_block_size = *start & BITMASK_TRUE(5);
 
@@ -396,10 +415,10 @@ namespace Edid {
   TIED_COMPARISONS(SpeakerAllocationDataBlock, FIELDS)
 #undef FIELDS
 
-  struct YCbCr420CapabilityMapDataBlock {
+  struct YCbCr420CapabilityMapDataBlock : ICtaDataBlock {
     std::set<uint8_t> svd_indices;
 
-    size_t size() const {
+    size_t size() const override {
       if (!svd_indices.size())
         return CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
       auto last_element = svd_indices.rbegin();
@@ -407,12 +426,12 @@ namespace Edid {
       return bytes + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static YCbCr420CapabilityMapDataBlock parse_byte_block(const uint8_t* start) {
       YCbCr420CapabilityMapDataBlock result;
@@ -449,6 +468,8 @@ namespace Edid {
 #define FIELDS(X) X.svd_indices
   TIED_COMPARISONS(YCbCr420CapabilityMapDataBlock, FIELDS)
 #undef FIELDS
+
+  // ---------- CTA-861-I Section 7.5.5 ----------
 
   enum ColorimetryStandard {
     CS_XV_YCC601   = 1 << 0,
@@ -495,22 +516,33 @@ namespace Edid {
     {GMP_3, "MD3"},
   })
 
-  // CTA-861-I Section 7.5.5
-  struct ColorimetryDataBlock {
+  struct ColorimetryDataBlock : ICtaDataBlock {
     uint16_t colorimetry_standards = 0;
     uint8_t gamut_metadata_profiles = 0;
 
-    size_t size() const {
+    ColorimetryDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    ColorimetryDataBlock(
+      uint16_t colorimetry_standards,
+      uint8_t gamut_metadata_profiles
+    )
+      : colorimetry_standards(colorimetry_standards)
+      , gamut_metadata_profiles(gamut_metadata_profiles)
+    {}
+
+    size_t size() const override {
       const size_t payload_size = 2;
       return payload_size + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
     }
 
-    CtaDataBlockType type() const {
+    CtaDataBlockType type() const override {
       return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG);
     }
 
-    std::vector<uint8_t> generate_byte_block() const;
-    void print(std::ostream& os, uint8_t tabs = 1) const;
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
 
     static ColorimetryDataBlock parse_byte_block(const uint8_t* iter) {
       ColorimetryDataBlock result;
@@ -537,5 +569,160 @@ namespace Edid {
 
 #define FIELDS(X) X.colorimetry_standards, X.gamut_metadata_profiles
   TIED_COMPARISONS(ColorimetryDataBlock, FIELDS)
+#undef FIELDS
+
+  // ---------- CTA-861-I Section 7.5.13 ----------
+
+  enum ElectroOpticalTransferFunction {
+    TF_SDR = 1 << 0,
+    TF_HDR = 1 << 1,
+    TF_PQ  = 1 << 2,
+    TF_HLG = 1 << 3,
+    TF_4   = 1 << 4,
+    TF_5   = 1 << 5,
+  };
+
+  STRINGIFY_ENUM(ElectroOpticalTransferFunction, {
+    {TF_SDR, "SDR"},
+    {TF_HDR, "HDR"},
+    {TF_PQ,  "PQ"},
+    {TF_HLG, "HLG"},
+    {TF_4,   "TF_4"},
+    {TF_5,   "TF_5"}
+  })
+
+  enum StaticMetadataType {
+    SM_TYPE_1 = 1 << 0,
+    SM_1      = 1 << 1,
+    SM_2      = 1 << 2,
+    SM_3      = 1 << 3,
+    SM_4      = 1 << 4,
+    SM_5      = 1 << 5,
+    SM_6      = 1 << 6,
+    SM_7      = 1 << 7,
+  };
+
+  STRINGIFY_ENUM(StaticMetadataType, {
+    {SM_TYPE_1, "StaticMetadataType1"},
+    {SM_1,      "SM_1"},
+    {SM_2,      "SM_2"},
+    {SM_3,      "SM_3"},
+    {SM_4,      "SM_4"},
+    {SM_5,      "SM_5"},
+    {SM_6,      "SM_6"},
+    {SM_7,      "SM_7"}
+  })
+
+  struct HdrStaticMetadataDataBlock : ICtaDataBlock {
+    uint8_t transfer_functions = 0;
+    uint8_t static_metadata_types = 0;
+    std::optional<uint8_t> max_luminance_code_value;
+    std::optional<uint8_t> max_frame_average_luminance_code_value;
+    std::optional<uint8_t> min_luminance_code_value;
+
+    HdrStaticMetadataDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    HdrStaticMetadataDataBlock(
+      uint8_t transfer_functions,
+      uint8_t static_metadata_types,
+      const std::optional<uint8_t>& max_luminance_code_value = std::nullopt,
+      const std::optional<uint8_t>& max_frame_average_luminance_code_value = std::nullopt,
+      const std::optional<uint8_t>& min_luminance_code_value = std::nullopt
+    )
+      : transfer_functions(transfer_functions)
+      , static_metadata_types(static_metadata_types)
+      , max_luminance_code_value(max_luminance_code_value)
+      , max_frame_average_luminance_code_value(max_frame_average_luminance_code_value)
+      , min_luminance_code_value(min_luminance_code_value)
+    {}
+
+    size_t size() const override {
+      size_t payload_size = 2;
+      if (min_luminance_code_value.has_value()) {
+        payload_size += 3;
+      }
+      else if (max_frame_average_luminance_code_value.has_value()) {
+        payload_size += 2;
+      }
+      else if (max_luminance_code_value.has_value()) {
+        payload_size += 1;
+      }
+      return payload_size + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+    }
+
+    CtaDataBlockType type() const override {
+      return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG);
+    }
+
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
+    static HdrStaticMetadataDataBlock parse_byte_block(const uint8_t* iter);
+  };
+
+#define FIELDS(X) X.transfer_functions, X.static_metadata_types, \
+                  X.max_luminance_code_value, X.max_frame_average_luminance_code_value, \
+                  X.min_luminance_code_value
+  TIED_COMPARISONS(HdrStaticMetadataDataBlock, FIELDS)
+#undef FIELDS
+
+  // ---------- CTA-861-I Section 7.5.6 ----------
+
+  enum OverUnderscanSupport {
+    OUB_NO_DATA = 0b00,
+    OUB_OVER    = 0b01,
+    OUB_UNDER   = 0b10,
+    OUB_BOTH    = 0b11
+  };
+
+  STRINGIFY_ENUM(OverUnderscanSupport, {
+    {OUB_NO_DATA, "no_data"},
+    {OUB_OVER,    "always_overscanned"},
+    {OUB_UNDER,   "always_underscanned"},
+    {OUB_BOTH,    "supports_over_and_underscan"}
+  })
+
+  struct VideoCapabilityDataBlock : ICtaDataBlock {
+    bool is_ycc_quantization_range_selectable = false;
+    bool is_rgb_quantization_range_selectable = true;
+    OverUnderscanSupport pt_scan_behaviour = OUB_NO_DATA;  // Preferred Timings
+    OverUnderscanSupport it_scan_behaviour = OUB_NO_DATA;  // Information Technologies
+    OverUnderscanSupport ce_scan_behaviour = OUB_NO_DATA;  // Consumer Electronics
+
+    VideoCapabilityDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    VideoCapabilityDataBlock(
+      bool is_ycc_quantization_range_selectable,
+      bool is_rgb_quantization_range_selectable,
+      OverUnderscanSupport pt_scan_behaviour,
+      OverUnderscanSupport it_scan_behaviour,
+      OverUnderscanSupport ce_scan_behaviour
+    )
+      : is_ycc_quantization_range_selectable(is_ycc_quantization_range_selectable)
+      , is_rgb_quantization_range_selectable(is_rgb_quantization_range_selectable)
+      , pt_scan_behaviour(pt_scan_behaviour)
+      , it_scan_behaviour(it_scan_behaviour)
+      , ce_scan_behaviour(ce_scan_behaviour)
+    {}
+
+    constexpr size_t size() const override {
+      return 1 + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+    }
+
+    CtaDataBlockType type() const override {
+      return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG);
+    }
+
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
+    static VideoCapabilityDataBlock parse_byte_block(const uint8_t* iter);
+  };
+
+#define FIELDS(X) X.is_ycc_quantization_range_selectable, X.is_rgb_quantization_range_selectable, \
+                  X.pt_scan_behaviour, X.it_scan_behaviour, X.ce_scan_behaviour
+  TIED_COMPARISONS(VideoCapabilityDataBlock, FIELDS)
 #undef FIELDS
 }  // namespace Edid

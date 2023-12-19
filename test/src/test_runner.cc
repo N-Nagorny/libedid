@@ -181,16 +181,13 @@ TEST(CommonRoundtrips, DetailedTimingDescriptor) {
 }
 
 TEST(CommonRoundtrips, VideoDataBlock) {
-  VideoDataBlock video_data_block;
-  video_data_block.vics[0] = 16;
-  video_data_block.vics[1] = 4;
-  video_data_block.vics[2] = 31;
-  video_data_block.vics[3] = 19;
-  video_data_block.vics[4] = 2;
-  video_data_block.vics[5] = 18;
-  video_data_block.vics[6] = 1;
+  VideoDataBlock video_data_block = {
+    {16, 4, 31, 19, 2, 18, 1}
+  };
   std::vector<uint8_t> vdb_binary = video_data_block.generate_byte_block();
-  EXPECT_EQ(video_data_block, VideoDataBlock::parse_byte_block(vdb_binary.data()));
+  const auto vdb_parsed = VideoDataBlock::parse_byte_block(vdb_binary.data());
+  EXPECT_EQ(video_data_block.vics, vdb_parsed.vics);
+  EXPECT_EQ(video_data_block, vdb_parsed);
 }
 
 TEST(CommonRoundtrips, AudioDataBlock) {
@@ -202,7 +199,7 @@ TEST(CommonRoundtrips, AudioDataBlock) {
   sad.sampling_freqs |= SamplingFrequence::SF_32;
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
   AudioDataBlock audio_data_block;
-  audio_data_block.sads[0] = sad;
+  audio_data_block.sads.push_back(sad);
   std::vector<uint8_t> adb_binary = audio_data_block.generate_byte_block();
   EXPECT_EQ(audio_data_block, AudioDataBlock::parse_byte_block(adb_binary.data()));
 }
@@ -219,14 +216,9 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
     0x01, 0x78, 0xc0, 0x00, 0x65, 0x03, 0x0c, 0x00, 0x20, 0x00
   };
 
-  VideoDataBlock video_data_block;
-  video_data_block.vics[0] = 16;
-  video_data_block.vics[1] = 4;
-  video_data_block.vics[2] = 31;
-  video_data_block.vics[3] = 19;
-  video_data_block.vics[4] = 2;
-  video_data_block.vics[5] = 18;
-  video_data_block.vics[6] = 1;
+  VideoDataBlock video_data_block = {
+    {16, 4, 31, 19, 2, 18, 1}
+  };
 
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
@@ -237,7 +229,7 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
 
   AudioDataBlock audio_data_block;
-  audio_data_block.sads[0] = sad;
+  audio_data_block.sads.push_back(sad);
 
   UnknownDataBlock unknown_block_1{
     std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00},
@@ -261,14 +253,9 @@ TEST(DataBlockCollection, DataBlockCollectionGenerating) {
 }
 
 TEST(DataBlockCollection, Roundtrip) {
-  VideoDataBlock video_data_block;
-  video_data_block.vics[0] = 16;
-  video_data_block.vics[1] = 4;
-  video_data_block.vics[2] = 31;
-  video_data_block.vics[3] = 19;
-  video_data_block.vics[4] = 2;
-  video_data_block.vics[5] = 18;
-  video_data_block.vics[6] = 1;
+  VideoDataBlock video_data_block = {
+    {16, 4, 31, 19, 2, 18, 1}
+  };
 
   ShortAudioDescriptor sad;
   sad.audio_format = AudioFormatCode::LPCM;
@@ -279,7 +266,7 @@ TEST(DataBlockCollection, Roundtrip) {
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_16;
 
   AudioDataBlock audio_data_block;
-  audio_data_block.sads[0] = sad;
+  audio_data_block.sads.push_back(sad);
 
   UnknownDataBlock unknown_block_1{
     std::vector<uint8_t>{0xd8, 0x5d, 0xc4, 0x01, 0x78, 0xc0, 0x00},
@@ -343,8 +330,9 @@ TEST(ForEachModeTests, DeleteModesFromCta861) {
   auto iter = std::find_if(cta861_before.data_block_collection.begin(), cta861_before.data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
   });
-  auto& video_data_block_before = std::get<VideoDataBlock>(*iter);
-  video_data_block_before.vics[7] = 225;
+  *iter = VideoDataBlock{
+    {16, 4, 31, 19, 2, 18, 1, 225}
+  };
 
   remove_mode_if(cta861_before, [](const VideoTimingMode& mode) {
     return mode.v_res == 600 || mode.v_res == 1080;
@@ -354,10 +342,9 @@ TEST(ForEachModeTests, DeleteModesFromCta861) {
   iter = std::find_if(cta861_after.data_block_collection.begin(), cta861_after.data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
   });
-  auto& video_data_block = std::get<VideoDataBlock>(*iter);
-  video_data_block.vics[0] = std::nullopt;
-  video_data_block.vics[2] = std::nullopt;
-  video_data_block.vics[7] = 225;
+  *iter = VideoDataBlock{
+    {4, 19, 2, 18, 1, 225}
+  };
   cta861_after.detailed_timing_descriptors = {};
 
   EXPECT_EQ(cta861_before, cta861_after);
@@ -365,7 +352,9 @@ TEST(ForEachModeTests, DeleteModesFromCta861) {
 
 TEST(ForEachModeTests, DeleteModesFromHdmiVsdb) {
   Cta861Block cta861_before = make_cta861_ext();
-  HdmiVendorDataBlock block_before{1, 0, 0, 0};
+  HdmiVendorDataBlock block_before{
+    {1, 0, 0, 0}
+  };
   block_before.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, {1, 2, 3, 4}};
   cta861_before.data_block_collection.push_back(block_before);
 
@@ -374,7 +363,9 @@ TEST(ForEachModeTests, DeleteModesFromHdmiVsdb) {
   });
 
   Cta861Block cta861_after = make_cta861_ext();
-  HdmiVendorDataBlock block_after{1, 0, 0, 0};
+  HdmiVendorDataBlock block_after{
+    {1, 0, 0, 0}
+  };
   block_after.hdmi_video = HdmiVideoSubblock{ISM_NO_INFO, { 4}};
   cta861_after.data_block_collection.push_back(block_after);
 
@@ -387,8 +378,9 @@ TEST(ForEachModeTests, DeleteModesFromCta861IncludingUnknown) {
   auto iter = std::find_if(cta861_before.data_block_collection.begin(), cta861_before.data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
   });
-  auto& video_data_block_before = std::get<VideoDataBlock>(*iter);
-  video_data_block_before.vics[7] = 225;
+  *iter = VideoDataBlock{
+    {16, 4, 31, 19, 2, 18, 1, 225}
+  };
 
   remove_mode_if(cta861_before, [](const VideoTimingMode& mode) {
     return mode.v_res == 600 || mode.v_res == 1080;
@@ -398,10 +390,9 @@ TEST(ForEachModeTests, DeleteModesFromCta861IncludingUnknown) {
   iter = std::find_if(cta861_after.data_block_collection.begin(), cta861_after.data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
   });
-  auto& video_data_block = std::get<VideoDataBlock>(*iter);
-  video_data_block.vics[0] = std::nullopt;
-  video_data_block.vics[2] = std::nullopt;
-  video_data_block.vics[7] = std::nullopt;
+  *iter = VideoDataBlock{
+    {4, 19, 2, 18, 1}
+  };
   cta861_after.detailed_timing_descriptors = {};
 
   EXPECT_EQ(cta861_before, cta861_after);
@@ -426,9 +417,9 @@ TEST(ForEachModeTests, DeleteModesFromOverallEdid) {
   auto iter = std::find_if(edid_after.extension_blocks->at(0).data_block_collection.begin(), edid_after.extension_blocks->at(0).data_block_collection.end(), [](const auto& data_block){
     return std::visit(is_vdb_visitor, data_block);
   });
-  auto& video_data_block = std::get<VideoDataBlock>(*iter);
-  video_data_block.vics[0] = std::nullopt;
-  video_data_block.vics[2] = std::nullopt;
+  *iter = VideoDataBlock{
+    {4, 19, 2, 18, 1}
+  };
   edid_after.extension_blocks->at(0).detailed_timing_descriptors = {};
   EXPECT_EQ(edid_before, edid_after);
 }
@@ -507,23 +498,9 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   cta861.ycbcr_444 = true;
   cta861.ycbcr_422 = true;
 
-  VideoDataBlock video_data_block;
-  video_data_block.vics[0] = 144;
-  video_data_block.vics[1] = 5;
-  video_data_block.vics[2] = 4;
-  video_data_block.vics[3] = 3;
-  video_data_block.vics[4] = 2;
-  video_data_block.vics[5] = 1;
-  video_data_block.vics[6] = 17;
-  video_data_block.vics[7] = 18;
-  video_data_block.vics[8] = 19;
-  video_data_block.vics[9] = 20;
-  video_data_block.vics[10] = 6;
-  video_data_block.vics[11] = 7;
-  video_data_block.vics[12] = 21;
-  video_data_block.vics[13] = 22;
-  video_data_block.vics[14] = 31;
-  video_data_block.vics[15] = 32;
+  VideoDataBlock video_data_block = {
+    {144, 5, 4, 3, 2, 1, 17, 18, 19, 20, 6, 7, 21, 22, 31, 32}
+  };
   cta861.data_block_collection.push_back(video_data_block);
 
   ShortAudioDescriptor sad;
@@ -536,7 +513,7 @@ TEST(WildEdidParsing, KoganKaled24144F_HDMI) {
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_20;
   sad.lpcm_bit_depths |= LpcmBitDepth::LPCM_BD_24;
   AudioDataBlock audio_data_block;
-  audio_data_block.sads[0] = sad;
+  audio_data_block.sads.push_back(sad);
   cta861.data_block_collection.push_back(audio_data_block);
 
   SpeakerAllocationDataBlock speaker_allocation_data_block;

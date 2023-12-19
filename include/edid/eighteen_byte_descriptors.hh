@@ -45,19 +45,19 @@ namespace Edid {
     // for brace-enclosed initialization despite
     // inheritance from a base class with virtual funcs
     DisplayRangeLimits(
-      uint16_t min_v_rate_hz_,
-      uint16_t max_v_rate_hz_,
-      uint16_t min_h_rate_khz_,
-      uint16_t max_h_rate_khz_,
-      uint16_t max_pixel_clock_rate_mhz_,
-      VideoTimingSupport video_timing_support_
+      uint16_t min_v_rate_hz,
+      uint16_t max_v_rate_hz,
+      uint16_t min_h_rate_khz,
+      uint16_t max_h_rate_khz,
+      uint16_t max_pixel_clock_rate_mhz,
+      VideoTimingSupport video_timing_support
     )
-      : min_v_rate_hz(min_v_rate_hz_)
-      , max_v_rate_hz(max_v_rate_hz_)
-      , min_h_rate_khz(min_h_rate_khz_)
-      , max_h_rate_khz(max_h_rate_khz_)
-      , max_pixel_clock_rate_mhz(max_pixel_clock_rate_mhz_)
-      , video_timing_support(video_timing_support_)
+      : min_v_rate_hz(min_v_rate_hz)
+      , max_v_rate_hz(max_v_rate_hz)
+      , min_h_rate_khz(min_h_rate_khz)
+      , max_h_rate_khz(max_h_rate_khz)
+      , max_pixel_clock_rate_mhz(max_pixel_clock_rate_mhz)
+      , video_timing_support(video_timing_support)
     {}
 
 #ifdef ENABLE_JSON
@@ -143,11 +143,11 @@ namespace Edid {
     // for brace-enclosed initialization despite
     // inheritance from a base class with virtual funcs
     AsciiString(
-      const std::string& string_,
-      AsciiStringType descriptor_type_
+      const std::string& string,
+      AsciiStringType descriptor_type
     )
-      : string(string_)
-      , descriptor_type(descriptor_type_)
+      : string(string)
+      , descriptor_type(descriptor_type)
     {}
 
 #ifdef ENABLE_JSON
