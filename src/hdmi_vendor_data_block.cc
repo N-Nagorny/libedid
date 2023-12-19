@@ -51,12 +51,16 @@ namespace Edid {
 
       if (hdmi_video.has_value()) {
         // byte (13) in Table 8-16
-        result[pos] = (hdmi_video->stereo_video_support.has_value() ? 1 : 0) << 7;
-        if (hdmi_video->stereo_video_support->vics.has_value()) {
-          result[pos] |= 0b10 << 5;
-        }
-        else if (hdmi_video->stereo_video_support->formats.has_value()) {
-          result[pos] |= 0b01 << 5;
+        bool has_video_support = hdmi_video->stereo_video_support.has_value();
+        result[pos] = has_video_support << 7;
+        if (has_video_support) {
+          if (hdmi_video->stereo_video_support->vics.has_value()) {
+            printf("hdmi_video->stereo_video_support->vics.has_value()\n");
+            result[pos] |= 0b10 << 5;
+          }
+          else if (hdmi_video->stereo_video_support->formats.has_value()) {
+            result[pos] |= 0b01 << 5;
+          }
         }
         result[pos++] |= hdmi_video->image_size_meaning & BITMASK_TRUE(2) << 3;
 

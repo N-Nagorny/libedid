@@ -140,40 +140,43 @@
               }
             },
             "vic_3d_support": {
-              "required": [
-                "vic_index",
-                "format",
-                "subsampling_3d"
-              ],
-              "type": "object",
-              "properties": {
-                "vic_index": {
-                  "type": "integer"
-                },
-                "format": {
-                  "type": "string",
-                  "enum": [
-                    "Frame packing",
-                    "Field alternative",
-                    "Line alternative",
-                    "Side-by-Side (Full)",
-                    "L + depth",
-                    "L + depth + graphics + graphics-depth",
-                    "Top-and-Bottom",
-                    "Side-by-Side (Half)"
-                  ]
-                },
-                "subsampling_3d": {
-                  "type":"string",
-                  "enum": [
-                    "Horizontal and four quincunx matrix",
-                    "Horizontal",
-                    "Four quincunx matrix",
-                    "Odd/Left, Odd/Right",
-                    "Odd/Left, Even/Right",
-                    "Even/Left, Odd/Right",
-                    "Even/Left, Even/Right"
-                  ]
+              "type":"array",
+              "item": {
+                "required": [
+                  "vic_index",
+                  "format",
+                  "subsampling_3d"
+                ],
+                "type": "object",
+                "properties": {
+                  "vic_index": {
+                    "type": "integer"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "Frame packing",
+                      "Field alternative",
+                      "Line alternative",
+                      "Side-by-Side (Full)",
+                      "L + depth",
+                      "L + depth + graphics + graphics-depth",
+                      "Top-and-Bottom",
+                      "Side-by-Side (Half)"
+                    ]
+                  },
+                  "subsampling_3d": {
+                    "type":"string",
+                    "enum": [
+                      "Horizontal and four quincunx matrix",
+                      "Horizontal",
+                      "Four quincunx matrix",
+                      "Odd/Left, Odd/Right",
+                      "Odd/Left, Even/Right",
+                      "Even/Left, Odd/Right",
+                      "Even/Left, Even/Right"
+                    ]
+                  }
                 }
               }
             }
@@ -183,4 +186,3 @@
     }
   }
 }
-

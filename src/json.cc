@@ -618,7 +618,7 @@ namespace Edid {
     if (j.contains("max_tmds_clock_mhz")) {
       result.max_tmds_clock_mhz = j.at("max_tmds_clock_mhz");
     }
-    const auto content_types = j.at("content_types").get<std::vector<ContentTypes>>();
+    const auto content_types = j.at("content_types").get<std::vector<ContentType>>();
     for (auto type : content_types) {
       result.content_types |= type;
     }

@@ -226,7 +226,7 @@ if (BUILD_TESTS)
         if(RUN_TESTS)
             add_custom_command(TARGET json-roundtrip-tester POST_BUILD
                 COMMAND ${CMAKE_SOURCE_DIR}/scripts/linuxhw_coverage.sh
-                ARGS ${CMAKE_BINARY_DIR}/json-roundtrip-tester 35908 ${LINUXHW_EDID_DIR} ${CMAKE_BINARY_DIR}/test_result_json
+                ARGS ${CMAKE_BINARY_DIR}/json-roundtrip-tester 37020 ${LINUXHW_EDID_DIR} ${CMAKE_BINARY_DIR}/test_result_json
             )
         endif()
 
