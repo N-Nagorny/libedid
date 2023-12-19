@@ -49,10 +49,7 @@ function decoded_to_binary {
     done
     if [ "$IS_IGNORED" = "false" ]; then
       cat "$file" | grep -E '^([a-f0-9]{32}|[a-f0-9 ]{47})$' | tr -d '[:space:]' | xxd -r -p > "$file".bin
-      # Also ignore EDIDs larger than 256 bytes
-      if [[ $(wc -c "${file}.bin" | cut -d' ' -f1) -lt 257 ]]; then
-        echo "${file}.bin" >> "${BINARY_PATH}"
-      fi
+      echo "${file}.bin" >> "${BINARY_PATH}"
     fi
   done
 }
