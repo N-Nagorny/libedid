@@ -198,7 +198,8 @@ namespace Edid {
         pos = dtd_start_pos;
       }
 
-      while (cta861[pos] != 0 && cta861[pos + 1] != 0) {
+      // While not Beginning of Padding or Checksum (Table 60)
+      while (cta861[pos] != 0 && cta861[pos + 1] != 0 && pos + 1 < EDID_BLOCK_SIZE - 1) {
         result.detailed_timing_descriptors.push_back(DetailedTimingDescriptor::parse_byte_block(cta861.begin() + pos));
         pos += EIGHTEEN_BYTES;
       }
