@@ -4,7 +4,6 @@
   "title": "HDR Static Metadata Data Block (CTA-861-I Section 7.5.13)",
   "description": "Indicates the Static HDR capabilities of a Sink",
   "additionalProperties": false,
-  "minProperties": 2,
   "required": [
     "transfer_functions",
     "static_metadata_types",

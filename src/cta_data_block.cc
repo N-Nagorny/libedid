@@ -271,4 +271,57 @@ namespace Edid {
         get_min_luminance(*min_luminance_code_value, get_luminance(*max_luminance_code_value)) << " cd/m^2)\n";
     }
   }
+
+  VideoCapabilityDataBlock VideoCapabilityDataBlock::parse_byte_block(const uint8_t* iter) {
+    VideoCapabilityDataBlock result;
+
+    const uint8_t data_block_tag = *iter++ >> 5 & BITMASK_TRUE(3);
+    if (data_block_tag != CTA861_EXTENDED_TAG)
+      throw EdidException(__FUNCTION__, "Extended Tag Data Block has incorrect Data Block Tag: " +
+        std::to_string(data_block_tag)
+      );
+
+    int extended_tag = *iter++;
+    if (extended_tag != CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG)
+      throw EdidException(__FUNCTION__, "Video Capability Data Block has incorrect Extended Data Block Tag: " +
+        std::to_string(extended_tag)
+      );
+
+    result.ce_scan_behaviour = OverUnderscanSupport(*iter & BITMASK_TRUE(2));
+    result.it_scan_behaviour = OverUnderscanSupport(*iter >> 2 & BITMASK_TRUE(2));
+    result.pt_scan_behaviour = OverUnderscanSupport(*iter >> 4 & BITMASK_TRUE(2));
+    result.is_rgb_quantization_range_selectable = *iter >> 6 & BITMASK_TRUE(1);
+    result.is_ycc_quantization_range_selectable = *iter >> 7 & BITMASK_TRUE(1);
+
+    return result;
+  }
+
+  std::vector<uint8_t> VideoCapabilityDataBlock::generate_byte_block() const {
+    std::vector<uint8_t> result(size(), 0x00);
+    int pos = 0;
+
+    result[pos] = CTA861_EXTENDED_TAG << 5;
+    result[pos++] |= (size() - CTA861_DATA_BLOCK_HEADER_SIZE) & BITMASK_TRUE(5);
+    result[pos++] = CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG;
+
+    result[pos] |= is_ycc_quantization_range_selectable << 7;
+    result[pos] |= is_rgb_quantization_range_selectable << 6;
+    result[pos] |= (pt_scan_behaviour & BITMASK_TRUE(2)) << 4;
+    result[pos] |= (it_scan_behaviour & BITMASK_TRUE(2)) << 2;
+    result[pos] |= ce_scan_behaviour & BITMASK_TRUE(2);
+
+    return result;
+  }
+
+  void VideoCapabilityDataBlock::print(std::ostream& os, uint8_t tabs) const {
+    std::string indent(tabs, '\t');
+    os << indent << "Video Capability Data Block: \n";
+    indent += '\t';
+
+    os << indent << "CE scan support: " << ce_scan_behaviour;
+    os << indent << "IT scan support: " << it_scan_behaviour;
+    os << indent << "PT scan support: " << pt_scan_behaviour;
+    os << indent << "RGB Quantization Range selectable: " << is_rgb_quantization_range_selectable;
+    os << indent << "YCC Quantization Range selectable: " << is_ycc_quantization_range_selectable;
+  }
 }  // namespace Edid

@@ -37,6 +37,7 @@ if (ENABLE_JSON)
         schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/hdr_static_metadata_data_block.json
         schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/speaker_allocation_data_block.json
         schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/unknown_data_block.json
+        schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/video_capability_data_block.json
         schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/video_data_block.json
         schemas/${JSON_SCHEMAS_CTA861_BLOCK_FOLDER}/ycbcr420_capability_map_data_block.json
 

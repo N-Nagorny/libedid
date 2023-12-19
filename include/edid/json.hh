@@ -74,6 +74,8 @@ namespace Edid {
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VideoDataBlock, vics)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AudioDataBlock, sads)
   NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(UnknownDataBlock, raw_data, data_block_tag, extended_tag)
+  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VideoCapabilityDataBlock, is_ycc_quantization_range_selectable,
+    is_rgb_quantization_range_selectable, pt_scan_behaviour, it_scan_behaviour, ce_scan_behaviour)
 
   // HDMI VSDB
 

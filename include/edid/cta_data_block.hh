@@ -20,6 +20,7 @@
 #define CTA861_VESA_DISPLAY_TRANSFER_DATA_BLOCK_TAG 0b101
 #define CTA861_EXTENDED_TAG 0b111
 
+#define CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG              0x00
 #define CTA861_EXTENDED_COLORIMETRY_BLOCK_TAG                   0x05
 #define CTA861_EXTENDED_HDR_STATIC_METADATA_BLOCK_TAG           0x06
 #define CTA861_EXTENDED_YCBCR420_CAPABILITY_MAP_DATA_BLOCK_TAG  0x0F
@@ -664,5 +665,64 @@ namespace Edid {
                   X.max_luminance_code_value, X.max_frame_average_luminance_code_value, \
                   X.min_luminance_code_value
   TIED_COMPARISONS(HdrStaticMetadataDataBlock, FIELDS)
+#undef FIELDS
+
+  // ---------- CTA-861-I Section 7.5.6 ----------
+
+  enum OverUnderscanSupport {
+    OUB_NO_DATA = 0b00,
+    OUB_OVER    = 0b01,
+    OUB_UNDER   = 0b10,
+    OUB_BOTH    = 0b11
+  };
+
+  STRINGIFY_ENUM(OverUnderscanSupport, {
+    {OUB_NO_DATA, "no_data"},
+    {OUB_OVER,    "always_overscanned"},
+    {OUB_UNDER,   "always_underscanned"},
+    {OUB_BOTH,    "supports_over_and_underscan"}
+  })
+
+  struct VideoCapabilityDataBlock : ICtaDataBlock {
+    bool is_ycc_quantization_range_selectable = false;
+    bool is_rgb_quantization_range_selectable = true;
+    OverUnderscanSupport pt_scan_behaviour = OUB_NO_DATA;  // Preferred Timings
+    OverUnderscanSupport it_scan_behaviour = OUB_NO_DATA;  // Information Technologies
+    OverUnderscanSupport ce_scan_behaviour = OUB_NO_DATA;  // Consumer Electronics
+
+    VideoCapabilityDataBlock() = default;
+
+    // for brace-enclosed initialization despite
+    // inheritance from a base class with virtual funcs
+    VideoCapabilityDataBlock(
+      bool is_ycc_quantization_range_selectable,
+      bool is_rgb_quantization_range_selectable,
+      OverUnderscanSupport pt_scan_behaviour,
+      OverUnderscanSupport it_scan_behaviour,
+      OverUnderscanSupport ce_scan_behaviour
+    )
+      : is_ycc_quantization_range_selectable(is_ycc_quantization_range_selectable)
+      , is_rgb_quantization_range_selectable(is_rgb_quantization_range_selectable)
+      , pt_scan_behaviour(pt_scan_behaviour)
+      , it_scan_behaviour(it_scan_behaviour)
+      , ce_scan_behaviour(ce_scan_behaviour)
+    {}
+
+    constexpr size_t size() const override {
+      return 1 + CTA861_DATA_BLOCK_HEADER_SIZE + CTA861_EXTENDED_TAG_SIZE;
+    }
+
+    CtaDataBlockType type() const override {
+      return CtaDataBlockType(CTA861_EXTENDED_TAG, CTA861_EXTENDED_VIDEO_CAPABILITY_BLOCK_TAG);
+    }
+
+    std::vector<uint8_t> generate_byte_block() const override;
+    void print(std::ostream& os, uint8_t tabs = 1) const override;
+    static VideoCapabilityDataBlock parse_byte_block(const uint8_t* iter);
+  };
+
+#define FIELDS(X) X.is_ycc_quantization_range_selectable, X.is_rgb_quantization_range_selectable, \
+                  X.pt_scan_behaviour, X.it_scan_behaviour, X.ce_scan_behaviour
+  TIED_COMPARISONS(VideoCapabilityDataBlock, FIELDS)
 #undef FIELDS
 }  // namespace Edid

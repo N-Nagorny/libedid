@@ -34,7 +34,8 @@
           {"$ref": "ycbcr420_capability_map_data_block.json"},
           {"$ref": "colorimetry_data_block.json"},
           {"$ref": "hdmi_vsdb.json"},
-          {"$ref": "hdr_static_metadata_data_block.json"}
+          {"$ref": "hdr_static_metadata_data_block.json"},
+          {"$ref": "video_capability_data_block.json"}
         ]
       }
     },

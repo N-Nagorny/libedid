@@ -439,6 +439,11 @@ namespace Edid {
       from_json(j, subresult);
       descriptor = subresult;
     }
+    else if (j.contains("is_ycc_quantization_range_selectable")) {
+      VideoCapabilityDataBlock subresult;
+      from_json(j, subresult);
+      descriptor = subresult;
+    }
     else if (j.contains("hdmi_vsdb")) {
       HdmiVendorDataBlock subresult;
       from_json(j, subresult);

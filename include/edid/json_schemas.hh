@@ -35,6 +35,7 @@ namespace Edid {
       extern const char* hdr_static_metadata_data_block;
       extern const char* speaker_allocation_data_block;
       extern const char* unknown_data_block;
+      extern const char* video_capability_data_block;
       extern const char* video_data_block;
       extern const char* ycbcr420_capability_map_data_block;
     }  // namespace cta861_block
@@ -56,6 +57,7 @@ namespace Edid {
       { json_uri{"hdr_static_metadata_data_block.json"}, json::parse(cta861_block::hdr_static_metadata_data_block) },
       { json_uri{"speaker_allocation_data_block.json"}, json::parse(cta861_block::speaker_allocation_data_block) },
       { json_uri{"unknown_data_block.json"}, json::parse(cta861_block::unknown_data_block) },
+      { json_uri{"video_capability_data_block.json"}, json::parse(cta861_block::video_capability_data_block) },
       { json_uri{"video_data_block.json"}, json::parse(cta861_block::video_data_block) },
       { json_uri{"ycbcr420_capability_map_data_block.json"}, json::parse(cta861_block::ycbcr420_capability_map_data_block) },
     };
