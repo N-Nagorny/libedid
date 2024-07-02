@@ -219,6 +219,7 @@ namespace Edid {
   void to_json(nlohmann::json& j, const ShortAudioDescriptor& block) {
     j["audio_format"] = block.audio_format;
     j["channels"] = block.channels + 1;
+    j["sampling_freqs"] = nlohmann::json::array();
     for (SamplingFrequence freq : bitfield_to_enums<SamplingFrequence>(block.sampling_freqs))
       j["sampling_freqs"].push_back(to_string(freq));
     for (LpcmBitDepth depth : bitfield_to_enums<LpcmBitDepth>(block.lpcm_bit_depths)) {
